@@ -1,0 +1,208 @@
+cities:
+  - id: "110000"
+    name:
+      zh: "北京"
+      en: "Beijing"
+    coordinates:
+      lng: 116.407526
+      lat: 39.904030
+    type: "city"
+    purpose: "travel"
+    visitDate: "20240315"
+    adcode: "110000"
+    places:
+      - id: "110000-001"
+        name:
+          zh: "故宫"
+          en: "Forbidden City"
+        coordinates:
+          lng: 116.397026
+          lat: 39.918058
+        type: "place"
+        purpose: "travel"
+        visitDate: "20240315"
+      - id: "110000-002"
+        name:
+          zh: "天安门广场"
+          en: "Tiananmen Square"
+        coordinates:
+          lng: 116.397477
+          lat: 39.903738
+        type: "place"
+        purpose: "travel"
+        visitDate: "20240315"
+      - id: "110000-003"
+        name:
+          zh: "长城（八达岭）"
+          en: "Great Wall (Badaling)"
+        coordinates:
+          lng: 116.017842
+          lat: 40.357763
+        type: "place"
+        purpose: "travel"
+        visitDate: "20240316"
+
+  - id: "310000"
+    name:
+      zh: "上海"
+      en: "Shanghai"
+    coordinates:
+      lng: 121.473701
+      lat: 31.230416
+    type: "city"
+    purpose: "business"
+    visitDate: "20240420"
+    adcode: "310000"
+    places:
+      - id: "310000-001"
+        name:
+          zh: "外滩"
+          en: "The Bund"
+        coordinates:
+          lng: 121.490317
+          lat: 31.239666
+        type: "place"
+        purpose: "travel"
+        visitDate: "20240420"
+      - id: "310000-002"
+        name:
+          zh: "东方明珠"
+          en: "Oriental Pearl Tower"
+        coordinates:
+          lng: 121.499763
+          lat: 31.239853
+        type: "place"
+        purpose: "travel"
+        visitDate: "20240420"
+
+  - id: "330100"
+    name:
+      zh: "杭州"
+      en: "Hangzhou"
+    coordinates:
+      lng: 120.210792
+      lat: 30.246026
+    type: "city"
+    purpose: "travel"
+    visitDate: "20240612"
+    adcode: "330100"
+    places:
+      - id: "330100-001"
+        name:
+          zh: "西湖"
+          en: "West Lake"
+        coordinates:
+          lng: 120.148792
+          lat: 30.259244
+        type: "place"
+        purpose: "travel"
+        visitDate: "20240612"
+      - id: "330100-002"
+        name:
+          zh: "灵隐寺"
+          en: "Lingyin Temple"
+        coordinates:
+          lng: 120.100847
+          lat: 30.242915
+        type: "place"
+        purpose: "travel"
+        visitDate: "20240612"
+
+  - id: "320100"
+    name:
+      zh: "南京"
+      en: "Nanjing"
+    coordinates:
+      lng: 118.796877
+      lat: 32.060255
+    type: "city"
+    purpose: "travel"
+    visitDate: "20240705"
+    adcode: "320100"
+    places:
+      - id: "320100-001"
+        name:
+          zh: "中山陵"
+          en: "Sun Yat-sen Mausoleum"
+        coordinates:
+          lng: 118.848263
+          lat: 32.056664
+        type: "place"
+        purpose: "travel"
+        visitDate: "20240705"
+      - id: "320100-002"
+        name:
+          zh: "夫子庙"
+          en: "Confucius Temple"
+        coordinates:
+          lng: 118.794449
+          lat: 32.025578
+        type: "place"
+        purpose: "travel"
+        visitDate: "20240705"
+
+  - id: "510100"
+    name:
+      zh: "成都"
+      en: "Chengdu"
+    coordinates:
+      lng: 104.066541
+      lat: 30.572815
+    type: "city"
+    purpose: "travel"
+    visitDate: "20240820"
+    adcode: "510100"
+    places:
+      - id: "510100-001"
+        name:
+          zh: "都江堰"
+          en: "Dujiangyan"
+        coordinates:
+          lng: 103.644077
+          lat: 31.023774
+        type: "place"
+        purpose: "travel"
+        visitDate: "20240821"
+      - id: "510100-002"
+        name:
+          zh: "大熊猫繁育研究基地"
+          en: "Giant Panda Breeding Base"
+        coordinates:
+          lng: 104.148785
+          lat: 30.732137
+        type: "place"
+        purpose: "travel"
+        visitDate: "20240820"
+
+  - id: "610100"
+    name:
+      zh: "西安"
+      en: "Xi'an"
+    coordinates:
+      lng: 108.940175
+      lat: 34.341574
+    type: "city"
+    purpose: "travel"
+    visitDate: "20240915"
+    adcode: "610100"
+    places:
+      - id: "610100-001"
+        name:
+          zh: "兵马俑"
+          en: "Terracotta Army"
+        coordinates:
+          lng: 109.279332
+          lat: 34.384855
+        type: "place"
+        purpose: "travel"
+        visitDate: "20240915"
+      - id: "610100-002"
+        name:
+          zh: "大雁塔"
+          en: "Big Wild Goose Pagoda"
+        coordinates:
+          lng: 108.964286
+          lat: 34.218169
+        type: "place"
+        purpose: "travel"
+        visitDate: "20240915"

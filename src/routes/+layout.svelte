@@ -1,0 +1,106 @@
+<script lang="ts">
+	/**
+	 * 主布局文件
+	 *
+	 * 负责应用的整体结构，包括移动端和桌面端的响应式布局。
+	 * 整合了所有的布局组件 (Sidebar, Header, Background, etc.)。
+	 */
+	import '../app.css';
+
+	import { navItems } from '$lib/config';
+	import { page } from '$app/state';
+	import { backgroundState, layoutState } from '$lib/state.svelte';
+	import { t } from '$lib/i18n/store';
+
+	// 引入新的模块化组件
+	import BackgroundLayer from '$lib/components/layout/common/BackgroundLayer.svelte';
+	import GlobalLoader from '$lib/components/layout/common/GlobalLoader.svelte';
+	import MobileHeader from '$lib/components/layout/mobile/Header.svelte';
+	import MobileNav from '$lib/components/layout/mobile/MobileNav.svelte';
+	import MobileDrawer from '$lib/components/layout/mobile/Drawer.svelte';
+	import Sidebar from '$lib/components/layout/desktop/Sidebar.svelte';
+	import Header from '$lib/components/layout/desktop/Header.svelte';
+	import Content from '$lib/components/layout/desktop/Content.svelte';
+	import MobileContent from '$lib/components/layout/mobile/Content.svelte';
+
+	let { children, data } = $props();
+
+	// 派生当前页面标题
+	let currentNavItem = $derived(navItems.find((item) => page.url.pathname.startsWith(item.href)));
+	let pageLabel = $derived(currentNavItem ? $t(currentNavItem.i18nKey) : $t('nav.home'));
+	let fullTitle = $derived(`扶摇skyrocketing · ${pageLabel}`);
+
+	// 图片加载状态
+	let isImageLoaded = $state(false);
+	let minTimeElapsed = $state(false);
+
+	// 最小加载时间（毫秒）
+	const MIN_LOADING_TIME = 1000;
+
+	$effect(() => {
+		const timer = setTimeout(() => {
+			minTimeElapsed = true;
+		}, MIN_LOADING_TIME);
+		return () => clearTimeout(timer);
+	});
+
+	// 只有当图片加载完成且最小时间已过时才显示内容
+	let showContent = $derived(isImageLoaded && minTimeElapsed);
+</script>
+
+<svelte:head>
+	<title>{fullTitle}</title>
+</svelte:head>
+
+<!-- 加载屏幕：在背景图片未加载时显示 -->
+<GlobalLoader {showContent} />
+
+<!-- 全局背景层 -->
+<BackgroundLayer
+	spotlightUrl={data.spotlightUrl ?? data.appConfig?.wallpaper?.default ?? ''}
+	onImageLoad={() => (isImageLoaded = true)}
+/>
+
+{#if showContent}
+	<div
+		class="pointer-events-none min-h-screen font-sans transition-all duration-300 {backgroundState.uiTheme ===
+		'light'
+			? 'text-black'
+			: 'text-white'}"
+	>
+		<!-- 移动端：顶部标题栏 -->
+		<MobileHeader {pageLabel} />
+
+		<!-- 内容区域 (移动端带有上下内边距) -->
+		<MobileContent pathname={page.url.pathname}>
+			{@render children()}
+		</MobileContent>
+
+		<!-- 移动端：底部导航栏 -->
+		<MobileNav />
+
+		<!-- PC/平板：分栏视图 -->
+		<div class="hidden h-screen overflow-hidden md:flex">
+			<!-- 左侧侧边栏组件 -->
+			<div class="pt-4 pb-4 pl-4"><Sidebar /></div>
+
+			<!-- 右侧内容区域：标题 + 控件 + 内容 -->
+			<div
+				class={layoutState.isContentTransparent
+					? 'pointer-events-none relative flex h-full flex-1 flex-col overflow-hidden'
+					: 'pointer-events-auto relative flex h-full flex-1 flex-col overflow-hidden'}
+			>
+				<!-- 头部栏：标题 (左) + 控件 (右) -->
+				<Header {pageLabel} />
+
+				<!-- 可滚动的内容区域 -->
+				<Content pathname={page.url.pathname}>
+					{@render children()}
+				</Content>
+			</div>
+		</div>
+	</div>
+
+	<!-- 全局移动端抽屉 -->
+	<MobileDrawer />
+{/if}
