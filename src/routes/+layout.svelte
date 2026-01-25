@@ -15,20 +15,24 @@
 	// 引入新的模块化组件
 	import BackgroundLayer from '$lib/components/layout/common/BackgroundLayer.svelte';
 	import GlobalLoader from '$lib/components/layout/common/GlobalLoader.svelte';
-	import MobileHeader from '$lib/components/layout/mobile/Header.svelte';
 	import MobileNav from '$lib/components/layout/mobile/MobileNav.svelte';
 	import MobileDrawer from '$lib/components/layout/mobile/Drawer.svelte';
 	import Sidebar from '$lib/components/layout/desktop/Sidebar.svelte';
-	import Header from '$lib/components/layout/desktop/Header.svelte';
+	import Header from '$lib/components/layout/common/Header.svelte';
 	import Content from '$lib/components/layout/desktop/Content.svelte';
 	import MobileContent from '$lib/components/layout/mobile/Content.svelte';
+	import SeoHead from '$lib/components/seo/SeoHead.svelte';
 
 	let { children, data } = $props();
 
 	// 派生当前页面标题
 	let currentNavItem = $derived(navItems.find((item) => page.url.pathname.startsWith(item.href)));
 	let pageLabel = $derived(currentNavItem ? $t(currentNavItem.i18nKey) : $t('nav.home'));
-	let fullTitle = $derived(`扶摇skyrocketing · ${pageLabel}`);
+    
+    // 从当前导航项派生 SEO 数据
+    let seoTitle = $derived(currentNavItem?.seo?.title ?? pageLabel);
+    let seoDescription = $derived(currentNavItem?.seo?.description);
+    let seoKeywords = $derived(currentNavItem?.seo?.keywords);
 
 	// 图片加载状态
 	let isImageLoaded = $state(false);
@@ -48,9 +52,11 @@
 	let showContent = $derived(isImageLoaded && minTimeElapsed);
 </script>
 
-<svelte:head>
-	<title>{fullTitle}</title>
-</svelte:head>
+<SeoHead 
+    title={seoTitle}
+    description={seoDescription}
+    keywords={seoKeywords}
+/>
 
 <!-- 加载屏幕：在背景图片未加载时显示 -->
 <GlobalLoader {showContent} />
@@ -69,7 +75,10 @@
 			: 'text-white'}"
 	>
 		<!-- 移动端：顶部标题栏 -->
-		<MobileHeader {pageLabel} />
+		<Header
+			{pageLabel}
+			class="fixed top-0 right-0 left-0 z-20 flex items-center justify-between bg-transparent p-2 md:hidden"
+		/>
 
 		<!-- 内容区域 (移动端带有上下内边距) -->
 		<MobileContent pathname={page.url.pathname}>
@@ -91,7 +100,10 @@
 					: 'pointer-events-auto relative flex h-full flex-1 flex-col overflow-hidden'}
 			>
 				<!-- 头部栏：标题 (左) + 控件 (右) -->
-				<Header {pageLabel} />
+				<Header
+					{pageLabel}
+					class="pointer-events-auto absolute top-0 right-0 left-0 z-20 flex items-center justify-between pt-4 pl-4 pb-4"
+				/>
 
 				<!-- 可滚动的内容区域 -->
 				<Content pathname={page.url.pathname}>

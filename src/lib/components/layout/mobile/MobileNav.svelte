@@ -4,18 +4,21 @@
 	 *
 	 * 在移动设备上显示的底部导航条。
 	 */
-	import LiquidGlass from '$lib/components/ui/liquid-glass.svelte';
+	import LiquidGlass from '$lib/components/ui/LiquidGlass.svelte';
 	import Copyright from '../common/Copyright.svelte';
 	import { navItems } from '$lib/config';
 	import { page } from '$app/state';
 	import { isActiveRoute } from '$lib/utils/nav';
 	import { t, locale } from '$lib/i18n/store';
-	import Crossfade from '$lib/components/ui/crossfade.svelte';
+	import Crossfade from '$lib/components/ui/Crossfade.svelte';
 </script>
 
 <nav class="fixed right-2 bottom-2 left-2 z-50 md:hidden">
 	<LiquidGlass class="pointer-events-auto flex h-full w-full flex-col p-2">
-		<div class="grid w-full grid-cols-5">
+		<div
+			class="grid w-full"
+			style="grid-template-columns: repeat({navItems.length}, minmax(0, 1fr))"
+		>
 			{#each navItems as item}
 				<a
 					href={item.href}

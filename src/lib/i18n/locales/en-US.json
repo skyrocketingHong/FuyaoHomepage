@@ -1,7 +1,10 @@
 {
     "common": {
         "loading": "Loading...",
-        "copyright": "© {{startYear}} - {{currentYear}} 扶摇skyrocketing.\nAll rights reserved."
+        "travingto": "Traving to",
+        "copyright": "{{startYear}} - {{currentYear}} 扶摇skyrocketing.",
+        "comma": ", ",
+        "colon": ": "
     },
     "nav": {
         "home": "Home",
@@ -31,8 +34,11 @@
     "home": {
         "hero": {
             "profile": {
-                "name": "Hello!\nI'm Fuyao skyrocketing, {{age}} years old",
-                "role": "A Stack Developer / Open Source Enthusiast from China",
+                "hello": "Hello! ",
+                "im": "I'm ",
+                "name": "Fuyao skyrocketing",
+                "age": "{{age}} years old",
+                "role": "a Research and Technology Specialist",
                 "status": "Online",
                 "quote": "\"Try to create my own digital footprint.\""
             },
@@ -47,14 +53,12 @@
                 "language_default": "Code"
             },
             "social_links": {
-                "title": "Social Links",
-                "subtitle": "My social links"
+                "title": "Social Links"
             }
         }
     },
     "pay": {
         "title": "Donate",
-        "subtitle": "Buy me a coffee",
         "modal": {
             "pay_with": "Pay with {{method}}",
             "scan_qr": "Scan the QR code to proceed",
@@ -69,16 +73,14 @@
         }
     },
     "footprint": {
-        "title": "Footprint",
-        "subtitle": "Places I've been"
+        "title": "Footprint"
     },
     "blog": {
         "title": "Blog",
-        "subtitle": "My articles"
+        "iframe_loading": "'s Blog"
     },
     "friends": {
         "title": "Friends",
-        "subtitle": "My friends",
         "exchange": "Exchange Link",
         "profile": {
             "name_label": "Name",

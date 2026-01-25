@@ -19,7 +19,7 @@
 <div class={cn('grid', className)}>
 	{#key key}
 		<div
-			class="will-change-opacity col-start-1 row-start-1 [transform:translateZ(0)]"
+			class="col-start-1 row-start-1"
 			in:fade={{ duration }}
 			out:fade={{ duration }}
 		>

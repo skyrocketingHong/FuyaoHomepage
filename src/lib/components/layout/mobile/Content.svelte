@@ -1,5 +1,5 @@
 <script lang="ts">
-	import Crossfade from '$lib/components/ui/crossfade.svelte';
+	import Crossfade from '$lib/components/ui/Crossfade.svelte';
 	import type { Snippet } from 'svelte';
 
 	let { children, pathname } = $props<{ children: Snippet; pathname: string }>();

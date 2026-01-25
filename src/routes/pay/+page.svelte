@@ -6,7 +6,7 @@
 	 */
 	import { onMount } from 'svelte';
 	import QRCodeCard from '$lib/components/pay/QRCodeCard.svelte';
-	import Crossfade from '$lib/components/ui/crossfade.svelte';
+	import Crossfade from '$lib/components/ui/Crossfade.svelte';
 	import LoadingState from '$lib/components/ui/LoadingState.svelte';
 	import { fade } from 'svelte/transition';
 	import { loadYaml } from '$lib/utils/loading';

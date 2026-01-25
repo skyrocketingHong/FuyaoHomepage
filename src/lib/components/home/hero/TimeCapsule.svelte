@@ -6,9 +6,9 @@
 	 */
 	import { onMount, onDestroy } from 'svelte';
 	import { Clock } from 'lucide-svelte';
-	import LiquidGlass from '$lib/components/ui/liquid-glass.svelte';
+	import LiquidGlass from '$lib/components/ui/LiquidGlass.svelte';
 	import { t, locale } from '$lib/i18n/store';
-	import Crossfade from '$lib/components/ui/crossfade.svelte';
+	import Crossfade from '$lib/components/ui/Crossfade.svelte';
 	import { numberToChinese, numberToEnglish } from '$lib/utils/number';
 
 	// 配置
@@ -39,7 +39,7 @@
 			const m = minutes.toString().padStart(2, '0');
 			const s = seconds.toString().padStart(2, '0');
 
-			if ($locale === 'zh') {
+			if ($locale === 'zh-CN') {
 				timeRunning = `${d} 天\n${h} 小时 ${m} 分钟 ${s} 秒`;
 			} else {
 				timeRunning = `${d} Days\n${h} Hours ${m} Minutes ${s} Seconds`;
@@ -47,7 +47,7 @@
 			return;
 		}
 
-		if ($locale === 'zh') {
+		if ($locale === 'zh-CN') {
 			// 中文大写格式
 			const format = (val: number) => {
 				const converted = numberToChinese(val);
@@ -122,9 +122,11 @@
 				{#each timeRunning.split('') as char, i}
 					{#if char === '\n'}
 						<br />
+					{:else if char === ' '}
+						<span class="inline-block whitespace-pre">{'\u00A0'}</span>
 					{:else}
 						<Crossfade key={`${i}-${char}`} duration={150} class="inline-grid"
-							><span>{char === ' ' ? '\u00A0' : char}</span></Crossfade
+							><span>{char}</span></Crossfade
 						>
 					{/if}
 				{/each}

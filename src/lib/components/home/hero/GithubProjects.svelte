@@ -6,10 +6,13 @@
 	 */
 	import { onMount } from 'svelte';
 	import { Github, Star, GitFork } from 'lucide-svelte';
-	import LiquidGlass from '$lib/components/ui/liquid-glass.svelte';
-	import LoadingSpinner from '$lib/components/ui/LoadingSpinner.svelte';
+	import LiquidGlass from '$lib/components/ui/LiquidGlass.svelte';
 	import { t, locale } from '$lib/i18n/store';
-	import Crossfade from '$lib/components/ui/crossfade.svelte';
+	import Crossfade from '$lib/components/ui/Crossfade.svelte';
+	import LoadingState from '$lib/components/ui/LoadingState.svelte';
+	import { cn } from '$lib/utils';
+
+	import AutoScroll from '$lib/components/ui/AutoScroll.svelte';
 
 	interface GithubRepo {
 		name: string;
@@ -22,20 +25,48 @@
 		updatedAt: string;
 	}
 
-	const GITHUB_USERNAME = 'skyrocketinghong';
+	/** GitHub 用户名，从环境变量读取 */
+	const GITHUB_USERNAME = import.meta.env.VITE_GITHUB_USERNAME;
 
 	let githubData = $state<GithubRepo[]>([]);
 	let loadingGithub = $state(true);
 	let loadingText = $state('');
 
 	$effect(() => {
-		// Simple i18n loading text
+		// 国际化加载文本
 		loadingText = $t('home.hero.github.loading');
 	});
 
-	// Fetch GitHub Data
+	/**
+	 * 获取 GitHub 仓库数据
+	 * 优先尝试获取 Pinned (置顶) 项目，如果失败或为空，则回退到获取最近更新的项目。
+	 */
 	async function fetchGithubData() {
 		try {
+			// 1. 尝试获取 Pinned 项目 (通过第三方 API)
+			// 注意：官方 API 获取 Pinned 需要 GraphQL 和 Token，这里使用第三方开源服务无需 Token
+			const pinnedResponse = await fetch(
+				`https://gh-pinned-repos-tsj7ta5xfhep.deno.dev/?username=${GITHUB_USERNAME}`
+			);
+
+			if (pinnedResponse.ok) {
+				const data = await pinnedResponse.json();
+				if (Array.isArray(data) && data.length > 0) {
+					githubData = data.map((repo: any) => ({
+						name: repo.repo,
+						description: repo.description,
+						stars: Number(repo.stars) || 0,
+						forks: Number(repo.forks) || 0,
+						watchers: 0, // Pinned API 不返回 watchers
+						language: repo.language,
+						url: repo.link,
+						updatedAt: '' // Pinned API 不返回 updatedAt
+					}));
+					return; // 成功获取 Pinned 项目，直接返回
+				}
+			}
+
+			// 2. 如果 Pinned 获取失败或为空，回退到原来的逻辑 (最近更新)
 			const response = await fetch(
 				`https://api.github.com/users/${GITHUB_USERNAME}/repos?sort=updated&per_page=6`
 			);
@@ -52,21 +83,23 @@
 					updatedAt: repo.updated_at
 				}));
 			} else {
-				githubData = [
-					{
-						name: 'fuyao-homepage',
-						description: 'My personal homepage built with SvelteKit',
-						stars: 12,
-						forks: 2,
-						watchers: 1,
-						language: 'Svelte',
-						url: 'https://github.com/skyrocketinghong/fuyao-homepage',
-						updatedAt: new Date().toISOString()
-					}
-				];
+				throw new Error('Github API failed');
 			}
 		} catch (e) {
-			console.error('Failed to fetch GitHub data', e);
+			console.error('获取 GitHub 数据失败', e);
+			// API 请求失败时使用备用数据
+			githubData = [
+				{
+					name: 'LoadError',
+					description: 'Failed to load GitHub data, maybe rate limited',
+					stars: 114,
+					forks: 514,
+					watchers: 1919810,
+					language: 'LoadError',
+					url: `https://github.com/${GITHUB_USERNAME}/fuyao-homepage`,
+					updatedAt: new Date().toISOString()
+				}
+			];
 		} finally {
 			loadingGithub = false;
 		}
@@ -89,57 +122,59 @@
 		</h2>
 	</div>
 
-	{#if loadingGithub}
-		<!-- Loading State -->
-		<div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-			{#each Array(4) as _}
-				<LiquidGlass class="flex h-32 flex-col items-center justify-center gap-4 p-4" tilt={true}>
-					<LoadingSpinner size="md" />
-					<span class="text-xs font-medium tracking-widest text-white/50 uppercase"
-						><Crossfade key={$locale} class="inline-grid"><span>{loadingText}</span></Crossfade
-						></span
-					>
-				</LiquidGlass>
-			{/each}
-		</div>
-	{:else}
-		<div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-			{#each githubData as repo}
-				<LiquidGlass
-					tag="a"
-					href={repo.url}
-					target="_blank"
-					class="block p-4 transition-all hover:border-purple-500/30 hover:bg-white/5"
-					tilt={true}
-				>
-					<div class="mb-2 flex items-start justify-between">
-						<h3
-							class="truncate pr-4 text-lg font-bold transition-colors group-hover:text-purple-400"
-						>
-							{repo.name}
-						</h3>
-						<span
-							class="rounded-full border border-white/5 bg-white/10 px-2 py-0.5 text-xs text-white/50"
-							><Crossfade key={$locale} class="inline-grid"
-								><span>{repo.language || $t('home.hero.github.language_default')}</span></Crossfade
-							></span
-						>
-					</div>
-					<p class="mb-4 line-clamp-2 h-10 text-sm text-white/60">
-						{repo.description || $t('home.hero.github.no_description')}
-					</p>
-					<div class="flex items-center gap-4 text-xs text-white/40">
-						<div class="flex items-center gap-1">
-							<Star size={14} />
-							<span>{repo.stars}</span>
+	<div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+		{#each loadingGithub ? Array(6).fill(null) : githubData as repo}
+			<LiquidGlass
+				tag="a"
+				href={repo?.url}
+				target={repo?.url ? '_blank' : undefined}
+				class={cn(
+					'transition-all duration-300',
+					loadingGithub
+						? 'flex h-[142px] items-center justify-center border-white/5 bg-white/5'
+						: 'block p-4 hover:border-purple-500/30 hover:bg-white/5'
+				)}
+				tilt={true}
+			>
+				<Crossfade key={loadingGithub ? 'loading' : 'loaded'} class="h-full w-full">
+					{#if loadingGithub}
+						<div class="flex h-full w-full items-center justify-center">
+							<LoadingState loading={true} variant="inline" text={loadingText} />
 						</div>
-						<div class="flex items-center gap-1">
-							<GitFork size={14} />
-							<span>{repo.forks}</span>
+					{:else if repo}
+						<div class="h-full">
+							<div class="mb-2 flex items-start justify-between gap-2">
+								<h3
+									class="min-w-0 w-0 flex-1 text-lg font-bold transition-colors group-hover:text-purple-400"
+								>
+									<AutoScroll text={repo.name} class="w-full" />
+								</h3>
+								<span
+									class="shrink-0 rounded-full border border-white/5 bg-white/10 px-2 py-0.5 text-xs text-white/50"
+									>{repo.language || "N/A"}</span
+								>
+							</div>
+							<div class="mb-4 h-9 text-sm text-white/60">
+								<AutoScroll
+									text={repo.description || ""}
+									direction="vertical"
+									class="h-full w-full"
+								/>
+							</div>
+							<div class="flex items-center gap-4 text-xs text-white/40">
+								<div class="flex items-center gap-1">
+									<Star size={14} />
+									<span>{repo.stars}</span>
+								</div>
+								<div class="flex items-center gap-1">
+									<GitFork size={14} />
+									<span>{repo.forks}</span>
+								</div>
+							</div>
 						</div>
-					</div>
-				</LiquidGlass>
-			{/each}
-		</div>
-	{/if}
+					{/if}
+				</Crossfade>
+			</LiquidGlass>
+		{/each}
+	</div>
 </div>

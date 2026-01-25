@@ -4,14 +4,18 @@
 	 *
 	 * 在友链页面顶部展示站长个人信息，方便友链交换。
 	 */
-	import LiquidGlass from '$lib/components/ui/liquid-glass.svelte';
+	import LiquidGlass from '$lib/components/ui/LiquidGlass.svelte';
 	import Avatar from '$lib/components/ui/Avatar.svelte';
 	import { Github } from 'lucide-svelte';
 	import { t, locale } from '$lib/i18n/store';
-	import Crossfade from '$lib/components/ui/crossfade.svelte';
+	import Crossfade from '$lib/components/ui/Crossfade.svelte';
 	import { calculateAge } from '$lib/utils/age';
+	import { getAvatarUrl, seoConfig, repoConfig } from '$lib/config';
 
 	const age = calculateAge();
+	const avatarUrl = getAvatarUrl();
+	const siteUrl = seoConfig.baseURL;
+	const issueUrl = `${repoConfig.url}/issues/new?q=is%3Aissue+state%3Aopen`;
 </script>
 
 <div class="mt-1 pb-4">
@@ -20,9 +24,10 @@
 			<div class="flex w-full flex-row gap-3 md:w-auto md:flex-row md:items-center">
 				<div class="justify-center self-start md:self-auto">
 					<Avatar
-						src="https://github.com/skyrocketinghong.png"
-						alt="Fuyao skyrocketing's avatar"
+						src={avatarUrl}
+						alt="站长头像"
 						size="sm"
+						adaptiveStatus
 					/>
 				</div>
 				<div class="flex min-w-0 flex-1 flex-col gap-1 text-xs text-white lg:flex-row lg:gap-6">
@@ -48,19 +53,19 @@
 						<p>
 							<Crossfade key={$locale} class="inline-grid">
 								<span>{$t('friends.profile.link_label')}</span>
-							</Crossfade>: https://fuyaoskyrocket.ing
+							</Crossfade>: {siteUrl}
 						</p>
 						<p>
 							<Crossfade key={$locale} class="inline-grid">
 								<span>{$t('friends.profile.icon_label')}</span>
-							</Crossfade>: https://github.com/skyrocketinghong.png
+							</Crossfade>: {avatarUrl}
 						</p>
 					</div>
 				</div>
 			</div>
 			<div class="w-full md:w-auto">
 				<a
-					href="https://github.com/skyrocketinghong/fuyao-homepage/issues"
+					href={issueUrl}
 					target="_blank"
 					class="flex w-full items-center justify-center gap-1.5 rounded-lg bg-white/10 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-white/20 md:w-auto"
 				>
@@ -73,3 +78,4 @@
 		</div>
 	</LiquidGlass>
 </div>
+

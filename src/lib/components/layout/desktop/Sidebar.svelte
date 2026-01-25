@@ -4,14 +4,14 @@
 	 *
 	 * 桌面布局左侧的侧边栏，包含主导航、动态列表区域和版权信息。
 	 */
-	import LiquidGlass from '$lib/components/ui/liquid-glass.svelte';
+	import LiquidGlass from '$lib/components/ui/LiquidGlass.svelte';
 	import Copyright from '../common/Copyright.svelte';
 	import { navItems } from '$lib/config';
 	import { page } from '$app/state';
 	import { sidebarState } from '$lib/state.svelte';
 	import { isActiveRoute } from '$lib/utils/nav';
 	import { t, locale } from '$lib/i18n/store';
-	import Crossfade from '$lib/components/ui/crossfade.svelte';
+	import Crossfade from '$lib/components/ui/Crossfade.svelte';
 </script>
 
 <!-- 左侧侧边栏：路由、列表、版权 -->

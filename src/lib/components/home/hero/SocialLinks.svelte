@@ -6,8 +6,8 @@
 		SiX
 	} from '@icons-pack/svelte-simple-icons';
 	import { Mail, Share2 } from 'lucide-svelte';
-	import LiquidGlass from '$lib/components/ui/liquid-glass.svelte';
-	import Crossfade from '$lib/components/ui/crossfade.svelte';
+	import LiquidGlass from '$lib/components/ui/LiquidGlass.svelte';
+	import Crossfade from '$lib/components/ui/Crossfade.svelte';
 	import LoadingState from '$lib/components/ui/LoadingState.svelte';
 	import { t, locale } from '$lib/i18n/store';
 	import { loadYaml } from '$lib/utils/loading';

@@ -4,7 +4,7 @@
 	 *
 	 * 在移动端点击列表按钮时弹出的抽屉，用于显示侧边栏列表内容。
 	 */
-	import LiquidGlass from '$lib/components/ui/liquid-glass.svelte';
+	import LiquidGlass from '$lib/components/ui/LiquidGlass.svelte';
 	import { sidebarState } from '$lib/state.svelte';
 	import { fade, fly } from 'svelte/transition';
 	import { X } from 'lucide-svelte';

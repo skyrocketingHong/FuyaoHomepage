@@ -1,3 +1,19 @@
+@import url("https://cdn-font.hyperos.mi.com/font/css?family=MiSans_Latin_VF:VF:Latin&display=swap");
+@import url("https://cdn-font.hyperos.mi.com/font/css?family=MiSans_VF:VF:Chinese_Simplify,Latin&display=swap");
+@import url("https://cdn-font.hyperos.mi.com/font/css?family=MiSans:100,200,300,400,450,500,600,650,700,900:Chinese_Simplify,Latin&display=swap");
+@import url("https://cdn-font.hyperos.mi.com/font/css?family=HYXuanSong55S:400:HYXuanSong&display=swap");
+@import url("https://cdn-font.hyperos.mi.com/font/css?family=HYXuanSong75S:400:HYXuanSong&display=swap");
+@import url("https://cdn-font.hyperos.mi.com/font/css?family=MiSans_L3:400:Uncommon&display=swap");
+@import url("https://cdn-font.hyperos.mi.com/font/css?family=MiSans_ArabicUI_VF:VF:ArabicUI&display=swap");
+@import url("https://cdn-font.hyperos.mi.com/font/css?family=MiSans_Devanagari_VF:VF:Devanagari&display=swap");
+@import url("https://cdn-font.hyperos.mi.com/font/css?family=MiSans_Gujarati_VF:VF:Gujarati&display=swap");
+@import url("https://cdn-font.hyperos.mi.com/font/css?family=MiSans_Gurmukhi_VF:VF:Gurmukhi&display=swap");
+@import url("https://cdn-font.hyperos.mi.com/font/css?family=MiSans_Khmer_VF:VF:Khmer&display=swap");
+@import url("https://cdn-font.hyperos.mi.com/font/css?family=MiSans_Lao_VF:VF:Lao&display=swap");
+@import url("https://cdn-font.hyperos.mi.com/font/css?family=MiSans_Myanmar_VF:VF:Myanmar&display=swap");
+@import url("https://cdn-font.hyperos.mi.com/font/css?family=Misans_TC_VF:VF:Chinese_Traditional_TW&display=swap");
+@import url("https://cdn-font.hyperos.mi.com/font/css?family=MiSans_Thai_VF:VF:Thai&display=swap");
+@import url("https://cdn-font.hyperos.mi.com/font/css?family=MiSans_Tibetan_VF:VF:Tibetan&display=swap");
 @import "tailwindcss";
 
 @import "tw-animate-css";
@@ -76,6 +92,7 @@
 }
 
 @theme inline {
+  --font-sans: "MiSans", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
@@ -148,7 +165,6 @@
       #fa7830 0%,
       #e83e8f 25%,
       #5abefe 45%,
-      #e7e7e7ff 50%,
       #5abefe 55%,
       #e83e8f 75%,
       #fa7830 100%
@@ -159,6 +175,84 @@
     -webkit-text-fill-color: transparent;
     color: transparent;
     animation: gradient-flow 3s linear infinite;
+    will-change: background-position;
+    transform: translateZ(0);
+    animation-timing-function: steps(120);
+  }
+
+  .text-console-green {
+    color: #4af626;
+    text-shadow: 0 0 10px #4af626, 0 0 20px #4af626, 0 0 40px #4af626;
+    will-change: text-shadow;
+    will-change: text-shadow;
+  }
+
+  .text-fire {
+    color: #ffcc00;
+    text-shadow:
+      0 0 4px #ffcc00,
+      0 -5px 10px #ff6600,
+      2px -10px 15px #ff3300;
+    animation: fire-flicker 2s infinite alternate linear;
+    transform: translateZ(0);
+    /* Limit to ~60fps (2s * 60fps = 120 steps) */
+    animation-timing-function: steps(120);
+  }
+
+  .text-chromatic {
+    color: white;
+    text-shadow:
+      -2px 0 0 #ff0000,
+      2px 0 0 #0000ff;
+    animation: chromatic-jitter 3s infinite steps(10);
+    transform: translateZ(0);
+  }
+
+  @keyframes fire-flicker {
+    0%, 100% {
+      text-shadow:
+        0 0 4px #ffcc00,
+        0 -5px 10px #ff6600,
+        2px -10px 15px #ff3300;
+    }
+    25% {
+      text-shadow:
+        0 0 3px #ffcc00,
+        -2px -6px 12px #ff6600,
+        0 -9px 12px #ff3300;
+    }
+    50% {
+      text-shadow:
+        0 0 5px #ffcc00,
+        2px -4px 8px #ff6600,
+        -2px -11px 18px #ff3300;
+    }
+    75% {
+      text-shadow:
+        0 0 4px #ffcc00,
+        -1px -7px 14px #ff6600,
+        2px -8px 10px #ff3300;
+    }
+  }
+
+  @keyframes chromatic-jitter {
+    0%, 100% { text-shadow: -2px 0 0 #ff0000, 2px 0 0 #0000ff; }
+    5% { text-shadow: -2px -1px 0 #ff0000, 2px 1px 0 #0000ff; }
+    10% { text-shadow: -2px 1px 0 #ff0000, 2px -1px 0 #0000ff; }
+    15% { text-shadow: -2px 0 0 #ff0000, 2px 0 0 #0000ff; }
+  }
+
+  @keyframes aurora-flow {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .text-gradient-flow {
+      animation: none;
+      background-position: 0% center;
+    }
   }
 
   @keyframes gradient-flow {
@@ -167,6 +261,24 @@
     }
     100% {
       background-position: 0% center;
+    }
+  }
+
+  @keyframes auto-scroll-text {
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(var(--scroll-dist));
+    }
+  }
+
+  @keyframes auto-scroll-vertical {
+    from {
+      transform: translateY(0);
+    }
+    to {
+      transform: translateY(var(--scroll-dist));
     }
   }
 }

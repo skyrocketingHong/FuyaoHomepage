@@ -5,23 +5,26 @@
 	 * 展示个人头像、姓名、职业和签名等信息。
 	 */
 	import { Quote, Github } from 'lucide-svelte';
-	import LiquidGlass from '$lib/components/ui/liquid-glass.svelte';
+	import LiquidGlass from '$lib/components/ui/LiquidGlass.svelte';
 	import Avatar from '$lib/components/ui/Avatar.svelte';
+	import TextEffect from '$lib/components/ui/TextEffect.svelte';
 	import { t, locale } from '$lib/i18n/store';
-	import Crossfade from '$lib/components/ui/crossfade.svelte';
+	import Crossfade from '$lib/components/ui/Crossfade.svelte';
 	import { calculateAge } from '$lib/utils/age';
+	import { getAvatarUrl } from '$lib/config';
 
 	const age = calculateAge();
+	const avatarUrl = getAvatarUrl();
 </script>
 
-<!-- Profile & Description Section -->
+<!-- 个人信息与描述区域 -->
 <LiquidGlass
 	class="hover:border-cyan-500/20 hover:bg-white/10 hover:shadow-cyan-500/10"
 	tilt={true}
 >
 	<div class="flex flex-col items-center gap-8 md:flex-row">
 		<Avatar
-			src="https://github.com/skyrocketinghong.png"
+			src={avatarUrl}
 			alt="Avatar"
 			size="lg"
 			showStatus={true}
@@ -31,15 +34,13 @@
 		<div class="flex-1 space-y-4 text-center md:text-left">
 			<div>
 				<Crossfade key={$locale} class="inline-grid">
-					<h1
-						class="bg-gradient-to-r from-cyan-300 to-blue-500 bg-clip-text text-4xl font-bold whitespace-pre-line text-transparent"
-					>
-						<span>{$t('home.hero.profile.name', { age })}</span>
+					<h1 class="text-4xl font-bold whitespace-pre-line text-white">
+						{$t('home.hero.profile.hello')}{$t('home.hero.profile.im')}<TextEffect text={$t('home.hero.profile.name')} />
 					</h1>
 				</Crossfade>
 				<p class="mt-2 text-lg text-white/60">
 					<Crossfade key={$locale} class="inline-grid"
-						><span>{$t('home.hero.profile.role')}</span></Crossfade
+						><span>{$t('home.hero.profile.age', { age })}</span><span>{$t('common.comma')}</span><span>{$t('home.hero.profile.role')}</span></Crossfade
 					>
 				</p>
 			</div>

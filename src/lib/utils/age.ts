@@ -5,7 +5,7 @@
  */
 
 /** 个人出生日期常量 */
-export const BIRTH_DATE = '1999-02-11';
+export const BIRTH_DATE = import.meta.env.VITE_USER_BIRTH_DATE;
 
 /**
  * 计算从出生日期到当前的年龄

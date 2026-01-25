@@ -8,8 +8,8 @@
 	import { onMount } from 'svelte';
 	import QRCode from 'qrcode';
 	import LoadingSpinner from '$lib/components/ui/LoadingSpinner.svelte';
-	import LiquidGlass from '$lib/components/ui/liquid-glass.svelte';
-	import Crossfade from '$lib/components/ui/crossfade.svelte';
+	import LiquidGlass from '$lib/components/ui/LiquidGlass.svelte';
+	import Crossfade from '$lib/components/ui/Crossfade.svelte';
 	import { t, locale } from '$lib/i18n/store';
 	import { fade, slide } from 'svelte/transition';
 	import {
