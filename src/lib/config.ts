@@ -1,4 +1,4 @@
-import { Home, BookOpen, MapPin, CreditCard, Users } from 'lucide-svelte';
+import { Home, BookOpen, CreditCard, Users } from 'lucide-svelte';
 
 /**
  * 导航项接口定义
@@ -19,6 +19,10 @@ export interface NavItem {
         /** 页面关键词 */
         keywords?: string[];
     };
+    /** 是否拥有侧边栏列表 (用于控制路由切换时的列表清理) */
+    hasSidebarList?: boolean;
+    /** 背景模式 (可选，覆盖默认行为) */
+    backgroundMode?: BackgroundMode;
 }
 
 /**
@@ -34,7 +38,8 @@ export const navItems: NavItem[] = [
         seo: {
             description: '扶摇skyrocketing的个人主页首页，包含最新动态和个人简介。',
             keywords: ['首页', 'Dashboard', '个人中心']
-        }
+        },
+        backgroundMode: 'mosaic'
     },
     {
         i18nKey: 'nav.blog',
@@ -43,9 +48,21 @@ export const navItems: NavItem[] = [
         seo: {
             description: '扶摇skyrocketing的博客文章，分享技术教程、生活感悟和思考随笔。',
             keywords: ['博客', '文章', '技术教程', '随笔']
-        }
+        },
+        hasSidebarList: true,
+        backgroundMode: 'mosaic'
     },
-    //{ i18nKey: 'nav.footprint', href: '/footprint', icon: MapPin },
+    // {
+    //     i18nKey: 'nav.footprint',
+    //     href: '/footprint',
+    //     icon: MapPin,
+    //     seo: {
+    //         description: '扶摇skyrocketing的足迹，记录我走过的城市和地方。',
+    //         keywords: ['足迹', '足迹记录', '足迹追踪']
+    //     },
+    //     hasSidebarList: true,
+    //     backgroundMode: 'none'
+    // },
     {
         i18nKey: 'nav.pay',
         href: '/pay',
@@ -53,7 +70,8 @@ export const navItems: NavItem[] = [
         seo: {
             description: '扶摇skyrocketing的赞赏支持，如果您觉得我的内容对您有帮助，欢迎赞赏支持。',
             keywords: ['赞赏', '捐赠', '支持']
-        }
+        },
+        backgroundMode: 'mosaic'
     },
     {
         i18nKey: 'nav.friends',
@@ -62,7 +80,8 @@ export const navItems: NavItem[] = [
         seo: {
             description: '扶摇skyrocketing的友情链接，我的朋友们和推荐的优质网站。',
             keywords: ['友链', '朋友圈', '推荐网站']
-        }
+        },
+        backgroundMode: 'mosaic'
     },
 ];
 
@@ -108,3 +127,30 @@ export const repoConfig = {
     name: import.meta.env.VITE_REPO_NAME,
 };
 
+
+/**
+ * 背景模式定义
+ */
+export type BackgroundMode = 'none' | 'image' | 'solid' | 'flowing' | 'mosaic';
+
+/**
+ * 根据路径获取背景模式
+ * 
+ * @param pathname 当前路径
+ * @returns BackgroundMode
+ */
+export function getBackgroundMode(pathname: string): BackgroundMode {
+    // 查找匹配的导航项
+    const activeItem = navItems.find(item => {
+        // 简单匹配：只要 pathname 以 item.href 开头 (且 item.href 不是 '/'，除非 pathname 也是 '/')
+        if (item.href === '/') return pathname === '/';
+        return pathname.startsWith(item.href);
+    });
+
+    if (activeItem && activeItem.backgroundMode) {
+        return activeItem.backgroundMode;
+    }
+
+    // 默认使用马赛克背景 (如果找不到匹配项或未配置)
+    return 'mosaic';
+}

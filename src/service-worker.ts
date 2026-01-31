@@ -62,8 +62,8 @@ self.addEventListener('fetch', (event) => {
         const url = new URL(event.request.url);
         const cache = await caches.open(CACHE);
 
-        // build/files 中的资源始终可以从缓存提供
-        if (ASSETS.includes(url.pathname)) {
+        // build/files 中的资源始终可以从缓存提供 (排除数据文件以保证新鲜度)
+        if (ASSETS.includes(url.pathname) && !url.pathname.startsWith('/data/') && !url.pathname.endsWith('.json') && !url.pathname.endsWith('.yaml')) {
             const response = await cache.match(event.request);
             if (response) return response;
         }

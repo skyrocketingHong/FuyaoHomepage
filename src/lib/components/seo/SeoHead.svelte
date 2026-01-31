@@ -3,35 +3,41 @@
 	 * SEO 头部组件
 	 *
 	 * 为页面提供标题、描述、关键词和 Open Graph / Twitter 卡片元标签。
+	 * 
+	 * @prop title - 页面标题
+	 * @prop description - 页面描述
+	 * @prop keywords - 关键词数组
+	 * @prop author - 作者名称
+	 * @prop image - 预览图 URL
+	 * @prop type - 页面类型 (website | article | profile)
+	 * @prop jsonLd - 结构化数据对象
 	 */
 	import { seoConfig } from '$lib/config';
 	import { page } from '$app/state';
 
-	interface Props {
-		/** 页面标题 */
-		title?: string;
-		/** 页面描述 */
-		description?: string;
-		/** 页面关键词 */
-		keywords?: string[];
-		/** 作者 */
-		author?: string;
-		/** OG 图片 */
-		image?: string;
-		/** 页面类型 */
-		type?: 'website' | 'article' | 'profile';
-	}
-
 	const siteName = import.meta.env.VITE_SITE_NAME ?? '扶摇 Skyrocketing';
 
 	let {
+
 		title = siteName,
 		description = seoConfig.description,
 		keywords = seoConfig.keywords,
 		author = seoConfig.author,
 		image,
-		type = 'website'
+		type = 'website',
+		jsonLd
 	}: Props = $props();
+
+	interface Props {
+		title?: string;
+		description?: string;
+		keywords?: string[];
+		author?: string;
+		image?: string;
+		type?: 'website' | 'article' | 'profile';
+		/** 结构化数据 (JSON-LD) */
+		jsonLd?: Record<string, any>;
+	}
 
 	// 生成最终标题（非首页添加站点名后缀）
 	let finalTitle = $derived(title === siteName ? title : `${title} | ${siteName}`);
@@ -40,7 +46,7 @@
 	// 如果关键词是数组则连接为字符串
 	let keywordsString = $derived(Array.isArray(keywords) ? keywords.join(', ') : keywords);
 	// 回退图片逻辑：优先使用传入图片，否则使用默认 favicon
-	let finalImage = $derived(image ? (image.startsWith('http') ? image : `${seoConfig.baseURL}${image}`) : `${seoConfig.baseURL}/favicon.png`);
+	let finalImage = $derived(image ? (image.startsWith('http') ? image : `${seoConfig.baseURL}${image}`) : `${seoConfig.baseURL}/favicon/android-chrome-512x512.png`);
 </script>
 
 <svelte:head>
@@ -67,6 +73,10 @@
 	{#if seoConfig.twitterId}
 		<meta name="twitter:creator" content={seoConfig.twitterId} />
 		<meta name="twitter:site" content={seoConfig.twitterId} />
+	{/if}
+
+	{#if jsonLd}
+		{@html `<script type="application/ld+json">${JSON.stringify(jsonLd)}</script>`}
 	{/if}
 </svelte:head>
 

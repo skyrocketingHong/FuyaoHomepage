@@ -1,44 +1,50 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
+	/**
+	 * 足迹列表组件
+	 *
+	 * 将足迹地点按年份分组并以树形结构展示。
+	 * 
+	 * @prop places - 足迹地点数组
+	 * @prop onSelect - 选择地点时的回调函数
+	 */
+	import SidebarTree from '$lib/components/layout/sidebar/SidebarTree.svelte';
+	import type { SidebarItemType } from '$lib/components/layout/sidebar/types';
 
 	let { places = [], onSelect } = $props();
 
-	// Simple Year Grouping
-	let groupedPlaces = $derived.by(() => {
+	// 转换为侧边栏树形结构 (SidebarTree)
+	let treeItems = $derived.by(() => {
 		const groups: Record<string, typeof places> = {};
 		places.forEach((place) => {
 			const year = place.visitDate ? place.visitDate.substring(0, 4) : 'Unknown';
 			if (!groups[year]) groups[year] = [];
 			groups[year].push(place);
 		});
-		return Object.entries(groups).sort((a, b) => b[0].localeCompare(a[0])); // Descending years
+		
+		const sortedYears = Object.keys(groups).sort((a, b) => b[0].localeCompare(a[0]));
+
+		return sortedYears.map(year => {
+			const yearPlaces = groups[year];
+			const count = yearPlaces.length;
+			
+			const items: SidebarItemType[] = yearPlaces.map(place => ({
+				label: place.title,
+				onClick: () => onSelect(place),
+				// 如果需要可以通过此处添加 isActive 逻辑
+			}));
+
+			return {
+				label: `${year} (${count})`,
+				items: items,
+				defaultExpanded: year === sortedYears[0]
+			} as SidebarItemType;
+		});
 	});
 </script>
 
-<div class="flex flex-col gap-4">
-	<div class="px-2">
-		<h3 class="text-sm font-bold text-white/60 uppercase">Years</h3>
-	</div>
-
-	<div class="flex flex-col gap-6">
-		{#each groupedPlaces as [year, yearPlaces]}
-			<div class="flex flex-col gap-2">
-				<div
-					class="sticky top-0 rounded bg-black/20 px-2 py-1 text-xs font-bold text-white/80 backdrop-blur-md"
-				>
-					{year} ({yearPlaces.length})
-				</div>
-				<div class="ml-2 flex flex-col gap-1 border-l border-white/10 pl-2">
-					{#each yearPlaces as place}
-						<button
-							class="truncate rounded px-2 py-1 text-left text-sm text-white/70 transition-all hover:bg-white/10 hover:text-white"
-							onclick={() => onSelect(place)}
-						>
-							{place.title}
-						</button>
-					{/each}
-				</div>
-			</div>
-		{/each}
-	</div>
+<div class="flex flex-col gap-0.5">
+	{#each treeItems as item (item.label)}
+		<SidebarTree {item} />
+	{/each}
 </div>
+

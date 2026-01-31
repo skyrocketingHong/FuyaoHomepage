@@ -16,6 +16,20 @@
 @import url("https://cdn-font.hyperos.mi.com/font/css?family=MiSans_Tibetan_VF:VF:Tibetan&display=swap");
 @import "tailwindcss";
 
+@font-face {
+  font-family: "MTRSong";
+  src: url("/fonts/GangTieSongTiSpecial.woff2") format("woff2");
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Helvetica Neue Medium";
+  src: url("/fonts/Helvetica Neue - Medium.woff2") format("woff2");
+  font-weight: normal;
+  font-style: normal;
+}
+
 @import "tw-animate-css";
 
 @custom-variant dark (&:is(.dark *));
@@ -54,6 +68,8 @@
   --sidebar-accent-foreground: oklch(0.208 0.042 265.755);
   --sidebar-border: oklch(0.929 0.013 255.508);
   --sidebar-ring: oklch(0.704 0.04 256.788);
+  --theme-color: #ff8800;
+  --bg-overlay: oklch(1 0 0 / 0.2);
 }
 
 .dark {
@@ -89,6 +105,8 @@
   --sidebar-accent-foreground: oklch(0.984 0.003 247.858);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.551 0.027 264.364);
+  --theme-color: #ff8800;
+  --bg-overlay: oklch(0 0 0 / 0.4);
 }
 
 @theme inline {
@@ -128,12 +146,14 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+  --color-theme: var(--theme-color);
 }
 
 @layer base {
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
     @apply bg-background text-foreground;
     background-image: var(--background-image);
@@ -143,32 +163,87 @@
     min-height: 100vh;
   }
 
-  /* Hide Scrollbar Globally */
-  html, body, * {
-    scrollbar-width: none; /* Firefox */
-    -ms-overflow-style: none; /* IE and Edge */
+  /* Custom Scrollbar Globally */
+  html {
+    scrollbar-gutter: stable; 
+    /* Prevent layout shift when scrollbar appears/disappears if possible, 
+       but user requested "not occupy horizontal space". 
+       "stable" takes space. So maybe don't use it.
+       Let's use webkit styling for overlay effect.
+    */
+  }
+
+  html,
+  body,
+  * {
+    /* Reverting standard scrollbar width for Firefox */
+    scrollbar-width: thin; 
+    scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
+  }
+  
+  .dark * {
+    scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
   }
 
   /* Webkit browsers (Chrome, Safari) */
   ::-webkit-scrollbar {
-    display: none;
-    width: 0;
-    height: 0;
+    width: 6px;
+    height: 6px;
     background: transparent;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background-color: rgba(0, 0, 0, 0.2);
+    border-radius: 10px;
+    border: 2px solid transparent; /* padding around thumb */
+    background-clip: content-box; /* helps with padding */
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(0, 0, 0, 0.4);
+  }
+  
+  .dark ::-webkit-scrollbar-thumb {
+    background-color: rgba(255, 255, 255, 0.2);
+  }
+  
+  .dark ::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(255, 255, 255, 0.4);
+  }
+}
+
+
+@layer components {
+  .sidebar-item-base {
+    @apply flex items-center gap-3 rounded-lg px-3 py-2 text-[15px] transition-all w-full text-left cursor-pointer;
+  }
+
+  .sidebar-item-active {
+    @apply bg-primary/10 text-[var(--theme-color)] font-semibold;
+  }
+
+  .sidebar-item-inactive {
+    @apply text-foreground hover:bg-accent/40 hover:text-accent-foreground;
+  }
+
+  .sidebar-icon {
+    @apply size-5 flex-none;
   }
 }
 
 @layer utilities {
   .text-gradient-flow {
-    background: linear-gradient(
-      to right,
-      #fa7830 0%,
-      #e83e8f 25%,
-      #5abefe 45%,
-      #5abefe 55%,
-      #e83e8f 75%,
-      #fa7830 100%
-    );
+    background: linear-gradient(to right,
+        #fa7830 0%,
+        #e83e8f 25%,
+        #5abefe 45%,
+        #5abefe 55%,
+        #e83e8f 75%,
+        #fa7830 100%);
     background-size: 200% auto;
     background-clip: text;
     -webkit-background-clip: text;
@@ -178,6 +253,52 @@
     will-change: background-position;
     transform: translateZ(0);
     animation-timing-function: steps(120);
+  }
+
+  /* Z-Index Layering System
+   * 
+   * 策略 (Strategy):
+   * 1. 禁止硬编码: 禁止使用 z-[100] 或 style="z-index: 100".
+   * 2. 使用工具类: 必须使用下方定义的语义化类名.
+   * 3. 新增层级: 如需新层级，请在此处定义并在 PROJECT_STRUCTURE.md 说明.
+   */
+  .z-loader {
+    z-index: 100;
+    /* 全局加载遮罩 */
+  }
+
+  .z-modal {
+    z-index: 60;
+    /* 模态框、抽屉、Dialog (高于控件) */
+  }
+
+  .z-controls {
+    z-index: 50;
+    /* 核心控件层 (Header, Sidebar, MobileNav) */
+  }
+
+  .z-mask {
+    z-index: 40;
+    /* 内容遮罩层 (ScrollMask) (高于内容，低于控件) */
+  }
+
+  .z-content {
+    z-index: 20;
+    /* 主要内容区域 */
+  }
+
+  .z-deep {
+    z-index: -10;
+    /* 组件内部深层装饰 (如 Tab 背景) */
+  }
+
+  .z-background {
+    z-index: -50;
+    /* 全局背景层 */
+  }
+
+  .bg-liquid {
+    @apply bg-white/50 dark:bg-black/40;
   }
 
   .text-console-green {
@@ -209,24 +330,29 @@
   }
 
   @keyframes fire-flicker {
-    0%, 100% {
+
+    0%,
+    100% {
       text-shadow:
         0 0 4px #ffcc00,
         0 -5px 10px #ff6600,
         2px -10px 15px #ff3300;
     }
+
     25% {
       text-shadow:
         0 0 3px #ffcc00,
         -2px -6px 12px #ff6600,
         0 -9px 12px #ff3300;
     }
+
     50% {
       text-shadow:
         0 0 5px #ffcc00,
         2px -4px 8px #ff6600,
         -2px -11px 18px #ff3300;
     }
+
     75% {
       text-shadow:
         0 0 4px #ffcc00,
@@ -236,16 +362,37 @@
   }
 
   @keyframes chromatic-jitter {
-    0%, 100% { text-shadow: -2px 0 0 #ff0000, 2px 0 0 #0000ff; }
-    5% { text-shadow: -2px -1px 0 #ff0000, 2px 1px 0 #0000ff; }
-    10% { text-shadow: -2px 1px 0 #ff0000, 2px -1px 0 #0000ff; }
-    15% { text-shadow: -2px 0 0 #ff0000, 2px 0 0 #0000ff; }
+
+    0%,
+    100% {
+      text-shadow: -2px 0 0 #ff0000, 2px 0 0 #0000ff;
+    }
+
+    5% {
+      text-shadow: -2px -1px 0 #ff0000, 2px 1px 0 #0000ff;
+    }
+
+    10% {
+      text-shadow: -2px 1px 0 #ff0000, 2px -1px 0 #0000ff;
+    }
+
+    15% {
+      text-shadow: -2px 0 0 #ff0000, 2px 0 0 #0000ff;
+    }
   }
 
   @keyframes aurora-flow {
-    0% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
+    0% {
+      background-position: 0% 50%;
+    }
+
+    50% {
+      background-position: 100% 50%;
+    }
+
+    100% {
+      background-position: 0% 50%;
+    }
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -259,6 +406,7 @@
     0% {
       background-position: 200% center;
     }
+
     100% {
       background-position: 0% center;
     }
@@ -268,6 +416,7 @@
     from {
       transform: translateX(0);
     }
+
     to {
       transform: translateX(var(--scroll-dist));
     }
@@ -277,6 +426,7 @@
     from {
       transform: translateY(0);
     }
+
     to {
       transform: translateY(var(--scroll-dist));
     }

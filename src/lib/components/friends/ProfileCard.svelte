@@ -4,12 +4,12 @@
 	 *
 	 * 在友链页面顶部展示站长个人信息，方便友链交换。
 	 */
-	import LiquidGlass from '$lib/components/ui/LiquidGlass.svelte';
-	import Avatar from '$lib/components/ui/Avatar.svelte';
+	import LiquidGlass from '$lib/components/ui/effect/LiquidGlass.svelte';
+	import Avatar from '$lib/components/ui/display/Avatar.svelte';
 	import { Github } from 'lucide-svelte';
 	import { t, locale } from '$lib/i18n/store';
-	import Crossfade from '$lib/components/ui/Crossfade.svelte';
-	import { calculateAge } from '$lib/utils/age';
+	import Crossfade from '$lib/components/ui/effect/Crossfade.svelte';
+	import { calculateAge } from '$lib/utils/datetime/age';
 	import { getAvatarUrl, seoConfig, repoConfig } from '$lib/config';
 
 	const age = calculateAge();
@@ -19,7 +19,7 @@
 </script>
 
 <div class="mt-1 pb-4">
-	<LiquidGlass class="gap-1 rounded-xl p-3">
+	<LiquidGlass opaque={true} class="gap-1 rounded-xl p-3">
 		<div class="flex flex-col items-start gap-3 md:flex-row md:items-center md:justify-between">
 			<div class="flex w-full flex-row gap-3 md:w-auto md:flex-row md:items-center">
 				<div class="justify-center self-start md:self-auto">
@@ -30,7 +30,7 @@
 						adaptiveStatus
 					/>
 				</div>
-				<div class="flex min-w-0 flex-1 flex-col gap-1 text-xs text-white lg:flex-row lg:gap-6">
+				<div class="flex min-w-0 flex-1 flex-col gap-1 text-xs text-muted-foreground lg:flex-row lg:gap-6">
 					<div class="shrink-0 space-y-0.5">
 						<p>
 							<Crossfade key={$locale} class="inline-grid">
@@ -67,7 +67,7 @@
 				<a
 					href={issueUrl}
 					target="_blank"
-					class="flex w-full items-center justify-center gap-1.5 rounded-lg bg-white/10 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-white/20 md:w-auto"
+					class="flex w-full items-center justify-center gap-1.5 rounded-lg bg-secondary/50 px-3 py-1.5 text-xs font-medium text-foreground transition-colors hover:bg-secondary/70 md:w-auto"
 				>
 					<Github size={16} />
 					<Crossfade key={$locale} class="inline-grid">

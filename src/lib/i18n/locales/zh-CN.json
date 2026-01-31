@@ -1,92 +1,112 @@
 {
-    "common": {
-        "loading": "加载中...",
-        "travingto": "正在前往",
-        "copyright": "{{startYear}} - {{currentYear}} 扶摇skyrocketing.",
-        "comma": "，",
-        "colon": "："
-    },
-    "nav": {
-        "home": "首页",
-        "blog": "博客",
-        "footprint": "足迹",
-        "pay": "打钱",
-        "friends": "友链"
-    },
-    "layout": {
-        "sidebar": {
-            "navigation": "导航"
-        },
-        "header": {
-            "toggle_theme": "切换主题",
-            "switch_language": "切换语言",
-            "theme": {
-                "light": "日间模式",
-                "dark": "夜间模式",
-                "system": "跟随系统"
-            },
-            "lang": {
-                "zh": "简体中文",
-                "en": "English"
-            }
-        }
-    },
-    "home": {
-        "hero": {
-            "profile": {
-                "hello": "你好！",
-                "im": "我是",
-                "name": "扶摇skyrocketing",
-                "age": "{{age}}岁",
-                "role": "是科研技术专员",
-                "status": "在线",
-                "quote": "“尝试在互联网上留下一些属于自己的痕迹”"
-            },
-            "time_capsule": {
-                "title": "时间胶囊",
-                "subtitle": "网站已运行"
-            },
-            "github": {
-                "title": "开源项目",
-                "loading": "正在从 GitHub 获取数据...",
-                "no_description": "暂无描述。",
-                "language_default": "代码"
-            },
-            "social_links": {
-                "title": "社交链接"
-            }
-        }
-    },
-    "pay": {
-        "title": "打钱",
-        "modal": {
-            "pay_with": "使用 {{method}} 付款",
-            "scan_qr": "扫描二维码进行支付",
-            "open_link": "直接打开链接",
-            "no_qr": "暂无二维码"
-        },
-        "methods": {
-            "alipay": "支付宝",
-            "wechat": "微信支付",
-            "qq": "QQ 钱包",
-            "unionpay": "云闪付"
-        }
-    },
-    "footprint": {
-        "title": "足迹"
-    },
-    "blog": {
-        "title": "博客",
-        "iframe_loading": "的博客"
-    },
-    "friends": {
-        "title": "友链",
-        "exchange": "交换友链",
-        "profile": {
-            "name_label": "名称",
-            "desc_label": "描述",
-            "link_label": "链接",
-            "icon_label": "图标"
-        }
-    }
+	"common": {
+		"loading": "加载中...",
+		"travingto": "正在前往",
+		"copyright": "{{startYear}} - {{currentYear}} 扶摇skyrocketing.",
+		"copied": "已复制",
+		"comma": "，",
+		"colon": "："
+	},
+	"nav": {
+		"home": "首页",
+		"blog": "博客",
+		"footprint": "足迹",
+		"pay": "打钱",
+		"friends": "友链",
+		"list": "列表"
+	},
+	"layout": {
+		"sidebar": {
+			"navigation": "导航"
+		},
+		"header": {
+			"toggle_theme": "切换主题",
+			"switch_language": "切换语言",
+			"theme": {
+				"light": "日间模式",
+				"dark": "夜间模式",
+				"system": "跟随系统"
+			},
+			"lang": {
+				"zh": "简体中文",
+				"en": "English"
+			}
+		}
+	},
+	"home": {
+		"hero": {
+			"profile": {
+				"hello": "你好！",
+				"im": "我是",
+				"name": "扶摇skyrocketing",
+				"age": "{{age}}岁",
+				"role": "是科研技术专员",
+				"status": "在线",
+				"quote": "“尝试在互联网上留下一些属于自己的痕迹”"
+			},
+			"time_capsule": {
+				"title": "时间胶囊",
+				"subtitle": "网站已运行"
+			},
+			"github": {
+				"title": "开源项目",
+				"loading": "正在从 GitHub 获取数据...",
+				"no_description": "暂无描述。",
+				"language_default": "代码"
+			},
+			"social_links": {
+				"title": "社交链接"
+			}
+		}
+	},
+	"pay": {
+		"title": "打钱",
+		"modal": {
+			"pay_with": "使用 {{method}} 付款",
+			"scan_qr": "扫描二维码进行支付",
+			"open_link": "直接打开链接",
+			"no_qr": "暂无二维码"
+		},
+		"methods": {
+			"alipay": "支付宝",
+			"wechat": "微信支付",
+			"qq": "QQ 钱包",
+			"unionpay": "云闪付"
+		}
+	},
+	"footprint": {
+		"title": "足迹"
+	},
+	"blog": {
+		"title": "博客",
+		"all": "全部",
+		"iframe_loading": "的博客",
+		"toc": "目录",
+		"contents": "目录",
+		"loading_error": "加载文章失败。",
+		"close": "关闭",
+		"toggle_toc": "切换目录",
+		"latest_news": "最新动态",
+		"new": "新",
+		"update": "更新",
+		"article": "文章",
+		"more_stories": "更多文章",
+		"load_more": "加载更多",
+		"no_stories": "暂无文章",
+		"no_posts_in_category": "该分类下暂无文章。",
+		"view_all": "查看所有文章",
+		"unknown_year": "年份未知",
+		"back_to_list": "返回列表",
+		"share_article": "分享文章"
+	},
+	"friends": {
+		"title": "友链",
+		"exchange": "交换友链",
+		"profile": {
+			"name_label": "名称",
+			"desc_label": "描述",
+			"link_label": "链接",
+			"icon_label": "图标"
+		}
+	}
 }

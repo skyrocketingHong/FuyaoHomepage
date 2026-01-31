@@ -5,10 +5,10 @@
 	 * 展示站长个人信息和友链列表。
 	 */
 	import { onMount } from 'svelte';
-	import { loadYaml } from '$lib/utils/loading';
+	import { loadYaml } from '$lib/utils/network/loading';
 	import ProfileCard from '$lib/components/friends/ProfileCard.svelte';
 	import FriendCard from '$lib/components/friends/FriendCard.svelte';
-	import LoadingState from '$lib/components/ui/LoadingState.svelte';
+	import LoadingState from '$lib/components/ui/feedback/LoadingState.svelte';
 
 	interface Friend {
 		name: string;
@@ -38,7 +38,7 @@
 
 <!-- 友链列表 -->
 <div class="flex w-full flex-col gap-10">
-	<LoadingState {loading} {error}>
+	<LoadingState {loading} {error} class="w-full justify-center pt-10 pb-0">
 		<div class="grid grid-cols-[repeat(auto-fill,minmax(300px,1fr))] gap-4">
 			{#each friendsData as friend}
 				<FriendCard {friend} />

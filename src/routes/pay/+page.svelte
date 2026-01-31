@@ -6,10 +6,10 @@
 	 */
 	import { onMount } from 'svelte';
 	import QRCodeCard from '$lib/components/pay/QRCodeCard.svelte';
-	import Crossfade from '$lib/components/ui/Crossfade.svelte';
-	import LoadingState from '$lib/components/ui/LoadingState.svelte';
+	import Crossfade from '$lib/components/ui/effect/Crossfade.svelte';
+	import LoadingState from '$lib/components/ui/feedback/LoadingState.svelte';
 	import { fade } from 'svelte/transition';
-	import { loadYaml } from '$lib/utils/loading';
+	import { loadYaml } from '$lib/utils/network/loading';
 	import { t, locale } from '$lib/i18n/store';
 
 	let payments: any[] = $state([]);
@@ -28,9 +28,9 @@
 	});
 </script>
 
-<div class="flex h-full w-full flex-col items-center justify-start px-0 py-4 md:px-4 md:py-8">
+<div class="flex h-full w-full flex-col items-center justify-start px-0 pt-4 md:px-4 md:pt-8">
 	<!-- 标题 -->
-	<div class="mb-4 text-center px-4" in:fade={{ duration: 300 }}>
+	<div class="mb-4 text-center px-4">
 		<h1
 			class="bg-gradient-to-r from-blue-400 via-purple-500 to-pink-500 bg-clip-text text-3xl font-bold text-transparent md:text-4xl"
 		>
@@ -42,7 +42,7 @@
 
 	<!-- 内容区域 -->
 	<LoadingState {loading} {error} class="px-4">
-		<div class="w-full" in:fade={{ duration: 300 }}>
+		<div class="w-full">
 			<QRCodeCard {payments} />
 		</div>
 	</LoadingState>

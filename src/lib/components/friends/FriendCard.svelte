@@ -3,10 +3,12 @@
 	 * 友链卡片组件
 	 *
 	 * 展示单个友链的卡片，包含头像、名称、描述和链接。
+	 * 
+	 * @prop friend - 友链数据对象
 	 */
-	import LiquidGlass from '$lib/components/ui/LiquidGlass.svelte';
-	import Avatar from '$lib/components/ui/Avatar.svelte';
-	import AutoScroll from '$lib/components/ui/AutoScroll.svelte';
+	import LiquidGlass from '$lib/components/ui/effect/LiquidGlass.svelte';
+	import Avatar from '$lib/components/ui/display/Avatar.svelte';
+	import Marquee from '$lib/components/ui/display/Marquee.svelte';
 
 	interface Friend {
 		name: string;
@@ -18,20 +20,20 @@
 	let { friend }: { friend: Friend } = $props();
 </script>
 
-<LiquidGlass tilt class="group relative h-full overflow-hidden rounded-2xl p-0">
+<LiquidGlass tilt opaque={true} class="group relative h-full overflow-hidden rounded-2xl p-0">
 	<a href={friend.url} target="_blank" rel="noopener noreferrer" class="flex h-full items-center gap-3 p-3">
 		<Avatar adaptiveStatus src={friend.avatar} alt={friend.name} size="md" />
 
 		<div class="flex min-w-0 flex-1 flex-col gap-1">
 			<div class="flex items-center gap-2">
 				<h3
-					class="truncate text-lg font-bold text-white transition-colors duration-300 group-hover:text-amber-200"
+					class="truncate text-lg font-bold text-foreground transition-colors duration-300 group-hover:text-primary"
 				>
 					{friend.name}
 				</h3>
 				<svg
 					xmlns="http://www.w3.org/2000/svg"
-					class="size-4 -translate-x-2 opacity-0 transition-all duration-300 group-hover:translate-x-0 group-hover:text-amber-200 group-hover:opacity-100"
+					class="size-4 -translate-x-2 opacity-0 transition-all duration-300 group-hover:translate-x-0 group-hover:text-primary group-hover:opacity-100"
 					viewBox="0 0 24 24"
 					fill="none"
 					stroke="currentColor"
@@ -44,8 +46,8 @@
 					<line x1="10" y1="14" x2="21" y2="3"></line>
 				</svg>
 			</div>
-			<div class="h-[2.5rem] text-sm leading-relaxed text-white/70">
-				<AutoScroll text={friend.description} direction="vertical" class="h-full w-full" />
+			<div class="h-[2.5rem] text-sm leading-relaxed text-muted-foreground">
+				<Marquee text={friend.description} direction="vertical" class="h-full w-full" />
 			</div>
 		</div>
 	</a>

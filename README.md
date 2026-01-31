@@ -13,7 +13,6 @@
 - **字体**: 整合 MiSans 字体，优化阅读体验
 - **响应式设计**: 完美适配移动端和桌面端
 
-
 ## 📂 项目结构
 
 详情请参阅 [PROJECT_STRUCTURE.md](./PROJECT_STRUCTURE.md)。
@@ -71,41 +70,41 @@ npm run preview
 
 ### 必填配置
 
-| 变量名 | 说明 | 示例 |
-|--------|------|------|
-| `VITE_SITE_NAME` | 站点名称 | `扶摇 Skyrocketing` |
-| `VITE_GITHUB_USERNAME` | GitHub 用户名 | `skyrocketinghong` |
+| 变量名                 | 说明          | 示例                |
+| ---------------------- | ------------- | ------------------- |
+| `VITE_SITE_NAME`       | 站点名称      | `扶摇 Skyrocketing` |
+| `VITE_GITHUB_USERNAME` | GitHub 用户名 | `skyrocketinghong`  |
 
 ### 站点信息
 
-| 变量名 | 说明 |
-|--------|------|
-| `VITE_SITE_URL` | 主站地址 |
-| `VITE_BLOG_URL` | 博客地址（用于博客页面 iframe） |
-| `VITE_AVATAR_URL` | 头像 URL（留空则使用 GitHub 头像） |
-| `VITE_SITE_START_YEAR` | 网站运营起始年份 |
-| `VITE_USER_BIRTH_DATE` | 站长出生日期（用于年龄计算） |
+| 变量名                 | 说明                               |
+| ---------------------- | ---------------------------------- |
+| `VITE_SITE_URL`        | 主站地址                           |
+| `VITE_BLOG_URL`        | 博客地址（用于博客页面 iframe）    |
+| `VITE_AVATAR_URL`      | 头像 URL（留空则使用 GitHub 头像） |
+| `VITE_SITE_START_YEAR` | 网站运营起始年份                   |
+| `VITE_USER_BIRTH_DATE` | 站长出生日期（用于年龄计算）       |
 
 ### SEO 配置
 
-| 变量名 | 说明 |
-|--------|------|
-| `VITE_SEO_AUTHOR` | 作者名称 |
-| `VITE_SEO_DESCRIPTION` | 网站描述 |
-| `VITE_SEO_KEYWORDS` | SEO 关键词（逗号分隔） |
-| `VITE_TWITTER_ID` | Twitter 用户名 |
+| 变量名                 | 说明                   |
+| ---------------------- | ---------------------- |
+| `VITE_SEO_AUTHOR`      | 作者名称               |
+| `VITE_SEO_DESCRIPTION` | 网站描述               |
+| `VITE_SEO_KEYWORDS`    | SEO 关键词（逗号分隔） |
+| `VITE_TWITTER_ID`      | Twitter 用户名         |
 
 ### 开源仓库
 
-| 变量名 | 说明 |
-|--------|------|
-| `VITE_REPO_URL` | 项目仓库地址 |
+| 变量名           | 说明                         |
+| ---------------- | ---------------------------- |
+| `VITE_REPO_URL`  | 项目仓库地址                 |
 | `VITE_REPO_NAME` | 项目仓库名称（用于页脚显示） |
 
 ### 第三方服务
 
-| 变量名 | 说明 |
-|--------|------|
-| `VITE_WALLPAPER_API` | 必应壁纸 API 地址 |
-| `VITE_AMAP_KEY` | 高德地图 API Key |
-| `VITE_AMAP_SECURITY_CODE` | 高德地图安全码 |
+| 变量名                    | 说明              |
+| ------------------------- | ----------------- |
+| `VITE_WALLPAPER_API`      | 必应壁纸 API 地址 |
+| `VITE_AMAP_KEY`           | 高德地图 API Key  |
+| `VITE_AMAP_SECURITY_CODE` | 高德地图安全码    |

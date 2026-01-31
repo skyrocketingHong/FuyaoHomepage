@@ -25,7 +25,7 @@ function updatePackageJson(newVersion) {
     const pkg = JSON.parse(content);
     pkg.version = newVersion;
     fs.writeFileSync(PACKAGE_JSON_PATH, JSON.stringify(pkg, null, '\t') + '\n');
-    console.log(`✅ package.json updated to version ${newVersion}`);
+    console.log(`✅ package.json 已更新至版本 ${newVersion}`);
 }
 
 function updateChangelog(newVersion) {
@@ -44,11 +44,11 @@ function updateChangelog(newVersion) {
 - 
 `;
 
-    // Find the place to insert the new version. 
-    // Customarily, it's after the "Keep a Changelog" link or first header, 
-    // but looking at the user's file, it seems the first version header starts around line 7.
-    // We'll look for the first occurrence of "## [" to insert before it, 
-    // or if not found (first release), append or insert after header.
+    // 寻找新版本的插入位置。
+    // 通常是在 "Keep a Changelog" 链接或第一个二级标题之后。
+    // 根据用户文件情况，第一个版本标题通常在第 7 行左右。
+    // 我们会寻找第一个出现的 "## [" 并在其上方插入，
+    // 如果未找到（首次发布），则追加到末尾。
 
     // Strategy: Find the first line starting with "## ["
     const lines = content.split('\n');
@@ -62,14 +62,14 @@ function updateChangelog(newVersion) {
     }
 
     if (insertIndex === -1) {
-        // Fallback: append to end if no version headers found, or after title if empty
-        // Ideally we want it after the intro.
-        // Let's look for the last non-empty line of the header section (approx line 5-6)
+        // 回退方案：如果未发现版本标题，则追加到末尾，或者在标题介绍后插入。
+        // 我们倾向于将其放在介绍之后。
+        // 查找标题部分最后的非空行（约 5-6 行）。
         insertIndex = lines.length;
-        // Try to find the Keep a Changelog line
+        // 尝试寻找 "Keep a Changelog" 行
         const keepChangelogIndex = lines.findIndex(l => l.includes('Keep a Changelog'));
         if (keepChangelogIndex !== -1) {
-            insertIndex = keepChangelogIndex + 2; // +1 for the line itself, +1 for newline gap
+            insertIndex = keepChangelogIndex + 2; // +1 表示该行本身，+1 表示空行间隙
         }
     }
 
@@ -80,7 +80,7 @@ function updateChangelog(newVersion) {
     // Clean up potential extra newlines if needed, but simple splicing should be okay for now
 
     fs.writeFileSync(CHANGELOG_PATH, lines.join('\n'));
-    console.log(`✅ CHANGELOG.md updated with new entry for ${newVersion}`);
+    console.log(`✅ CHANGELOG.md 已更新，并为版本 ${newVersion} 创建了新条目`);
 }
 
 function incrementVersion(version, type) {
@@ -95,18 +95,18 @@ function incrementVersion(version, type) {
 
 async function main() {
     const currentVersion = getCurrentVersion();
-    console.log(`Current version: ${currentVersion}`);
-
+    console.log(`当前版本: ${currentVersion}`);
+ 
     const patch = incrementVersion(currentVersion, 'patch');
     const minor = incrementVersion(currentVersion, 'minor');
     const major = incrementVersion(currentVersion, 'major');
-
-    console.log(`1. Patch (${patch})`);
-    console.log(`2. Minor (${minor})`);
-    console.log(`3. Major (${major})`);
-    console.log(`4. Custom`);
-
-    rl.question('Select update type (1-4): ', (answer) => {
+ 
+    console.log(`1. 补丁版本 (Patch - ${patch})`);
+    console.log(`2. 次要版本 (Minor - ${minor})`);
+    console.log(`3. 主要版本 (Major - ${major})`);
+    console.log(`4. 自定义版本`);
+ 
+    rl.question('请选择更新类型 (1-4): ', (answer) => {
         let newVersion = '';
 
         if (answer === '1') newVersion = patch;
@@ -129,13 +129,13 @@ async function main() {
 
 function finalize(newVersion) {
     if (!newVersion) {
-        console.log('No version provided');
+        console.log('未提供版本号');
         rl.close();
         return;
     }
     updatePackageJson(newVersion);
     updateChangelog(newVersion);
-    console.log(`\n🎉 Version update complete! Don't forget to fill in CHANGELOG.md`);
+    console.log(`\n🎉 版本更新完成！别忘了填写 CHANGELOG.md 中的内容`);
     rl.close();
 }
 

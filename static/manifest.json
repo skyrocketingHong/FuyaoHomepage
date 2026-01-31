@@ -1,6 +1,6 @@
 {
-    "name": "Fuyao skyrocketing's Homepage",
-    "short_name": "Fuyao skyrocketing",
+    "name": "Your Application Name",
+    "short_name": "App Name",
     "start_url": "/",
     "display": "standalone",
     "background_color": "#000000",

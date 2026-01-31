@@ -1,23 +1,22 @@
 <script lang="ts">
-	import ProfileSection from './hero/ProfileSection.svelte';
-	import TimeCapsule from './hero/TimeCapsule.svelte';
-	import GithubProjects from './hero/GithubProjects.svelte';
-	import SocialLinks from './hero/SocialLinks.svelte';
+	import ProfileSection from './content/ProfileSection.svelte';
+	import TimeCapsule from './content/TimeCapsule.svelte';
+	import GithubProjects from './content/GithubProjects.svelte';
+	import SocialLinks from './content/SocialLinks.svelte';
 </script>
 
-<div class="mx-auto w-full max-w-3xl">
-	<!-- Profile & Description Section -->
+<div class="mx-auto w-full max-w-3xl min-h-full flex flex-col justify-center">
+	<!-- 个人简介与描述区域 -->
 	<ProfileSection />
 
 	<div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-		<!-- Time Capsule -->
+		<!-- 时间胶囊 -->
 		<TimeCapsule />
 
-		<!-- Social Links -->
+		<!-- 社交链接 -->
 		<SocialLinks />
 	</div>
 
-	<!-- Github Projects -->
+	<!-- Github 项目 -->
 	<GithubProjects />
 </div>
-

@@ -1,0 +1,16 @@
+{
+  "example-category/example-article": {
+    "file": "example-category/example-article.md",
+    "title": "这是一篇示例文章",
+    "category": "example-category",
+    "categoryTitle": "示例分类 📂",
+    "date": "2026-01-31T16:00:00.000Z"
+  },
+  "example-article": {
+    "file": "example-category/example-article.md",
+    "title": "这是一篇示例文章",
+    "category": "example-category",
+    "categoryTitle": "示例分类 📂",
+    "date": "2026-01-31T16:00:00.000Z"
+  }
+}

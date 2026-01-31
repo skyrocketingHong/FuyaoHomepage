@@ -1,92 +1,112 @@
 {
-    "common": {
-        "loading": "Loading...",
-        "travingto": "Traving to",
-        "copyright": "{{startYear}} - {{currentYear}} 扶摇skyrocketing.",
-        "comma": ", ",
-        "colon": ": "
-    },
-    "nav": {
-        "home": "Home",
-        "blog": "Blog",
-        "footprint": "Footprint",
-        "pay": "Donate",
-        "friends": "Friends"
-    },
-    "layout": {
-        "sidebar": {
-            "navigation": "Navigation"
-        },
-        "header": {
-            "toggle_theme": "Toggle Theme",
-            "switch_language": "Switch Language",
-            "theme": {
-                "light": "Light Mode",
-                "dark": "Dark Mode",
-                "system": "System"
-            },
-            "lang": {
-                "zh": "简体中文",
-                "en": "English"
-            }
-        }
-    },
-    "home": {
-        "hero": {
-            "profile": {
-                "hello": "Hello! ",
-                "im": "I'm ",
-                "name": "Fuyao skyrocketing",
-                "age": "{{age}} years old",
-                "role": "a Research and Technology Specialist",
-                "status": "Online",
-                "quote": "\"Try to create my own digital footprint.\""
-            },
-            "time_capsule": {
-                "title": "Time Capsule",
-                "subtitle": "Site running for"
-            },
-            "github": {
-                "title": "Open Source",
-                "loading": "Getting data from GitHub...",
-                "no_description": "No description provided.",
-                "language_default": "Code"
-            },
-            "social_links": {
-                "title": "Social Links"
-            }
-        }
-    },
-    "pay": {
-        "title": "Donate",
-        "modal": {
-            "pay_with": "Pay with {{method}}",
-            "scan_qr": "Scan the QR code to proceed",
-            "open_link": "Open Link Directly",
-            "no_qr": "No QR Code"
-        },
-        "methods": {
-            "alipay": "Alipay",
-            "wechat": "WeChat Pay",
-            "qq": "QQ Wallet",
-            "unionpay": "UnionPay"
-        }
-    },
-    "footprint": {
-        "title": "Footprint"
-    },
-    "blog": {
-        "title": "Blog",
-        "iframe_loading": "'s Blog"
-    },
-    "friends": {
-        "title": "Friends",
-        "exchange": "Exchange Link",
-        "profile": {
-            "name_label": "Name",
-            "desc_label": "Description",
-            "link_label": "Link",
-            "icon_label": "Icon"
-        }
-    }
+	"common": {
+		"loading": "Loading...",
+		"travingto": "Traving to",
+		"copyright": "{{startYear}} - {{currentYear}} 扶摇skyrocketing.",
+		"copied": "Copied",
+		"comma": ", ",
+		"colon": ": "
+	},
+	"nav": {
+		"home": "Home",
+		"blog": "Blog",
+		"footprint": "Footprint",
+		"pay": "Donate",
+		"friends": "Friends",
+		"list": "List"
+	},
+	"layout": {
+		"sidebar": {
+			"navigation": "Navigation"
+		},
+		"header": {
+			"toggle_theme": "Toggle Theme",
+			"switch_language": "Switch Language",
+			"theme": {
+				"light": "Light Mode",
+				"dark": "Dark Mode",
+				"system": "System"
+			},
+			"lang": {
+				"zh": "简体中文",
+				"en": "English"
+			}
+		}
+	},
+	"home": {
+		"hero": {
+			"profile": {
+				"hello": "Hello! ",
+				"im": "I'm ",
+				"name": "Fuyao skyrocketing",
+				"age": "{{age}} years old",
+				"role": "a Research and Technology Specialist",
+				"status": "Online",
+				"quote": "\"Try to create my own digital footprint.\""
+			},
+			"time_capsule": {
+				"title": "Time Capsule",
+				"subtitle": "Site running for"
+			},
+			"github": {
+				"title": "Open Source",
+				"loading": "Getting data from GitHub...",
+				"no_description": "No description provided.",
+				"language_default": "Code"
+			},
+			"social_links": {
+				"title": "Social Links"
+			}
+		}
+	},
+	"pay": {
+		"title": "Donate",
+		"modal": {
+			"pay_with": "Pay with {{method}}",
+			"scan_qr": "Scan the QR code to proceed",
+			"open_link": "Open Link Directly",
+			"no_qr": "No QR Code"
+		},
+		"methods": {
+			"alipay": "Alipay",
+			"wechat": "WeChat Pay",
+			"qq": "QQ Wallet",
+			"unionpay": "UnionPay"
+		}
+	},
+	"footprint": {
+		"title": "Footprint"
+	},
+	"blog": {
+		"title": "Blog",
+		"all": "All",
+		"iframe_loading": "'s Blog",
+		"toc": "Table of Contents",
+		"contents": "Contents",
+		"loading_error": "Error loading post content.",
+		"close": "Close",
+		"toggle_toc": "Toggle Table of Contents",
+		"latest_news": "Latest News",
+		"new": "New",
+		"update": "Update",
+		"article": "Article",
+		"more_stories": "More stories",
+		"load_more": "Load more stories",
+		"no_stories": "No stories found",
+		"no_posts_in_category": "There are no posts in this category yet.",
+		"view_all": "View all stories",
+		"unknown_year": "Unknown",
+		"back_to_list": "Back to Articles",
+		"share_article": "Share Article"
+	},
+	"friends": {
+		"title": "Friends",
+		"exchange": "Exchange Link",
+		"profile": {
+			"name_label": "Name",
+			"desc_label": "Description",
+			"link_label": "Link",
+			"icon_label": "Icon"
+		}
+	}
 }
