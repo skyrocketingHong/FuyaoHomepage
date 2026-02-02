@@ -16,12 +16,14 @@
 	 * @prop tilt - 是否开启 3D 倾斜视差效果 (默认 false)
 	 * @prop lazyBlur - 是否启用延迟模糊 (默认 false)。开启后，静止状态不使用 backdrop-filter，极大降低 GPU 占用。
 	 * @prop opaque - 是否启用纯不透明模式 (默认 false)。开启后，不使用 backdrop-filter，背景保持不透明，保留交互动画。
+	 * @prop showLighting - 是否显示光照跟随层 (默认 true)
+	 * @prop showGloss - 是否显示表面光泽层 (默认 true)
 	 * @prop class - 额外的 CSS 类名
 	 */
 	import { cn } from '$lib/utils';
 	import { onMount } from 'svelte';
 
-	let { children, class: className, tag = 'div', tilt = false, lazyBlur = false, opaque = false, ...rest } = $props();
+	let { children, class: className, tag = 'div', tilt = false, lazyBlur = false, opaque = false, showLighting = true, showGloss = true, ...rest } = $props();
 
 	let el: HTMLElement | undefined = $state();
 	let bounds: DOMRect | undefined = undefined;
@@ -208,29 +210,33 @@
 >
 
 	<!-- 光照层：仅在交互时显示，且跟随鼠标 -->
-	<div
-		class={cn(
-			"pointer-events-none absolute z-0 h-[250px] w-[250px] transition-opacity duration-300",
-			// 当未处在交互状态时，使用 invisible 确保它完全从渲染树中剔除
-			isInteracting ? "opacity-100 visible" : "opacity-0 invisible"
-		)}
-		style={`
-            top: 0; left: 0;
-            transform: translate(calc(var(--mouse-x, 0px) - 125px), calc(var(--mouse-y, 0px) - 125px));
-            background: radial-gradient(circle closest-side, rgba(255,255,255,0.15), transparent 100%);
-            /* 只有在交互时才提升该层的合成，彻底消除静态时的额外 Layer */
-            ${shouldPromoteLayer ? 'will-change: transform;' : ''}
-        `}
-	></div>
+	{#if showLighting}
+		<div
+			class={cn(
+				"pointer-events-none absolute z-0 h-[250px] w-[250px] transition-opacity duration-300",
+				// 当未处在交互状态时，使用 invisible 确保它完全从渲染树中剔除
+				isInteracting ? "opacity-100 visible" : "opacity-0 invisible"
+			)}
+			style={`
+				top: 0; left: 0;
+				transform: translate(calc(var(--mouse-x, 0px) - 125px), calc(var(--mouse-y, 0px) - 125px));
+				background: radial-gradient(circle closest-side, rgba(255,255,255,0.15), transparent 100%);
+				/* 只有在交互时才提升该层的合成，彻底消除静态时的额外 Layer */
+				${shouldPromoteLayer ? 'will-change: transform;' : ''}
+			`}
+		></div>
+	{/if}
 
 	<!-- 内发光/边框高光 -->
 	<div class="pointer-events-none absolute inset-0 z-10 rounded-[inherit] border border-white/20 shadow-[inset_0_0_15px_rgba(255,255,255,0.05)]"></div>
 	
 	<!-- 表面光泽 -->
-	<div 
-		class="pointer-events-none absolute inset-0 z-10 rounded-[inherit] opacity-50"
-		style="background: linear-gradient(120deg, rgba(255,255,255,0.1) 0%, transparent 40%);"
-	></div>
+	{#if showGloss}
+		<div 
+			class="pointer-events-none absolute inset-0 z-10 rounded-[inherit] opacity-50"
+			style="background: linear-gradient(120deg, rgba(255,255,255,0.1) 0%, transparent 40%);"
+		></div>
+	{/if}
 
 	<!-- 内容层 -->
 	<div class="relative z-20 h-full w-full">

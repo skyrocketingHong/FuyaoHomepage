@@ -20,6 +20,8 @@
 
 	import { beforeNavigate, afterNavigate } from '$app/navigation';
 	import { tick, type Component } from 'svelte';
+	import { fade } from 'svelte/transition';
+	import SegmentedControl from '$lib/components/ui/display/SegmentedControl.svelte';
 
     let { 
         backgroundMode = 'image', 
@@ -178,10 +180,26 @@
 					{#if sidebarState.listComponent}
 						<div class="flex flex-col pt-4">
 							{#if $t(sidebarState.listTitle)}
-								<h2 class="mb-2 px-3 text-xs font-semibold text-muted-foreground/80 flex-none">
-									<Crossfade key={$t(sidebarState.listTitle)} class="inline-grid"><span>{$t(sidebarState.listTitle)}</span></Crossfade>
-								</h2>
+								<div class="mb-2 px-3 flex items-center justify-between flex-none">
+									<h2 class="text-xs font-semibold text-muted-foreground/80">
+										<Crossfade key={$t(sidebarState.listTitle)} class="inline-grid"><span>{$t(sidebarState.listTitle)}</span></Crossfade>
+									</h2>
+									
+									{#if sidebarState.availableModes.length > 1}
+										<Crossfade key={sidebarState.listTitle} class="ml-auto">
+											<SegmentedControl 
+												items={sidebarState.availableModes.map(m => ({ id: m.id, label: $t(m.label), icon: m.icon }))}
+												activeId={sidebarState.viewMode}
+												onSelect={(id) => sidebarState.setViewMode(id)}
+												size="sm"
+												noShadow={true}
+												class="!bg-transparent !p-0"
+											/>
+										</Crossfade>
+									{/if}
+								</div>
 							{/if}
+							
 							<div class="flex flex-col px-1">
 								<sidebarState.listComponent {...sidebarState.listProps} />
 							</div>

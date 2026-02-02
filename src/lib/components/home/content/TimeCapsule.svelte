@@ -120,17 +120,25 @@
 					><span>{$t('home.hero.time_capsule.subtitle')}</span></Crossfade
 				>
 			</p>
-			<div class="min-h-14 font-mono text-xl font-bold text-orange-400 select-none">
-				{#each timeRunning.split('') as char, i}
-					{#if char === '\n'}
-						<br />
-					{:else if char === ' '}
-						<span class="inline-block whitespace-pre">{'\u00A0'}</span>
-					{:else}
-						<Crossfade key={`${i}-${char}`} duration={150} class="inline-grid"
-							><span>{char}</span></Crossfade
+			<div
+				class="min-h-14 font-mono font-bold text-orange-400 select-none {$locale !== 'zh-CN'
+					? 'text-sm'
+					: 'text-xl'}"
+			>
+				{#each timeRunning.split('\n') as line, lineIdx}
+					{#if lineIdx > 0}<br />{/if}
+					{#each line.split(' ') as word, wordIdx}
+						{#if wordIdx > 0}<span class="inline-block whitespace-pre">{'\u00A0'}</span
+							>{/if}<span class="inline-block"
+							>{#each word.split('') as char, charIdx}
+								<Crossfade
+									key={`${lineIdx}-${wordIdx}-${charIdx}-${char}`}
+									duration={150}
+									class="inline-grid"
+									><span>{char}</span></Crossfade
+								>{/each}</span
 						>
-					{/if}
+					{/each}
 				{/each}
 			</div>
 		</div>

@@ -6,7 +6,7 @@
 	 */
 	import LiquidGlass from '$lib/components/ui/effect/LiquidGlass.svelte';
 	import Avatar from '$lib/components/ui/display/Avatar.svelte';
-	import { Github } from 'lucide-svelte';
+	import { SiGithub } from '@icons-pack/svelte-simple-icons';
 	import { t, locale } from '$lib/i18n/store';
 	import Crossfade from '$lib/components/ui/effect/Crossfade.svelte';
 	import { calculateAge } from '$lib/utils/datetime/age';
@@ -18,14 +18,14 @@
 	const issueUrl = `${repoConfig.url}/issues/new?q=is%3Aissue+state%3Aopen`;
 </script>
 
-<div class="mt-1 pb-4">
+<div class="mt-1">
 	<LiquidGlass opaque={true} class="gap-1 rounded-xl p-3">
 		<div class="flex flex-col items-start gap-3 md:flex-row md:items-center md:justify-between">
 			<div class="flex w-full flex-row gap-3 md:w-auto md:flex-row md:items-center">
 				<div class="justify-center self-start md:self-auto">
 					<Avatar
 						src={avatarUrl}
-						alt="站长头像"
+						alt={$t('friends.profile.avatar_alt')}
 						size="sm"
 						adaptiveStatus
 					/>
@@ -69,7 +69,9 @@
 					target="_blank"
 					class="flex w-full items-center justify-center gap-1.5 rounded-lg bg-secondary/50 px-3 py-1.5 text-xs font-medium text-foreground transition-colors hover:bg-secondary/70 md:w-auto"
 				>
-					<Github size={16} />
+					<div class="w-4 h-4 [&>svg]:w-full [&>svg]:h-full">
+						<SiGithub />
+					</div>
 					<Crossfade key={$locale} class="inline-grid">
 						<span>{$t('friends.exchange')}</span>
 					</Crossfade>
@@ -78,4 +80,3 @@
 		</div>
 	</LiquidGlass>
 </div>
-

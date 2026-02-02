@@ -13,3 +13,8 @@ export interface SidebarItemType {
     componentProps?: Record<string, any>;
     [key: string]: any;
 }
+export interface SidebarViewMode {
+    id: string;
+    label: string;
+    icon?: Component<any>;
+}

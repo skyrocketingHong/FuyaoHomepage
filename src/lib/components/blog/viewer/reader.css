@@ -1,0 +1,236 @@
+/* =========================================================
+   Apple Newsroom 样式设计系统
+   用于博客阅读器 Markdown 内容渲染
+   ========================================================= */
+
+.markdown-body {
+    /* 布局与字体匹配 Apple Newsroom 规范 */
+    font-family: "SF Pro Text", "SF Pro Icons", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 17px; 
+    line-height: 25px; 
+    font-weight: 400;
+    letter-spacing: 0.011em;
+    color: var(--foreground);
+    max-width: 653px; 
+    margin: 0 auto;
+    padding: 0;
+    transition: color 0.3s, background-color 0.3s;
+}
+
+/* 标题样式 */
+.markdown-body h1,
+.markdown-body h2,
+.markdown-body h3,
+.markdown-body h4,
+.markdown-body h5,
+.markdown-body h6 {
+    font-family: "SF Pro Display", "SF Pro Icons", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-weight: 700;
+    letter-spacing: -0.015em;
+    color: var(--foreground);
+}
+
+.markdown-body h1 { 
+    font-size: 48px; 
+    line-height: 52px;
+    margin-top: 1.0em;
+    margin-bottom: 0.5em;
+}
+
+.markdown-body h2 { 
+    font-size: 24px; 
+    line-height: 28px;
+    margin-top: 52px; 
+    margin-bottom: 16px;
+    border-bottom: none; 
+}
+
+.markdown-body h3 { 
+    font-size: 20px; 
+    line-height: 24px;
+    margin-top: 32px;
+    margin-bottom: 12px;
+}
+
+@media (max-width: 1024px) {
+    .markdown-body h1 { font-size: 40px; line-height: 44px; }
+}
+
+@media (max-width: 768px) {
+    .markdown-body h1 { font-size: 32px; line-height: 36px; }
+    .markdown-body h2 { font-size: 22px; line-height: 26px; margin-top: 40px; }
+    .markdown-body h3 { font-size: 19px; line-height: 23px; }
+}
+
+.markdown-body p {
+    margin-bottom: 1.42em; 
+    color: var(--foreground); 
+    font-weight: 400;
+}
+
+/* 暗色模式适配通过 app.css 管理变量，此处无需冗余覆盖 */
+
+.markdown-body a {
+    color: var(--primary);
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 2px;
+}
+
+.markdown-body a:hover {
+    color: var(--theme-color);
+    transition: color 0.2s;
+}
+
+.markdown-body img {
+    display: block;
+    margin: 2.5em auto;
+    max-width: 100%;
+    height: auto;
+    border-radius: 12px;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.06);
+}
+
+:global(.dark) .markdown-body img {
+    box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+}
+
+.markdown-body blockquote {
+    margin: 2rem 0;
+    padding-left: 1.5rem;
+    border-left: 4px solid var(--primary);
+    color: var(--muted-foreground);
+    font-style: italic;
+    font-size: 1.1em;
+}
+
+.markdown-body ul,
+.markdown-body ol {
+    margin-bottom: 1.5em;
+    padding-left: 1.5em;
+}
+
+.markdown-body li {
+    margin-bottom: 0.5em;
+}
+
+.markdown-body hr {
+    height: 1px;
+    background-color: var(--border);
+    border: none;
+    margin: 3em 0;
+}
+
+/* 代码块增强 (Apple Developer 风格) */
+
+.markdown-body .code-wrapper {
+    all: initial; 
+    display: block;
+    margin: 2.5em 0;
+    border-radius: 14px;
+    background-color: var(--code-bg);
+    font-family: "SF Mono", SFMono-Regular, ui-monospace, Menlo, Monaco, Consolas, monospace;
+    width: 100%;
+    box-sizing: border-box;
+    font-size: 14px;
+    overflow: hidden; 
+    border: 1px solid var(--code-border);
+    box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+}
+
+.markdown-body .code-wrapper pre,
+.markdown-body .code-wrapper code {
+    background: transparent !important;
+    border: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    color: inherit !important;
+    font-family: inherit !important;
+}
+
+.markdown-body .code-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 16px;
+    background-color: transparent;
+    border-bottom: 1px solid var(--code-border-inner);
+    user-select: none;
+}
+
+.markdown-body .lang-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--code-text-muted);
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+}
+
+.markdown-body .copy-btn {
+    appearance: none;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    cursor: pointer;
+    color: var(--code-text-muted);
+    font-size: 0.75rem;
+    padding: 4px 10px;
+    transition: all 0.2s ease;
+    font-weight: 500;
+}
+
+.markdown-body .copy-btn:hover {
+    background-color: var(--code-hover);
+    color: var(--code-text);
+}
+
+.markdown-body .copy-btn.copied {
+    color: var(--primary);
+}
+
+.markdown-body pre.hljs {
+    padding: 16px 20px !important;
+    overflow-x: auto;
+    line-height: 1.6;
+    color: var(--code-text);
+    -webkit-font-smoothing: antialiased;
+    white-space: pre-wrap;
+    word-break: break-all;
+    overflow-wrap: break-word;
+}
+
+/* 表格样式 */
+.markdown-body table {
+    display: block;
+    width: 100%;
+    overflow: auto;
+    margin: 2em 0;
+    border-collapse: collapse; 
+}
+.markdown-body table th,
+.markdown-body table td {
+    padding: 10px 16px;
+    border: 1px solid var(--border);
+}
+.markdown-body table th {
+    font-weight: 600;
+    background-color: var(--secondary);
+}
+
+:global(:root) {
+    --code-bg: #f5f5f7;
+    --code-border: rgba(0,0,0,0.03);
+    --code-border-inner: rgba(0,0,0,0.04);
+    --code-text: #1d1d1f;
+    --code-text-muted: #86868b;
+    --code-hover: rgba(0,0,0,0.06);
+}
+
+:global(.dark) {
+    --code-bg: #1c1c1e; 
+    --code-border: rgba(255,255,255,0.08);
+    --code-border-inner: rgba(255,255,255,0.06);
+    --code-text: #f5f5f7;
+    --code-text-muted: #98989d;
+    --code-hover: rgba(255,255,255,0.1);
+}

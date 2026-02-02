@@ -20,6 +20,9 @@
 	// 配置与内部状态
 	// ==========================================
 	
+	// 可选：指定固定车站名称（英文）用于测试，如 'Choi Hung'、'Central' 等
+	let { fixedStation = '' }: { fixedStation?: string } = $props();
+	
 	let config: MosaicConfig = MOSAIC_DEFAULT_CONFIG;
 
 	// 内部状态
@@ -44,26 +47,65 @@
 		baseH: number;
 		baseS: number;
 		baseL: number;
+		rowIndex: number; // 行索引，用于彩虹模式
 		
-		constructor(r: number, g: number, b: number) {
+		constructor(r: number, g: number, b: number, rowIndex: number = 0) {
 			this.r = this.targetR = r;
 			this.g = this.targetG = g;
 			this.b = this.targetB = b;
+			this.rowIndex = rowIndex;
 			const hsl = rgbToHsl(r, g, b);
 			this.baseH = hsl.h;
 			this.baseS = hsl.s;
 			this.baseL = hsl.l;
 		}
 
-		updateTarget(randomness: number, isRainbow: boolean) {
-			if (isRainbow) {
-				const randHex = RAINBOW_COLORS[Math.floor(Math.random() * RAINBOW_COLORS.length)];
-				const rgb = hexToRgb(randHex);
-				this.targetR = rgb.r;
-				this.targetG = rgb.g;
-				this.targetB = rgb.b;
-				return;
+		updateTarget(randomness: number, isRainbow: boolean, totalRows: number) {
+		if (isRainbow) {
+			// ========================================
+			// 彩虹站布局计算
+			// ========================================
+			// 布局结构（从上到下）：
+			//   - 顶部青绿区：填充剩余空间的 30%
+			//   - 中间彩虹区：6条色带，每条固定 RAINBOW_BAND_ROWS 行
+			//   - 底部青绿区：填充剩余空间的 70%
+			// 
+			// 调整位置：修改 TOP_RATIO 值（0-1）
+			//   - 0.0 = 彩虹贴顶
+			//   - 0.5 = 彩虹居中（默认）
+			//   - 1.0 = 彩虹贴底
+			// ========================================
+			const RAINBOW_BAND_ROWS = 6;  // 每条彩虹色带固定行数
+			const TOP_RATIO = 0.3;        // 顶部青绿占剩余空间的比例（0.3 = 彩虹偏上）
+			
+			const rainbowTotalRows = 6 * RAINBOW_BAND_ROWS; // 中间6条彩虹总行数（红橙黄绿蓝紫）
+			const remainingRows = totalRows - rainbowTotalRows; // 剩余空间（顶部+底部）
+			const topRows = Math.floor(remainingRows * TOP_RATIO); // 顶部青绿行数
+			const bottomStartRow = topRows + rainbowTotalRows; // 底部青绿起始行
+			
+			let hex: string;
+			if (this.rowIndex < topRows) {
+				// 顶部青绿区域
+				hex = RAINBOW_COLORS[0];
+			} else if (this.rowIndex >= bottomStartRow) {
+				// 底部青绿区域
+				hex = RAINBOW_COLORS[7];
+			} else {
+				// 中间彩虹区域（6条色带）
+				const rainbowRow = this.rowIndex - topRows;
+				const bandIndex = Math.floor(rainbowRow / RAINBOW_BAND_ROWS);
+				// 颜色索引 1-6 对应红橙黄绿蓝紫
+				hex = RAINBOW_COLORS[Math.min(bandIndex + 1, 6)];
 			}
+			
+			const rgb = hexToRgb(hex);
+			// 添加轻微随机扰动模拟瓷砖质感
+			const variation = 0.05;
+			this.targetR = Math.round(rgb.r * (1 + (Math.random() - 0.5) * variation));
+			this.targetG = Math.round(rgb.g * (1 + (Math.random() - 0.5) * variation));
+			this.targetB = Math.round(rgb.b * (1 + (Math.random() - 0.5) * variation));
+			return;
+		}	
 			
 			// HSL 偏移计算（光感随机化）
 			const randomS = Math.max(0, Math.min(1, this.baseS + (Math.random() * randomness - randomness / 2)));
@@ -138,18 +180,36 @@
 	// ==========================================
 
 	function pickRandomPreset() {
-		const presets = themeState.isDark ? MTR_PRESETS_NIGHT : MTR_PRESETS_DAY;
-		const randomPreset = presets[Math.floor(Math.random() * presets.length)];
+		const dayPresets = MTR_PRESETS_DAY;
+		const nightPresets = MTR_PRESETS_NIGHT;
+		const allPresets = [...dayPresets, ...nightPresets];
+		
+		let selectedPreset: MtrStation;
+		
+		// 如果指定了固定车站，优先使用
+		if (fixedStation) {
+			const found = allPresets.find(p => p.name === fixedStation);
+			if (found) {
+				selectedPreset = found;
+			} else {
+				console.warn(`[MosaicBackground] fixedStation "${fixedStation}" not found, using random`);
+				const presets = themeState.isDark ? nightPresets : dayPresets;
+				selectedPreset = presets[Math.floor(Math.random() * presets.length)];
+			}
+		} else {
+			const presets = themeState.isDark ? nightPresets : dayPresets;
+			selectedPreset = presets[Math.floor(Math.random() * presets.length)];
+		}
 		
 		// @ts-ignore
-		mosaicState.setStation(randomPreset.nameZh, randomPreset.name);
+		mosaicState.setStation(selectedPreset.nameZh, selectedPreset.name);
 		
-		if (randomPreset.isRainbow) {
+		if (selectedPreset.isRainbow) {
 			isRainbowMode = true;
-			currentColorHex = randomPreset.color;
+			currentColorHex = selectedPreset.color;
 		} else {
 			isRainbowMode = false;
-			currentColorHex = randomPreset.color;
+			currentColorHex = selectedPreset.color;
 		}
 	}
 
@@ -192,14 +252,16 @@
 		// Initialize cells
 		cells = [];
 		const baseRgb = hexToRgb(currentColorHex);
-		for (let i = 0; i < rows * cols; i++) {
-			const cell = new Cell(baseRgb.r, baseRgb.g, baseRgb.b);
-            // 初始引导：从基础颜色开始。仅在 autoStart 为 true（如重调大小/主题切换）时设置随机目标
-            // 如果 autoStart 为 false（首次加载），目标设为当前色以保持初始平铺感
-			if (autoStart) {
-				cell.updateTarget(config.randomness, isRainbowMode);
+		for (let row = 0; row < rows; row++) {
+			for (let col = 0; col < cols; col++) {
+				const cell = new Cell(baseRgb.r, baseRgb.g, baseRgb.b, row);
+				// 初始引导：从基础颜色开始。仅在 autoStart 为 true（如重调大小/主题切换）时设置随机目标
+				// 如果 autoStart 为 false（首次加载），目标设为当前色以保持初始平铺感
+				if (autoStart) {
+					cell.updateTarget(config.randomness, isRainbowMode, rows);
+				}
+				cells.push(cell);
 			}
-			cells.push(cell);
 		}
         
         // 立即执行绘制（初始状态为平铺颜色）
@@ -275,7 +337,7 @@
 		// 定期更新颜色目标
         // 如果 duration 为 0，视为静态模式（从不更新目标）
 		if (config.duration > 0 && delta > config.duration * 1000) {
-			cells.forEach(cell => cell.updateTarget(config.randomness, isRainbowMode));
+			cells.forEach(cell => cell.updateTarget(config.randomness, isRainbowMode, rows));
 			lastUpdate = timestamp;
             needsRedraw = true; // 目标已变，开始插值
 		}
@@ -338,7 +400,7 @@
         // 延迟 250ms 后触发入场动画
         setTimeout(() => {
              // 随机分配目标颜色并启动循环
-             cells.forEach(cell => cell.updateTarget(config.randomness, isRainbowMode));
+             cells.forEach(cell => cell.updateTarget(config.randomness, isRainbowMode, rows));
              needsRedraw = true;
              startLoop();
         }, 250);

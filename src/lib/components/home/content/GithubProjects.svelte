@@ -111,6 +111,69 @@
 	});
 </script>
 
+{#snippet projectCard(repo: GithubRepo | null, loading: boolean)}
+	<LiquidGlass
+		opaque={true}
+		tag="div"
+		class={cn(
+			'group transition-all duration-300',
+			loading ? 'h-[142px] border-border/50' : 'hover:border-purple-500/30'
+		)}
+		tilt={true}
+	>
+		<svelte:element
+			this={loading ? 'div' : 'a'}
+			href={repo?.url}
+			target={repo?.url ? '_blank' : undefined}
+			class={cn('block h-full w-full outline-none')}
+		>
+			<Crossfade key={loading ? 'loading' : 'loaded'} class="h-full w-full">
+				{#if loading}
+					<div class="h-full w-full animate-pulse">
+						<div class="mb-3 flex items-start justify-between gap-2">
+							<div class="h-6 w-2/3 rounded bg-muted/40"></div>
+							<div class="h-5 w-12 rounded-full bg-muted/30"></div>
+						</div>
+						<div class="mb-4 space-y-2">
+							<div class="h-3 w-full rounded bg-muted/20"></div>
+							<div class="h-3 w-4/5 rounded bg-muted/20"></div>
+						</div>
+						<div class="flex items-center gap-4">
+							<div class="h-3 w-12 rounded bg-muted/20"></div>
+							<div class="h-3 w-12 rounded bg-muted/20"></div>
+						</div>
+					</div>
+				{:else if repo}
+					<div class="h-full group-hover:no-underline">
+						<div class="mb-2 flex items-start justify-between gap-2">
+							<h3 class="min-w-0 w-0 flex-1 text-lg font-bold transition-colors text-foreground">
+								<Marquee text={repo.name} class="w-full" />
+							</h3>
+							<span
+								class="shrink-0 rounded-full border border-border bg-secondary/20 px-2 py-0.5 text-xs text-muted-foreground"
+								>{repo.language || 'N/A'}</span
+							>
+						</div>
+						<div class="mb-4 h-9 text-sm text-muted-foreground">
+							<Marquee text={repo.description || ''} direction="vertical" class="h-full w-full" />
+						</div>
+						<div class="flex items-center gap-4 text-xs text-muted-foreground/70">
+							<div class="flex items-center gap-1">
+								<Star size={14} />
+								<span>{repo.stars}</span>
+							</div>
+							<div class="flex items-center gap-1">
+								<GitFork size={14} />
+								<span>{repo.forks}</span>
+							</div>
+						</div>
+					</div>
+				{/if}
+			</Crossfade>
+		</svelte:element>
+	</LiquidGlass>
+{/snippet}
+
 <div class="pt-4">
 	<div class="mb-4 flex items-center gap-4">
 		<LiquidGlass class="h-12 w-12 rounded-2xl bg-purple-500/20 p-3 text-purple-400">
@@ -125,58 +188,7 @@
 
 	<div class="grid grid-cols-1 gap-4 md:grid-cols-2">
 		{#each loadingGithub ? Array(6).fill(null) : githubData as repo}
-			<LiquidGlass
-				opaque={true}
-				tag="a"
-				href={repo?.url}
-				target={repo?.url ? '_blank' : undefined}
-				class={cn(
-					'transition-all duration-300',
-					loadingGithub
-						? 'flex h-[142px] items-center justify-center border-border'
-						: 'block p-4 hover:border-purple-500/30'
-				)}
-				tilt={true}
-			>
-				<Crossfade key={loadingGithub ? 'loading' : 'loaded'} class="h-full w-full">
-					{#if loadingGithub}
-						<div class="flex h-full w-full items-center justify-center">
-							<LoadingState loading={true} variant="inline" text={loadingText} />
-						</div>
-					{:else if repo}
-						<div class="h-full">
-							<div class="mb-2 flex items-start justify-between gap-2">
-								<h3
-									class="min-w-0 w-0 flex-1 text-lg font-bold transition-colors text-foreground"
-								>
-									<Marquee text={repo.name} class="w-full" />
-								</h3>
-								<span
-									class="shrink-0 rounded-full border border-border bg-secondary/20 px-2 py-0.5 text-xs text-muted-foreground"
-									>{repo.language || "N/A"}</span
-								>
-							</div>
-							<div class="mb-4 h-9 text-sm text-muted-foreground">
-								<Marquee
-									text={repo.description || ""}
-									direction="vertical"
-									class="h-full w-full"
-								/>
-							</div>
-							<div class="flex items-center gap-4 text-xs text-muted-foreground/70">
-								<div class="flex items-center gap-1">
-									<Star size={14} />
-									<span>{repo.stars}</span>
-								</div>
-								<div class="flex items-center gap-1">
-									<GitFork size={14} />
-									<span>{repo.forks}</span>
-								</div>
-							</div>
-						</div>
-					{/if}
-				</Crossfade>
-			</LiquidGlass>
+			{@render projectCard(repo, loadingGithub)}
 		{/each}
 	</div>
 </div>

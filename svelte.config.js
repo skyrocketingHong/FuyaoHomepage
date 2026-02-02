@@ -6,9 +6,10 @@ const config = {
 		adapter: adapter({
 			pages: 'build',
 			assets: 'build',
-			fallback: undefined
+			fallback: '200.html'
 		}),
 		prerender: {
+			entries: ['*', '/blog'],
 			handleUnseenRoutes: 'warn'
 		}
 	}

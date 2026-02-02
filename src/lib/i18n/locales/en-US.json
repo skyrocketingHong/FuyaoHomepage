@@ -2,8 +2,14 @@
 	"common": {
 		"loading": "Loading...",
 		"travingto": "Traving to",
-		"copyright": "{{startYear}} - {{currentYear}} 扶摇skyrocketing.",
+		"copyright": "{{startYear}} - {{currentYear}} 扶摇skyrocketing",
 		"copied": "Copied",
+		"site_name": "扶摇skyrocketing",
+		"none": "None",
+		"status": {
+			"online": "Online",
+			"offline": "Offline"
+		},
 		"comma": ", ",
 		"colon": ": "
 	},
@@ -17,7 +23,8 @@
 	},
 	"layout": {
 		"sidebar": {
-			"navigation": "Navigation"
+			"navigation": "Navigation",
+			"background_source": "Background Source"
 		},
 		"header": {
 			"toggle_theme": "Toggle Theme",
@@ -81,6 +88,8 @@
 		"title": "Blog",
 		"all": "All",
 		"iframe_loading": "'s Blog",
+		"renderer_load_error": "Failed to load renderer",
+		"render_error": "Render error: {{message}}",
 		"toc": "Table of Contents",
 		"contents": "Contents",
 		"loading_error": "Error loading post content.",
@@ -97,7 +106,15 @@
 		"view_all": "View all stories",
 		"unknown_year": "Unknown",
 		"back_to_list": "Back to Articles",
-		"share_article": "Share Article"
+		"share_article": "Share Article",
+		"published_at": "Published",
+		"updated_at": "Updated",
+		"rss": "RSS",
+		"rss_subscribe": "Subscribe to RSS",
+		"year": "Year",
+		"tag": "Tag",
+		"tag_filtering": "Filtering by tag: ",
+		"clear_tag": "Clear tag filter"
 	},
 	"friends": {
 		"title": "Friends",
@@ -106,7 +123,14 @@
 			"name_label": "Name",
 			"desc_label": "Description",
 			"link_label": "Link",
-			"icon_label": "Icon"
+			"icon_label": "Icon",
+			"avatar_alt": "Author Avatar"
 		}
+	},
+	"error": {
+		"not_found_title": "Page Not Found",
+		"something_wrong_title": "Something Went Wrong",
+		"not_found_desc": "Sorry, we couldn't find the resource you requested",
+		"request_path": "Request Path"
 	}
 }

@@ -9,7 +9,7 @@ export interface MtrStation {
     name: string; // 英文名称
     nameZh: string; // 中文名称
     color: string; // 代表颜色 (十六进制)
-    isRainbow?: boolean; // 是否应用彩虹特效 (Choi Hung 站专用)
+    isRainbow?: boolean; // 是否应用彩虹特效 (彩虹站专用)
 }
 
 // 马赛克配置接口
@@ -49,7 +49,7 @@ export const MTR_PRESETS_DAY: MtrStation[] = [
     // 观塘线
     { name: 'Whampoa', nameZh: '黃埔', color: '#AECFF0' },
     { name: 'Ho Man Tin', nameZh: '何文田', color: '#A2CF5A' },
-    // Yau Ma Tei repeated
+    // 油麻地（重复）
     { name: 'Lok Fu', nameZh: '樂富', color: '#579E2F' },
     { name: 'Wong Tai Sin', nameZh: '黃大仙', color: '#FFFF00' },
     { name: 'Kwun Tong', nameZh: '觀塘', color: '#FFFFFF' },
@@ -60,7 +60,7 @@ export const MTR_PRESETS_DAY: MtrStation[] = [
     { name: 'Kennedy Town', nameZh: '堅尼地城', color: '#95D0D0' },
     { name: 'HKU', nameZh: '香港大學', color: '#B8DA89' },
     { name: 'Sai Ying Pun', nameZh: '西營盤', color: '#8B7BA0' },
-    // Sheung Wan #FFD280 #6B4513 (Brown text, treat as Day)
+    // 上環 #FFD280 #6B4513（棕色文字，视为日间模式）
     { name: 'Sheung Wan', nameZh: '上環', color: '#FFD280' },
     { name: 'Wan Chai', nameZh: '灣仔', color: '#E1EB2B' },
     { name: 'Causeway Bay', nameZh: '銅鑼灣', color: '#C8A2C8' },
@@ -68,7 +68,7 @@ export const MTR_PRESETS_DAY: MtrStation[] = [
     { name: 'North Point', nameZh: '北角', color: '#E86220' },
     { name: 'Sai Wan Ho', nameZh: '西灣河', color: '#FFCC00' },
     // 将军澳线
-    // North Point, Yau Tong, Tiu Keng Leng repeated
+    // 北角、油塘、調景嶺（重复）
     { name: 'Hang Hau', nameZh: '坑口', color: '#2EA9DF' },
     { name: 'Po Lam', nameZh: '寶琳', color: '#F28500' },
     // 东涌线 & 机场快线
@@ -104,7 +104,7 @@ export const MTR_PRESETS_DAY: MtrStation[] = [
     { name: 'Hong Kong West Kowloon', nameZh: '香港西九龍', color: '#808080' },
     
     // 特殊请求：彩虹特效（用于彩虹站）
-    { name: 'Choi Hung', nameZh: '彩虹', color: '#27408B', isRainbow: true }
+    { name: 'Choi Hung', nameZh: '彩虹', color: '#4c717c', isRainbow: true }
 ];
 
 // 夜间模式 (暗色背景，白色文字)
@@ -170,4 +170,14 @@ export const MTR_PRESETS_NIGHT: MtrStation[] = [
     { name: 'Tung Chung', nameZh: '東涌', color: '#274060' }
 ];
 
-export const RAINBOW_COLORS = ['#EE2200', '#EE7F00', '#EEEE00', '#229922', '#2222EE', '#4B2282', '#8B00EE'];
+// 彩虹站颜色（从上到下：青绿 + 6色彩虹 + 青绿）
+export const RAINBOW_COLORS = [
+    '#4c717c', // 顶部青绿色
+    '#E44332', // 红色
+    '#F58536', // 橙色
+    '#F7E94E', // 黄色
+    '#4FA54B', // 绿色
+    '#3366AA', // 蓝色
+    '#6B3A74', // 紫色
+    '#4c717c'  // 底部青绿色
+];

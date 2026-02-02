@@ -142,5 +142,6 @@ vite.config.ts.timestamp-*
 .vscode
 
 # Static files
-#static/
+static
 node_modules
+.agent

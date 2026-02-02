@@ -28,8 +28,8 @@
 
 <header class={cn(className, "flex flex-wrap items-center gap-2 md:flex-nowrap")}>
 	<!-- 1. 标题区域与右侧操作按钮容器 -->
-	<!-- Mobile: Flex row (Top bar). Desktop: Contents (Flat list). -->
-	<!-- pointer-events-none on wrapper to let clicks pass through gaps, auto on children -->
+	<!-- 移动端：Flex 行布局（顶部栏）。桌面端：Contents（扁平列表） -->
+	<!-- 外层容器 pointer-events-none 以便点击穿透间隙，子元素设置为 auto -->
 	<div class="pointer-events-none order-1 flex w-full items-center justify-between gap-2 md:contents">
 		<h1
 			class="pointer-events-auto flex-1 md:flex-none md:order-1 flex min-w-0 shrink items-center gap-1 text-xl font-bold drop-shadow-md md:text-2xl md:tracking-wide text-foreground"

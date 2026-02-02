@@ -7,9 +7,10 @@
 	import LiquidGlass from '$lib/components/ui/effect/LiquidGlass.svelte';
 	import { sidebarState } from '$lib/state.svelte';
 	import { X } from 'lucide-svelte';
-	import { t, locale } from '$lib/i18n/store'; // Added import for translation
+	import { t, locale } from '$lib/i18n/store'; // 添加翻译导入
 	import ScrollContainer from '$lib/components/ui/layout/ScrollContainer.svelte';
 	import Crossfade from '$lib/components/ui/effect/Crossfade.svelte';
+	import SegmentedControl from '$lib/components/ui/display/SegmentedControl.svelte';
 </script>
 
 <Crossfade
@@ -49,12 +50,27 @@
 				<div class="relative z-10 flex flex-col h-full max-h-[80vh]">
 					<div class="mb-4 flex items-center justify-between p-4 pb-0">
 						<!-- 更新标题以使用翻译 -->
-						<!-- 更新标题以使用翻译 -->
-						<h2 class="text-lg font-bold text-foreground">
-							<Crossfade key={(sidebarState.listTitle || 'nav.list') + $locale} class="inline-grid">
-								<span>{sidebarState.listTitle ? $t(sidebarState.listTitle) : $t('nav.list')}</span>
-							</Crossfade>
-						</h2>
+						<div class="flex items-center gap-3">
+							<h2 class="text-lg font-bold text-foreground">
+								<Crossfade key={(sidebarState.listTitle || 'nav.list') + $locale} class="inline-grid">
+									<span>{sidebarState.listTitle ? $t(sidebarState.listTitle) : $t('nav.list')}</span>
+								</Crossfade>
+							</h2>
+
+							{#if sidebarState.availableModes.length > 1}
+								<Crossfade key={sidebarState.listTitle} class="ml-1">
+									<SegmentedControl 
+										items={sidebarState.availableModes.map(m => ({ id: m.id, label: $t(m.label), icon: m.icon }))}
+										activeId={sidebarState.viewMode}
+										onSelect={(id) => sidebarState.setViewMode(id)}
+										size="sm"
+										noShadow={true}
+										class="!bg-transparent !p-0"
+									/>
+								</Crossfade>
+							{/if}
+						</div>
+						
 						<button
 							class="rounded-full p-2 text-muted-foreground transition-all hover:bg-secondary/20 hover:text-foreground"
 							onclick={() => sidebarState.toggleMobileDrawer()}

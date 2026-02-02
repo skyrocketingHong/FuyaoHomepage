@@ -37,8 +37,6 @@
 	// 只有当图片加载完成时才显示内容
 	let showContent = $derived(backgroundState.isLoaded);
 
-
-
     // 决定是否渲染布局层级的 SEO 标签。
     // 博客子页面（文章及特定分类）会自行处理 SEO，因此在此跳过。
     // 布局 SEO 仅应用于：

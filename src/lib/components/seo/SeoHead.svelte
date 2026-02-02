@@ -14,12 +14,12 @@
 	 */
 	import { seoConfig } from '$lib/config';
 	import { page } from '$app/state';
+	import { t } from '$lib/i18n/store';
 
-	const siteName = import.meta.env.VITE_SITE_NAME ?? '扶摇 Skyrocketing';
+	const siteName = $derived(import.meta.env.VITE_SITE_NAME ?? $t('common.site_name'));
 
 	let {
-
-		title = siteName,
+		title,
 		description = seoConfig.description,
 		keywords = seoConfig.keywords,
 		author = seoConfig.author,
@@ -40,7 +40,8 @@
 	}
 
 	// 生成最终标题（非首页添加站点名后缀）
-	let finalTitle = $derived(title === siteName ? title : `${title} | ${siteName}`);
+	let displayTitle = $derived(title ?? siteName);
+	let finalTitle = $derived(displayTitle === siteName ? displayTitle : `${displayTitle} | ${siteName}`);
 	// 生成完整 URL
 	let finalUrl = $derived(`${seoConfig.baseURL}${page.url.pathname}`);
 	// 如果关键词是数组则连接为字符串

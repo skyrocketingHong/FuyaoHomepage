@@ -33,7 +33,7 @@ export interface NavItem {
 export const navItems: NavItem[] = [
     {
         i18nKey: 'nav.home',
-        href: '/home',
+        href: '/home/',
         icon: Home,
         seo: {
             description: '扶摇skyrocketing的个人主页首页，包含最新动态和个人简介。',
@@ -43,7 +43,7 @@ export const navItems: NavItem[] = [
     },
     {
         i18nKey: 'nav.blog',
-        href: '/blog',
+        href: '/blog/',
         icon: BookOpen,
         seo: {
             description: '扶摇skyrocketing的博客文章，分享技术教程、生活感悟和思考随笔。',
@@ -65,7 +65,7 @@ export const navItems: NavItem[] = [
     // },
     {
         i18nKey: 'nav.pay',
-        href: '/pay',
+        href: '/pay/',
         icon: CreditCard,
         seo: {
             description: '扶摇skyrocketing的赞赏支持，如果您觉得我的内容对您有帮助，欢迎赞赏支持。',
@@ -75,7 +75,7 @@ export const navItems: NavItem[] = [
     },
     {
         i18nKey: 'nav.friends',
-        href: '/friends',
+        href: '/friends/',
         icon: Users,
         seo: {
             description: '扶摇skyrocketing的友情链接，我的朋友们和推荐的优质网站。',

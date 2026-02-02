@@ -9,7 +9,7 @@
 	 * @prop infoComponent - 可选的背景信息展示组件
 	 */
 	import { t, locale } from '$lib/i18n/store';
-	import { Github } from 'lucide-svelte';
+	import { SiGithub } from '@icons-pack/svelte-simple-icons';
 	import { repoConfig, type BackgroundMode } from '$lib/config';
 	import Crossfade from '$lib/components/ui/effect/Crossfade.svelte';
     import type { Component } from 'svelte';
@@ -55,37 +55,39 @@
 			target="_blank"
 			rel="noopener noreferrer"
 			class="inline-flex items-center gap-1 hover:text-foreground transition-colors">
-			<Github size={direction === 'horizontal' ? 10 : 14} />
+			<div class={ 'w-3.5 h-3.5' + ' [&>svg]:w-full [&>svg]:h-full'}>
+				<SiGithub />
+			</div>
 			<span>{repoConfig.name}</span>
 		</a>
 	</span>
 {/snippet}
 
-<div class="w-full flex-none text-center text-xs text-muted-foreground drop-shadow-md">
+<div class="w-full flex-none text-center text-xs text-muted-foreground drop-shadow-md opacity-70">
 	<Crossfade key={$locale} class={containerClass}>
 		{#if direction === 'horizontal'}
-			<!-- Mobile Horizontal Layout -->
+			<!-- 移动端水平布局 -->
 			{#if InfoComponent}
-				<!-- Top Divider -->
+				<!-- 顶部分隔线 -->
 				<div class="w-full h-px bg-gradient-to-r from-transparent via-border to-transparent mt-0 mb-1"></div>
-				<div class="flex w-full items-start justify-between">
-					<!-- Left: Background Info -->
-					<div class="flex items-center gap-2 mt-0.5">
-						<span class="text-[10px] opacity-70 whitespace-nowrap">背景来源</span>
+				<div class="flex w-full items-center justify-between">
+					<!-- 左侧：背景信息 -->
+					<div class="flex items-center gap-2">
+						<span class="text-[10px] whitespace-nowrap">{$t('layout.sidebar.background_source')}</span>
 						<div class="origin-left">
 							<InfoComponent />
 						</div>
 					</div>
 					
-					<!-- Right: Copyright -->
-					<div class="flex flex-col items-end text-[10px] leading-snug opacity-60 text-right">
+					<!-- 右侧：版权信息 -->
+					<div class="flex flex-col items-end text-[10px] leading-snug text-right">
 						{@render copyrightText()}
 					</div>
 				</div>
 			{:else}
 				<!-- 移动端无信息显示时的版权排版 -->
 				<div class="w-full h-px bg-gradient-to-r from-transparent via-border to-transparent mt-0 mb-1"></div>
-				<div class="flex flex-col w-full items-center justify-center text-[10px] opacity-60">
+				<div class="flex flex-col w-full items-center justify-center text-[10px]">
 					{@render copyrightText()}
 				</div>
 			{/if}
@@ -94,8 +96,8 @@
 			{#if InfoComponent}
 				<!-- 顶部间距 + 背景信息 -->
 				<div class="w-full h-px bg-gradient-to-r from-transparent via-border to-transparent my-2 pl-2 pr-2"></div>
-				<div class="w-full flex items-center justify-between pl-2 pr-2">
-					<span>背景来源</span>
+				<div class="w-full flex items-center justify-between pl-4 pr-2">
+					<span>{$t('layout.sidebar.background_source')}</span>
 					<InfoComponent />
 				</div>
 			{/if}

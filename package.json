@@ -1,7 +1,7 @@
 {
 	"name": "fuyao-homepage",
 	"private": true,
-	"version": "2.0.0",
+	"version": "2.1.0",
 	"type": "module",
 	"scripts": {
 		"dev": "vite dev",
@@ -63,6 +63,7 @@
 		"js-yaml": "^4.1.1",
 		"katex": "^0.16.28",
 		"lucide-svelte": "^0.562.0",
+		"pangu": "7.2.0",
 		"qrcode": "^1.5.4",
 		"rehype-autolink-headings": "^7.1.0",
 		"rehype-highlight": "^7.0.2",

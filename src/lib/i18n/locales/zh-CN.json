@@ -2,8 +2,14 @@
 	"common": {
 		"loading": "加载中...",
 		"travingto": "正在前往",
-		"copyright": "{{startYear}} - {{currentYear}} 扶摇skyrocketing.",
+		"copyright": "{{startYear}} - {{currentYear}} 扶摇skyrocketing",
 		"copied": "已复制",
+		"site_name": "扶摇skyrocketing",
+		"none": "无",
+		"status": {
+			"online": "在线",
+			"offline": "离线"
+		},
 		"comma": "，",
 		"colon": "："
 	},
@@ -17,7 +23,8 @@
 	},
 	"layout": {
 		"sidebar": {
-			"navigation": "导航"
+			"navigation": "导航",
+			"background_source": "背景来源"
 		},
 		"header": {
 			"toggle_theme": "切换主题",
@@ -81,6 +88,8 @@
 		"title": "博客",
 		"all": "全部",
 		"iframe_loading": "的博客",
+		"renderer_load_error": "渲染器加载失败",
+		"render_error": "渲染内容出错: {{message}}",
 		"toc": "目录",
 		"contents": "目录",
 		"loading_error": "加载文章失败。",
@@ -97,7 +106,15 @@
 		"view_all": "查看所有文章",
 		"unknown_year": "年份未知",
 		"back_to_list": "返回列表",
-		"share_article": "分享文章"
+		"share_article": "分享文章",
+		"published_at": "发布于",
+		"updated_at": "更新于",
+		"rss": "RSS",
+		"rss_subscribe": "订阅 RSS",
+		"year": "年份",
+		"tag": "标签",
+		"tag_filtering": "正在查看标签：",
+		"clear_tag": "清除标签过滤"
 	},
 	"friends": {
 		"title": "友链",
@@ -106,7 +123,14 @@
 			"name_label": "名称",
 			"desc_label": "描述",
 			"link_label": "链接",
-			"icon_label": "图标"
+			"icon_label": "图标",
+			"avatar_alt": "站长头像"
 		}
+	},
+	"error": {
+		"not_found_title": "页面未找到",
+		"something_wrong_title": "出现了一些问题",
+		"not_found_desc": "抱歉，我们无法找到您请求的资源",
+		"request_path": "请求路径"
 	}
 }

@@ -8,6 +8,10 @@ export class SidebarState {
     listComponent = $state<Component<any> | null>(null);
     listProps = $state<Record<string, unknown>>({});
     listTitle = $state<string>('');
+    
+    // 视图模式相关
+    viewMode = $state<string>('');
+    availableModes = $state<any[]>([]);
 
     // 移动端抽屉状态
     isMobileDrawerOpen = $state(false);
@@ -22,13 +26,29 @@ export class SidebarState {
      * @param title 列表标题 (支持 i18n key)
      * @returns uniqueId 返回当前列表的唯一ID，需要在组件销毁时传回给 clearList
      */
-    setList(component: Component<any> | null, props: Record<string, unknown> = {}, title: string = '') {
+    setList(component: Component<any> | null, props: Record<string, unknown> = {}, title: string = '', modes: any[] = []) {
         const id = Math.random().toString(36).substring(7);
         this.listComponent = component;
         this.listProps = props;
         this.listTitle = title;
         this.currentListId = id;
+        
+        // 设置可用模式
+        this.availableModes = modes;
+        if (modes.length > 0) {
+            this.viewMode = modes[0].id; // 默认选中第一个
+        } else {
+            this.viewMode = '';
+        }
+        
         return id;
+    }
+
+    /**
+     * 设置视图模式
+     */
+    setViewMode(modeId: string) {
+        this.viewMode = modeId;
     }
 
     /**
@@ -72,6 +92,8 @@ export class SidebarState {
         this.listTitle = '';
         this.currentListId = '';
         this.isMobileDrawerOpen = false;
+        this.viewMode = '';
+        this.availableModes = [];
     }
 }
 

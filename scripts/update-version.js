@@ -1,3 +1,8 @@
+/**
+ * 版本更新脚本
+ *
+ * 提供交互式命令行界面，用于更新 package.json 版本号并自动生成 CHANGELOG 条目。
+ */
 import fs from 'node:fs';
 import path from 'node:path';
 import readline from 'node:readline';
@@ -14,12 +19,20 @@ const rl = readline.createInterface({
     output: process.stdout
 });
 
+/**
+ * 获取当前版本号
+ * @returns {string} 当前版本号
+ */
 function getCurrentVersion() {
     const content = fs.readFileSync(PACKAGE_JSON_PATH, 'utf-8');
     const pkg = JSON.parse(content);
     return pkg.version;
 }
 
+/**
+ * 更新 package.json 中的版本号
+ * @param {string} newVersion - 新版本号
+ */
 function updatePackageJson(newVersion) {
     const content = fs.readFileSync(PACKAGE_JSON_PATH, 'utf-8');
     const pkg = JSON.parse(content);
@@ -28,6 +41,10 @@ function updatePackageJson(newVersion) {
     console.log(`✅ package.json 已更新至版本 ${newVersion}`);
 }
 
+/**
+ * 更新 CHANGELOG.md，添加新版本条目
+ * @param {string} newVersion - 新版本号
+ */
 function updateChangelog(newVersion) {
     const date = new Date().toISOString().split('T')[0];
     const content = fs.readFileSync(CHANGELOG_PATH, 'utf-8');
@@ -50,7 +67,7 @@ function updateChangelog(newVersion) {
     // 我们会寻找第一个出现的 "## [" 并在其上方插入，
     // 如果未找到（首次发布），则追加到末尾。
 
-    // Strategy: Find the first line starting with "## ["
+    // 策略：寻找第一个以 "## [" 开头的行
     const lines = content.split('\n');
     let insertIndex = -1;
 
@@ -77,12 +94,18 @@ function updateChangelog(newVersion) {
 
     lines.splice(insertIndex, 0, newSection);
 
-    // Clean up potential extra newlines if needed, but simple splicing should be okay for now
+    // 如有需要，清理多余的换行符，但简单的拼接目前应该没问题
 
     fs.writeFileSync(CHANGELOG_PATH, lines.join('\n'));
     console.log(`✅ CHANGELOG.md 已更新，并为版本 ${newVersion} 创建了新条目`);
 }
 
+/**
+ * 递增版本号
+ * @param {string} version - 当前版本号
+ * @param {'major'|'minor'|'patch'} type - 更新类型
+ * @returns {string} 新版本号
+ */
 function incrementVersion(version, type) {
     const [major, minor, patch] = version.split('.').map(Number);
     switch (type) {
@@ -93,6 +116,9 @@ function incrementVersion(version, type) {
     }
 }
 
+/**
+ * 主函数：运行交互式版本更新流程
+ */
 async function main() {
     const currentVersion = getCurrentVersion();
     console.log(`当前版本: ${currentVersion}`);
@@ -113,12 +139,12 @@ async function main() {
         else if (answer === '2') newVersion = minor;
         else if (answer === '3') newVersion = major;
         else if (answer === '4') {
-            rl.question('Enter custom version: ', (ver) => {
+                    rl.question('请输入自定义版本号: ', (ver) => {
                 finalize(ver);
             });
             return;
         } else {
-            console.log('Invalid selection');
+            console.log('无效的选择');
             rl.close();
             return;
         }
@@ -127,6 +153,10 @@ async function main() {
     });
 }
 
+/**
+ * 完成版本更新
+ * @param {string} newVersion - 新版本号
+ */
 function finalize(newVersion) {
     if (!newVersion) {
         console.log('未提供版本号');

@@ -12,46 +12,113 @@
 	import { onMount, onDestroy, untrack } from 'svelte';
 	import { page } from '$app/state';
 	import { goto, beforeNavigate } from '$app/navigation';
-	import BlogSidebar from '$lib/components/blog/List.svelte';
-	import BlogHome from '$lib/components/blog/Home.svelte';
-	import BlogViewer from '$lib/components/blog/Content.svelte';
+	import BlogSidebar from '$lib/components/blog/sidebar/BlogSidebar.svelte';
+	import BlogHome from '$lib/components/blog/home/BlogHome.svelte';
+	import BlogViewer from '$lib/components/blog/viewer/BlogViewer.svelte';
 	import CategoryNav from '$lib/components/layout/header/nav/CategoryNav.svelte';
     import SeoHead from '$lib/components/seo/SeoHead.svelte';
 	import { sidebarState, layoutState, headerState } from '$lib/state.svelte';
 	import LoadingState from '$lib/components/ui/feedback/LoadingState.svelte';
 	import { loadJson } from '$lib/utils/network/loading';
-	import { t } from '$lib/i18n/store';
+	import { t, locale } from '$lib/i18n/store';
+	import BackButton from '$lib/components/blog/viewer/BackButton.svelte';
+	import HeaderRssButton from '$lib/components/blog/header/HeaderRssButton.svelte';
+	import { Calendar, Tag } from 'lucide-svelte';
+
+	let { data } = $props<{ data: any }>();
 
 	let posts = $state<any[]>([]);
 	let fetchedCategories = $state<{ slug: string, title: string }[]>([]);
-	let categoryList = $derived([
-		{ slug: 'All', title: $t('blog.all') },
-		...fetchedCategories.filter(c => c.slug !== 'All')
-	]);
+
+	$effect(() => {
+		if (data.posts) posts = data.posts;
+		if (data.categories) fetchedCategories = data.categories;
+	});
+	
+	// 根据当前激活分类计算要显示的分类列表
+	// 默认显示一级分类，如果当前分类有子分类则显示子分类
+	let categoryList = $derived.by(() => {
+		const allCategories = fetchedCategories.filter(c => c.slug !== 'All');
+		
+		// 获取分类标题的辅助函数
+		const getCategoryTitle = (slug: string) => {
+			const cat = fetchedCategories.find(c => c.slug === slug);
+			return cat ? cat.title : slug;
+		};
+
+		// 判断是否为当前分类的子分类
+		const getChildCategories = (parentSlug: string) => {
+			return allCategories.filter(c => 
+				c.slug.startsWith(parentSlug + '/') && 
+				!c.slug.substring(parentSlug.length + 1).includes('/')
+			);
+		};
+		
+		// 获取一级分类（不含 /）
+		const topLevelCategories = allCategories.filter(c => !c.slug.includes('/'));
+		
+		// 如果当前激活的是一级分类，检查是否有子分类
+		if (activeCategory && activeCategory !== 'All') {
+			const childCats = getChildCategories(activeCategory);
+			if (childCats.length > 0) {
+				// 有子分类：显示父级分类名称（作为返回项）+ 子分类
+				return [
+					{ slug: activeCategory, title: getCategoryTitle(activeCategory) },
+					...childCats
+				];
+			}
+		}
+		
+		// 如果当前激活的是二级分类，显示同级分类
+		if (activeCategory && activeCategory.includes('/')) {
+			const parentSlug = activeCategory.substring(0, activeCategory.lastIndexOf('/'));
+			const siblingCats = getChildCategories(parentSlug);
+			return [
+				{ slug: parentSlug, title: getCategoryTitle(parentSlug) },
+				...siblingCats
+			];
+		}
+		
+		// 默认：显示 "全部" + 一级分类
+		return [
+			{ slug: 'All', title: $t('blog.all') },
+			...topLevelCategories
+		];
+	});
 	let postMap = $state<Record<string, any>>({});
 	
 	let selectedPost = $state<any>(null);
 	let activeCategory = $state('All'); // 当前激活的分类 slug
+	let activeTagFromPath = $state(''); // 从路径中解析出的标签
 	let loading = $state(true);
 	let error = $state('');
 	
-	// 标志位
-	let archiveLoaded = $state(false);
-	
 	let sidebarListId = '';
     let navId = '';
+    let backBtnId = '';
+    let rssBtnId = '';
 
 	onMount(async () => {
 		try {
-			// 1. 并行加载分类、最新文章及文章映射
-			const [cats, latest, map] = await Promise.all([
-				loadJson<{ slug: string, title: string }[]>('/posts/categories.json').catch(() => []),
-				loadJson<any[]>('/posts/latest.json'),
-				loadJson<Record<string, any>>('/posts/map.json').catch(() => ({}))
-			]);
+			// 如果数据还没在 load 函数中加载（例如直接从其他页面 client-side 导航过来且 load 没被预执行）
+			// 或者我们需要确保最新数据
+			if (posts.length === 0) {
+				const [cats, allPosts] = await Promise.all([
+					loadJson<{ slug: string, title: string }[]>('/posts/categories.json').catch(() => []),
+					loadJson<any[]>('/posts/all.json')
+				]);
+				
+				fetchedCategories = cats;
+				posts = allPosts;
+			}
 			
-			fetchedCategories = cats;
-			posts = latest;
+			// 生成内存中的文章映射
+			const map: Record<string, any> = {};
+			posts.forEach(p => {
+				const fullPath = p.category === 'Uncategorized' ? p.slug : `${p.category}/${p.slug}`;
+				map[fullPath] = p;
+				if (!map[p.slug]) map[p.slug] = p;
+			});
 			postMap = map;
 			
 			syncStateFromPath();
@@ -67,28 +134,39 @@
             categories: categoryList,
             activeCategory: activeCategory, // slug
             onSelect: (catSlug: string) => {
-                 const target = catSlug === 'All' ? '/blog' : `/blog/${catSlug}`;
+                 const target = catSlug === 'All' ? '/blog/' : `/blog/${catSlug}/`;
                  goto(target);
             }
         }, 'blog-main-nav');
+
+        // 将 RSS 按钮注入 Header 右侧
+        rssBtnId = headerState.setRight(HeaderRssButton, {}, 'blog-rss');
 	});
 
     // 监听状态变化，维护侧边栏列表显示
     $effect(() => {
-        // 当处于列表模式（无选定文章）且数据已加载时，确保侧边栏显示文章列表
-        if (!loading && !selectedPost && posts.length > 0) {
-            // 如果我们也拥有当前的 sidebar，则更新数据而不是重建
+        // 当处于列表模式（无选定文章）时，确保侧边栏初始化显示
+        if (!selectedPost) {
+            // 定义模式常量给 Sidebar 初始化使用
+            const BLOG_MODES = [
+                { id: 'year', label: 'blog.year', icon: Calendar },
+                { id: 'tag', label: 'blog.tag', icon: Tag }
+            ];
+
+            // 如果我们也拥有当前的 sidebar，则更新参数
             if (sidebarListId && sidebarState.currentListId === sidebarListId) {
                 sidebarState.updateList(sidebarListId, {
                     posts: posts,
+                    activeCategory: activeCategory,
                     onSelect: (post: any) => selectPost(post)
                 });
             } else {
-                // 否则重新设置 list
+                // 否则设置 list，并注入模式以保证切换按钮立即可用
                 sidebarListId = sidebarState.setList(BlogSidebar, {
                     posts: posts,
+                    activeCategory: activeCategory,
                     onSelect: (post: any) => selectPost(post)
-                }, 'nav.list');
+                }, 'nav.list', BLOG_MODES);
             }
         }
     });
@@ -100,10 +178,33 @@
                 categories: categoryList,
                 activeCategory: activeCategory,
                 onSelect: (catSlug: string) => {
-                     const target = catSlug === 'All' ? '/blog' : `/blog/${catSlug}`;
+                     const target = catSlug === 'All' ? '/blog/' : `/blog/${catSlug}/`;
                      goto(target);
                 }
             };
+        }
+    });
+
+    // 二级分类时显示返回按钮
+    $effect(() => {
+        const isInSubCategory = activeCategory && activeCategory !== 'All' && (
+            activeCategory.includes('/') || 
+            fetchedCategories.some(c => c.slug.startsWith(activeCategory + '/'))
+        );
+        
+        if (isInSubCategory && !selectedPost) {
+            // 在二级分类，注入返回按钮
+            if (!backBtnId) {
+                backBtnId = headerState.setLeft(BackButton, { 
+                    onclick: () => goto('/blog/') 
+                }, 'blog-back-nav');
+            }
+        } else {
+            // 不在二级分类，清除返回按钮
+            if (backBtnId) {
+                headerState.clearLeft(backBtnId);
+                backBtnId = '';
+            }
         }
     });
 
@@ -128,55 +229,70 @@
         };
 	});
 
-	async function loadArchive() {
-		if (archiveLoaded) return;
-		try {
-			const archive = await loadJson<any[]>('/posts/archive.json');
-			posts = [...posts, ...archive];
-			archiveLoaded = true;
-			// 使用完整列表更新侧边栏
-			// 可以进一步优化，但重新注入是安全的
-			sidebarState.updateList(sidebarListId, { posts: posts });
-		} catch (e) {
-			console.error('Failed to load archive', e);
-		}
-	}
 
 	async function syncStateFromPath() {
-		const currentPath = page.params.path;
+		// 归一化路径，去除末尾斜杠以匹配数据中的 slug
+		const currentPath = (page.params.path || '').replace(/\/$/, '');
 		
 		if (!currentPath) {
 			// 根路径 /blog
 			selectedPost = null;
 			activeCategory = 'All';
+			activeTagFromPath = '';
 			return;
 		}
+
+		// 解析标签路径 (格式：tag/[tagSlug] 或 [category]/tag/[tagSlug])
+		let tagFromUrl = '';
+		let cleanPath = currentPath;
+		if (currentPath.includes('/tag/')) {
+			const parts = currentPath.split('/tag/');
+			cleanPath = parts[0];
+			// 确保移除标签后的末尾斜杠
+			tagFromUrl = decodeURIComponent(parts[parts.length - 1]).replace(/\/$/, '');
+		} else if (currentPath.startsWith('tag/')) {
+			cleanPath = '';
+			tagFromUrl = decodeURIComponent(currentPath.replace('tag/', '')).replace(/\/$/, '');
+		}
+		activeTagFromPath = tagFromUrl;
 
 		// 检查是否为当前已加载的文章
 		// 路径可能是 "category/slug" 或 "slug"
 		// 我们的映射键严格为 "category/slug" 或 "slug"
 		
-		// 1. 尝试在 `posts` (最新 + 归档) 中查找
-		let foundPost = posts.find(p => {
-			const postPath = p.category === 'Uncategorized' ? p.slug : `${p.category}/${p.slug}`;
-			// 如果用户通过短链接导航，也要检查严格 slug 匹配（尽管我们要首选规范路径）
-			return postPath === currentPath || p.slug === currentPath;
-		});
+			// 1. 尝试在 `posts` (最新 + 归档) 中查找
+		// 支持多分类：检查文章的所有分类路径
+		let foundPost: any = null;
+		let matchedCategory = '';
+		
+		for (const p of posts) {
+			const cats = p.categories || (p.category ? [p.category] : []);
+			
+			// 检查是否匹配任意一个分类路径
+			for (const cat of cats) {
+				const postPath = !cat || cat === 'Uncategorized' ? p.slug : `${cat}/${p.slug}`;
+				if (postPath === cleanPath) {
+					foundPost = p;
+					matchedCategory = cat;
+					break;
+				}
+			}
+			
+			// 也检查仅 slug 匹配（短链接）
+			if (!foundPost && p.slug === cleanPath) {
+				foundPost = p;
+				matchedCategory = cats[0] || '';
+			}
+			
+			if (foundPost) break;
+		}
 
 		// 2. 如果未找到，检查映射（旧文章的深层链接）
 		if (!foundPost && postMap[currentPath]) {
-			// 存在但未加载。
-			// 选项 A：立即加载归档
-			await loadArchive();
-			// 重新查找
-			foundPost = posts.find(p => {
-				const postPath = p.category === 'Uncategorized' ? p.slug : `${p.category}/${p.slug}`;
-				return postPath === currentPath || p.slug === currentPath;
-			});
-			
-			// 选项 B：使用映射中的最小数据？
+			// 存在但未加载。由于现在初始加载 all.json，这不应该发生。
+			// 如果由于某种原因还没加载到，可能需要等待或忽略。
 			// BlogViewer 需要内容，通过 `post.file` 获取。
-			// `map.json` 包含 `file`。
+			// 处理元数据并确保 slug 正确。
 			// 如果我们只是想查看它，可以构建一个临时对象。
 			// 但“返回”按钮等的正确行为意味着我们要保持一致的状态。
 			// 加载归档对侧边栏等更安全。
@@ -185,32 +301,30 @@
 		if (foundPost) {
 			// 是一篇文章
 			selectedPost = foundPost;
-			activeCategory = foundPost.category || 'All';
+			// 使用 URL 中匹配的分类，保持 URL 不变
+			activeCategory = matchedCategory || foundPost.categories?.[0] || foundPost.category || 'All';
 		} else {
-			// 是一个分类（或无效）
+			// 是一个分类（或标签列表页）
 			selectedPost = null;
 			
-			// 检查是否为有效的分类 slug
-			const catExists = categoryList.some(c => c.slug === currentPath);
+			// 检查是否为有效的分类 slug (使用去除了 tag 段的路径)
+			const catExists = categoryList.some(c => c.slug === cleanPath) || cleanPath === '' || cleanPath === 'All';
 			if (catExists) {
-				activeCategory = currentPath;
+				activeCategory = cleanPath || 'All';
 			} else {
-				// 无效路径或未知分类，默认为 全部/主页
-				// 或者处理 404？
-				// 暂时回退到 全部
-				// 但让我们保持原样以允许“虚拟”分类（如果有）
-				activeCategory = currentPath;
+				activeCategory = cleanPath || 'All';
 			}
 		}
 	}
 
 	function selectPost(post: any) {
 		selectedPost = post;
-		const postPath = post.category === 'Uncategorized' 
+		const primaryCategory = post.categories?.[0] || post.category;
+		const postPath = !primaryCategory || primaryCategory === 'Uncategorized' 
 			? post.slug 
-			: `${post.category}/${post.slug}`;
+			: `${primaryCategory}/${post.slug}`;
 		
-		goto(`/blog/${postPath}`, { 
+		goto(`/blog/${postPath}/`, { 
 			keepFocus: true, 
 			noScroll: true,
 			replaceState: false 
@@ -222,7 +336,7 @@
 	function closePost() {
 		selectedPost = null;
 		// 如果可能，主要返回分类，否则返回根路径
-		const target = activeCategory && activeCategory !== 'All' ? `/blog/${activeCategory}` : '/blog';
+		const target = activeCategory && activeCategory !== 'All' ? `/blog/${activeCategory}/` : '/blog/';
 		goto(target, { keepFocus: true, noScroll: true });
 	}
 
@@ -232,15 +346,27 @@
 		if (to && !to.url.pathname.startsWith('/blog')) {
             if (navId) {
                 headerState.clearMiddle(navId);
-                // 重置 navId 以便 onDestroy 不会再次尝试清除（尽管是安全的）
                 navId = ''; 
+            }
+            if (backBtnId) {
+                headerState.clearLeft(backBtnId);
+                backBtnId = '';
+            }
+            if (rssBtnId) {
+                headerState.clearRight(rssBtnId);
+                rssBtnId = '';
             }
 		}
 	});
 
 	onDestroy(() => {
-		sidebarState.clearList(sidebarListId);
+		// 只有当我们仍然拥有 sidebar 时才清除
+		if (sidebarListId && sidebarState.currentListId === sidebarListId) {
+			sidebarState.clearList(sidebarListId);
+		}
         if (navId) headerState.clearMiddle(navId);
+        if (backBtnId) headerState.clearLeft(backBtnId);
+        if (rssBtnId) headerState.clearRight(rssBtnId);
 	});
 </script>
 
@@ -262,7 +388,7 @@
             "dateModified": selectedPost.lastmod || selectedPost.date,
             "author": [{
                 "@type": "Person",
-                "name": selectedPost.author || "Skyrocketing Hong",
+                "name": selectedPost.author || "skyrocketing Hong",
                 "url": "https://fuyaoskyrocket.ing" 
             }],
             "description": selectedPost.description
@@ -271,7 +397,7 @@
 {:else if activeCategory !== 'All'}
     <!-- 分类列表页 SEO -->
      <SeoHead 
-        title={`${categoryList.find(c => c.slug === activeCategory)?.title || activeCategory}`}
+        title={`${fetchedCategories.find(c => c.slug === activeCategory)?.title || activeCategory}`}
         description={`Posts in category ${activeCategory}`}
      />
 {/if}
@@ -286,8 +412,8 @@
 		<BlogHome 
 			{posts} 
 			{activeCategory} 
-			hasMore={!archiveLoaded}
-			onLoadMore={loadArchive}
+			activeTag={activeTagFromPath}
+			categories={fetchedCategories}
 		/>
 	{/if}
 
@@ -296,6 +422,7 @@
 			<BlogViewer 
 				post={selectedPost} 
 				onClose={closePost} 
+				categories={fetchedCategories}
 			/>
 		</div>
 	{/if}

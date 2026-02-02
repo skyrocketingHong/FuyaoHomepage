@@ -16,36 +16,40 @@ export async function GET() {
         return {
             loc: `${siteUrl}${item.href}`,
             changefreq: 'daily',
-            priority: item.href === '/home' ? '1.0' : '0.8',
+            priority: item.href === '/home/' ? '1.0' : '0.8',
             lastmod: new Date().toISOString()
         };
     });
 
     // 2. Blog Posts
-    let blogPosts: any[] = [];
+    let blogPosts: { loc: string; changefreq: string; priority: string; lastmod: string }[] = [];
     try {
         const postsDir = path.join(process.cwd(), 'static/posts');
-        const latestPath = path.join(postsDir, 'latest.json');
-        const archivePath = path.join(postsDir, 'archive.json');
+        const allPostsPath = path.join(postsDir, 'all.json');
 
-        if (fs.existsSync(latestPath) && fs.existsSync(archivePath)) {
-            const latest = JSON.parse(fs.readFileSync(latestPath, 'utf-8'));
-            const archive = JSON.parse(fs.readFileSync(archivePath, 'utf-8'));
-            const allPosts = [...latest, ...archive];
+        if (fs.existsSync(allPostsPath)) {
+            const allPosts = JSON.parse(fs.readFileSync(allPostsPath, 'utf-8'));
 
-            blogPosts = allPosts.map(post => {
-                // Construct URL based on logic: category/slug or just slug if Uncategorized
-                // In generate-blog-index.js: 
-                // const fullPath = p.category === 'Uncategorized' ? p.slug : `${p.category}/${p.slug}`;
-                // However, the real URL is /blog/[...path]
-                const urlPath = post.category === 'Uncategorized' ? post.slug : `${post.category}/${post.slug}`;
-
-                return {
-                    loc: `${siteUrl}/blog/${urlPath}`,
+            // 为多分类文章生成多个 URL
+            blogPosts = allPosts.flatMap((post: { categories?: string[]; slug: string; lastmod?: string; date: string }) => {
+                const cats = post.categories || [];
+                if (cats.length === 0) {
+                    // 无分类的文章
+                    return [{
+                        loc: `${siteUrl}/blog/${post.slug}/`,
+                        changefreq: 'weekly',
+                        priority: '0.6',
+                        lastmod: post.lastmod || post.date
+                    }];
+                }
+                
+                // 为每个分类生成一个 URL
+                return cats.map((category: string) => ({
+                    loc: `${siteUrl}/blog/${category}/${post.slug}/`,
                     changefreq: 'weekly',
                     priority: '0.6',
-                    lastmod: post.lastmod || post.date // Use lastmod if available, otherwise date
-                };
+                    lastmod: post.lastmod || post.date
+                }));
             });
         }
     } catch (e) {
