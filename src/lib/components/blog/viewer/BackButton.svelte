@@ -6,7 +6,7 @@
      * 
      * @prop onclick - 点击回调
      */
-	import HeaderActionButton from '$lib/components/layout/header/button/HeaderActionButton.svelte';
+	import HeaderActionButton from '$lib/components/layout/header/ActionButton.svelte';
 	import { ChevronLeft } from 'lucide-svelte';
 	import { t } from '$lib/i18n/store';
 

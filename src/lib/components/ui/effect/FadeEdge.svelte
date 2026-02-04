@@ -14,7 +14,7 @@
 	 * @prop ref - (bindable) 绑定的 DOM 元素引用
 	 * @prop visible - 是否启用遮罩 (默认 true)
 	 */
-	import { cn } from '$lib/utils';
+	import { cn } from '$lib/utils/index';
 	import type { Snippet } from 'svelte';
 	import { Spring } from 'svelte/motion';
 

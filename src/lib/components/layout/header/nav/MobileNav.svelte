@@ -8,7 +8,7 @@
 	 * @prop infoComponent - 可选的背景信息显示组件
 	 */
 	import LiquidGlass from '$lib/components/ui/effect/LiquidGlass.svelte';
-	import { navItems } from '$lib/config';
+	import { navItems } from '$lib/config/index';
 	import { page } from '$app/state';
 	import { isActiveRoute } from '$lib/utils/domain/nav';
 	import { t, locale } from '$lib/i18n/store';

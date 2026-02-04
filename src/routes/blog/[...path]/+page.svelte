@@ -12,17 +12,18 @@
 	import { onMount, onDestroy, untrack } from 'svelte';
 	import { page } from '$app/state';
 	import { goto, beforeNavigate } from '$app/navigation';
-	import BlogSidebar from '$lib/components/blog/sidebar/BlogSidebar.svelte';
-	import BlogHome from '$lib/components/blog/home/BlogHome.svelte';
-	import BlogViewer from '$lib/components/blog/viewer/BlogViewer.svelte';
+	import BlogSidebar from '$lib/components/blog/sidebar/Sidebar.svelte';
+	import Home from '$lib/components/blog/home/Home.svelte';
+	import Viewer from '$lib/components/blog/viewer/Viewer.svelte';
+    import Search from '$lib/components/blog/search/Search.svelte';
 	import CategoryNav from '$lib/components/layout/header/nav/CategoryNav.svelte';
     import SeoHead from '$lib/components/seo/SeoHead.svelte';
-	import { sidebarState, layoutState, headerState } from '$lib/state.svelte';
+	import { sidebarState, layoutState, headerState } from '$lib/stores/app.svelte';
 	import LoadingState from '$lib/components/ui/feedback/LoadingState.svelte';
 	import { loadJson } from '$lib/utils/network/loading';
 	import { t, locale } from '$lib/i18n/store';
 	import BackButton from '$lib/components/blog/viewer/BackButton.svelte';
-	import HeaderRssButton from '$lib/components/blog/header/HeaderRssButton.svelte';
+	import HeaderBlogActions from '$lib/components/blog/header/Actions.svelte';
 	import { Calendar, Tag } from 'lucide-svelte';
 
 	let { data } = $props<{ data: any }>();
@@ -92,11 +93,12 @@
 	let activeTagFromPath = $state(''); // 从路径中解析出的标签
 	let loading = $state(true);
 	let error = $state('');
+    let isSearchOpen = $state(false);
 	
 	let sidebarListId = '';
     let navId = '';
     let backBtnId = '';
-    let rssBtnId = '';
+    let actionsId = '';
 
 	onMount(async () => {
 		try {
@@ -123,8 +125,8 @@
 			
 			syncStateFromPath();
 		} catch (e) {
-			console.error('Failed to load blog data', e);
-			error = 'Failed to load blog posts';
+			console.error('加载博客数据失败', e);
+			error = $t('blog.fetch_error');
 		} finally {
 			loading = false;
 		}
@@ -139,8 +141,10 @@
             }
         }, 'blog-main-nav');
 
-        // 将 RSS 按钮注入 Header 右侧
-        rssBtnId = headerState.setRight(HeaderRssButton, {}, 'blog-rss');
+        // 将 BlogActions 注入 Header 右侧
+        actionsId = headerState.setRight(HeaderBlogActions, {
+            onOpenSearch: () => goto('/blog/search')
+        }, 'blog-actions');
 	});
 
     // 监听状态变化，维护侧边栏列表显示
@@ -174,14 +178,14 @@
     // 状态变更时更新 Header 属性
     $effect(() => {
         if (navId) {
-            headerState.middleProps = {
+            headerState.updateMiddle(navId, {
                 categories: categoryList,
                 activeCategory: activeCategory,
                 onSelect: (catSlug: string) => {
                      const target = catSlug === 'All' ? '/blog/' : `/blog/${catSlug}/`;
                      goto(target);
                 }
-            };
+            });
         }
     });
 
@@ -233,6 +237,17 @@
 	async function syncStateFromPath() {
 		// 归一化路径，去除末尾斜杠以匹配数据中的 slug
 		const currentPath = (page.params.path || '').replace(/\/$/, '');
+        
+        // 默认关闭搜索，除非路径明确为 search
+        if (currentPath === 'search') {
+            isSearchOpen = true;
+            selectedPost = null;
+            activeCategory = 'All';
+            activeTagFromPath = '';
+            return;
+        } else {
+            isSearchOpen = false;
+        }
 		
 		if (!currentPath) {
 			// 根路径 /blog
@@ -343,7 +358,8 @@
 	beforeNavigate(({ to }) => {
 		// 如果导航离开博客部分，立即清除导航
 		// 以允许 Crossfade 与内容同步退出
-		if (to && !to.url.pathname.startsWith('/blog')) {
+        if (to && !to.url.pathname.startsWith('/blog')) {
+            isSearchOpen = false;
             if (navId) {
                 headerState.clearMiddle(navId);
                 navId = ''; 
@@ -352,9 +368,9 @@
                 headerState.clearLeft(backBtnId);
                 backBtnId = '';
             }
-            if (rssBtnId) {
-                headerState.clearRight(rssBtnId);
-                rssBtnId = '';
+            if (actionsId) {
+                headerState.clearRight(actionsId);
+                actionsId = '';
             }
 		}
 	});
@@ -366,7 +382,7 @@
 		}
         if (navId) headerState.clearMiddle(navId);
         if (backBtnId) headerState.clearLeft(backBtnId);
-        if (rssBtnId) headerState.clearRight(rssBtnId);
+        if (actionsId) headerState.clearRight(actionsId);
 	});
 </script>
 
@@ -398,7 +414,7 @@
     <!-- 分类列表页 SEO -->
      <SeoHead 
         title={`${fetchedCategories.find(c => c.slug === activeCategory)?.title || activeCategory}`}
-        description={`Posts in category ${activeCategory}`}
+        description={$t('blog.category_description', { category: activeCategory })}
      />
 {/if}
 
@@ -407,9 +423,9 @@
 		<div class="flex h-full w-full items-center justify-center">
 			<LoadingState {loading} {error} />
 		</div>
-	{:else if !selectedPost}
+	{:else if !selectedPost && !isSearchOpen}
 		<!-- 博客主页视图 (Apple Newsroom 风格) -->
-		<BlogHome 
+		<Home 
 			{posts} 
 			{activeCategory} 
 			activeTag={activeTagFromPath}
@@ -417,9 +433,19 @@
 		/>
 	{/if}
 
-	{#if selectedPost}
+    {#if isSearchOpen}
+        <Search onClose={() => {
+            if (window.history.length > 1) {
+                window.history.back();
+            } else {
+                goto('/blog/');
+            }
+        }} />
+    {/if}
+
+	{#if selectedPost && !isSearchOpen}
 		<div class="relative w-full h-full overflow-hidden">
-			<BlogViewer 
+			<Viewer 
 				post={selectedPost} 
 				onClose={closePost} 
 				categories={fetchedCategories}

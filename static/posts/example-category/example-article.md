@@ -10,7 +10,7 @@ categories:
   - "示例分类 📂"
 tags:
   - "示例"
-cover: "/images/example-cover.jpg"
+cover: "https://images.unsplash.com/photo-1432821596592-e2c18b78144f?q=80&w=1600&auto=format&fit=crop"
 description: "这是一篇用于演示目录结构和文章格式的示例文章。"
 ---
 

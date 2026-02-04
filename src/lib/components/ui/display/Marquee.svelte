@@ -4,48 +4,63 @@
 	 *
 	 * 当文本内容超过容器尺寸时，通过鼠标悬停或触摸交互触发滚动播放效果。
 	 *
-	 * @prop text - 需要显示的文本内容 (默认 '')
+	 * @prop text - 需要显示的文本内容 (可选，若不传则使用 children)
 	 * @prop class - 容器的额外 CSS 类名 (默认 '')
 	 * @prop direction - 滚动方向：'horizontal' | 'vertical' (默认 'horizontal')
+	 * @prop fadeSize - 边缘渐变大小 (默认 '10%')
+	 * @prop autoPlay - 是否自动播放 (默认 false)
 	 */
-	import { cn } from '$lib/utils';
+	import { cn } from '$lib/utils/index';
 	import FadeEdge from '$lib/components/ui/effect/FadeEdge.svelte';
-	import { tick } from 'svelte';
+	import { tick, type Snippet } from 'svelte';
 
-	let { text = '', class: className = '', direction = 'horizontal' } = $props<{
+	let { 
+		text = '', 
+		class: className = '', 
+		direction = 'horizontal', 
+		fadeSize = '10%',
+		autoPlay = false,
+		children
+	} = $props<{
 		text?: string;
 		class?: string;
 		direction?: 'horizontal' | 'vertical';
+		fadeSize?: string;
+		autoPlay?: boolean;
+		children?: Snippet;
 	}>();
 
 	let containerRef: HTMLDivElement | undefined = $state();
 	let spanRef: HTMLSpanElement | undefined = $state();
 	let isOverflowing = $state(false);
 	let scrollDistance = $state(0);
-	let isActive = $state(false);
+	let isHovered = $state(false);
+	
+	let isActive = $derived(autoPlay || isHovered);
 
 	$effect(() => {
-		if (containerRef && spanRef && text) {
+		if (containerRef && spanRef) {
 			const check = async () => {
 				await tick();
 				if (!containerRef || !spanRef) return;
 				
 				if (direction === 'horizontal') {
-					const textWidth = spanRef.scrollWidth;
+					const contentWidth = spanRef.scrollWidth;
 					const containerWidth = containerRef.clientWidth;
-					isOverflowing = textWidth > containerWidth;
-					scrollDistance = textWidth + 32;
+					isOverflowing = contentWidth > containerWidth;
+					scrollDistance = contentWidth + 32;
 				} else {
-					const textHeight = spanRef.scrollHeight;
+					const contentHeight = spanRef.scrollHeight;
 					const containerHeight = containerRef.clientHeight;
-					isOverflowing = textHeight > containerHeight;
-					scrollDistance = textHeight + 16;
+					isOverflowing = contentHeight > containerHeight;
+					scrollDistance = contentHeight + 16;
 				}
 			};
 			check();
 			
 			const ro = new ResizeObserver(check);
 			ro.observe(containerRef);
+			ro.observe(spanRef); // Also observe content changes
 			return () => ro.disconnect();
 		}
 	});
@@ -63,14 +78,14 @@
     visible={isOverflowing}
     showStart={isActive}
     showEnd={true}
-    fadeSize="10%"
-	title={isOverflowing ? text : undefined}
+    fadeSize={fadeSize}
+	title={isOverflowing && text ? text : undefined}
 	role="group"
-	onmouseenter={() => (isActive = true)}
-	onmouseleave={() => (isActive = false)}
-	ontouchstart={() => (isActive = true)}
-	ontouchend={() => (isActive = false)}
-	ontouchcancel={() => (isActive = false)}
+	onmouseenter={() => (isHovered = true)}
+	onmouseleave={() => (isHovered = false)}
+	ontouchstart={() => (isHovered = true)}
+	ontouchend={() => (isHovered = false)}
+	ontouchcancel={() => (isHovered = false)}
 >
 	<div
 		class={cn(
@@ -83,9 +98,21 @@
 		style:--scroll-dist="-{scrollDistance}px"
 		style:animation-duration="{Math.max(scrollDistance / (direction === 'horizontal' ? 50 : 30), 2)}s"
 	>
-		<span bind:this={spanRef}>{text}</span>
+		<span bind:this={spanRef} class="flex items-center shrink-0">
+			{#if children}
+				{@render children()}
+			{:else}
+				{text}
+			{/if}
+		</span>
 		{#if isOverflowing}
-			<span aria-hidden="true">{text}</span>
+			<span aria-hidden="true" class="flex items-center shrink-0">
+				{#if children}
+					{@render children()}
+				{:else}
+					{text}
+				{/if}
+			</span>
 		{/if}
 	</div>
 </FadeEdge>

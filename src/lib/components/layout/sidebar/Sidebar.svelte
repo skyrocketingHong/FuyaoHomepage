@@ -9,9 +9,9 @@
 	 */
 	import LiquidGlass from '$lib/components/ui/effect/LiquidGlass.svelte';
 	import Copyright from './Copyright.svelte';
-	import { navItems, type BackgroundMode } from '$lib/config'; // 背景模式类型
+	import { navItems, type BackgroundMode } from '$lib/config/index'; // 背景模式类型
 	import { page } from '$app/state';
-	import { sidebarState } from '$lib/state.svelte';
+	import { sidebarState } from '$lib/stores/app.svelte';
 	import { isActiveRoute } from '$lib/utils/domain/nav';
 	import { t, locale } from '$lib/i18n/store';
 	import Crossfade from '$lib/components/ui/effect/Crossfade.svelte';

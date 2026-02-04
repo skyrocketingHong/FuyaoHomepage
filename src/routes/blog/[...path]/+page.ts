@@ -43,8 +43,8 @@ export const load: PageLoad = async ({ params, fetch }) => {
 		const categories: Category[] = await catsRes.json();
 		const posts: Post[] = await postsRes.json();
 
-		// 情况 A：根路径 /blog 或手动指定为 All
-		if (currentPath === '' || currentPath === 'All') {
+		// 情况 A：根路径 /blog 或手动指定为 All 或 search
+		if (currentPath === '' || currentPath === 'All' || currentPath === 'search') {
 			return { posts, categories };
 		}
 

@@ -11,8 +11,8 @@
 	 */
 	import { t } from '$lib/i18n/store';
     import { renderMarkdown } from '$lib/utils/domain/markdown';
-    import { linkEnhancer } from './actions';
-    import './reader.css';
+    import { linkEnhancer } from '$lib/actions/linkEnhancer.svelte';
+    import '$lib/styles/reader.css';
 	
 	let { source, toc = $bindable([]) }: { 
         source: string; 
@@ -25,9 +25,9 @@
         
         // 按需异步加载样式分片 (让全局打包更小)
         if (src.includes('$')) import('katex/dist/katex.min.css');
-        if (src.includes('```')) import('highlight.js/styles/github.css');
 
-        const result = await renderMarkdown(src);
+
+        const result = await renderMarkdown(src, { copyLabel: $t('common.copy') });
         toc = result.toc;
         return result.html;
     }
@@ -50,7 +50,7 @@
                 btn.classList.add('copied');
                 
                 setTimeout(() => {
-                    btn.innerText = 'Copy';
+                    btn.innerText = $t('common.copy');
                     btn.classList.remove('copied');
                 }, 2000);
 			} catch (err) {

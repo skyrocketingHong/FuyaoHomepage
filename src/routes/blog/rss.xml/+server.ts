@@ -5,7 +5,7 @@
  * 访问路径：/blog/rss.xml
  */
 
-import { seoConfig } from '$lib/config';
+import { seoConfig } from '$lib/config/index';
 import fs from 'fs';
 import path from 'path';
 
@@ -57,8 +57,8 @@ function formatRfc822Date(dateString: string): string {
  */
 export async function GET() {
     const siteUrl = seoConfig.baseURL.replace(/\/$/, '');
-    const siteName = seoConfig.author || '扶摇skyrocketing';
-    const siteDescription = seoConfig.description || '个人博客';
+    const siteName = seoConfig.siteName || seoConfig.author;
+    const siteDescription = seoConfig.description;
 
     let posts: BlogPost[] = [];
     

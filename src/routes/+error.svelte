@@ -57,7 +57,7 @@
 		<!-- 5. 返回操作：使用独立 LiquidGlass 按钮 -->
 		<LiquidGlass 
 			tag="a" 
-			href="/home/"
+			href="/"
 			class="!w-auto !p-0 inline-flex rounded-full text-foreground transition-all"
 			tilt={false}
 		>

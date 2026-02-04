@@ -2,9 +2,11 @@
 	"common": {
 		"loading": "Loading...",
 		"travingto": "Traving to",
-		"copyright": "{{startYear}} - {{currentYear}} 扶摇skyrocketing",
+		"copyright": "{{startYear}} - {{currentYear}} {{siteName}}",
 		"copied": "Copied",
-		"site_name": "扶摇skyrocketing",
+		"copy": "Copy",
+		"copy_link": "Copy Link",
+		"site_name": "{{siteName}}",
 		"none": "None",
 		"status": {
 			"online": "Online",
@@ -45,11 +47,8 @@
 			"profile": {
 				"hello": "Hello! ",
 				"im": "I'm ",
-				"name": "Fuyao skyrocketing",
 				"age": "{{age}} years old",
-				"role": "a Research and Technology Specialist",
-				"status": "Online",
-				"quote": "\"Try to create my own digital footprint.\""
+				"status": "Online"
 			},
 			"time_capsule": {
 				"title": "Time Capsule",
@@ -82,7 +81,8 @@
 		}
 	},
 	"footprint": {
-		"title": "Footprint"
+		"title": "Footprint",
+		"load_error": "Failed to load footprints"
 	},
 	"blog": {
 		"title": "Blog",
@@ -93,6 +93,7 @@
 		"toc": "Table of Contents",
 		"contents": "Contents",
 		"loading_error": "Error loading post content.",
+		"fetch_error": "Failed to load blog posts",
 		"close": "Close",
 		"toggle_toc": "Toggle Table of Contents",
 		"latest_news": "Latest News",
@@ -102,10 +103,11 @@
 		"more_stories": "More stories",
 		"load_more": "Load more stories",
 		"no_stories": "No stories found",
+		"category_description": "Posts in category {{category}}",
 		"no_posts_in_category": "There are no posts in this category yet.",
 		"view_all": "View all stories",
 		"unknown_year": "Unknown",
-		"back_to_list": "Back to Articles",
+		"back_to_list": "Back",
 		"share_article": "Share Article",
 		"published_at": "Published",
 		"updated_at": "Updated",
@@ -114,7 +116,14 @@
 		"year": "Year",
 		"tag": "Tag",
 		"tag_filtering": "Filtering by tag: ",
-		"clear_tag": "Clear tag filter"
+		"clear_tag": "Clear tag filter",
+		"search": {
+			"placeholder": "Search articles...",
+			"no_results": "No results found for \"{{query}}\"",
+			"title": "Search",
+			"open": "Search",
+			"close": "Close"
+		}
 	},
 	"friends": {
 		"title": "Friends",

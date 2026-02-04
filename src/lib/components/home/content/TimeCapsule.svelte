@@ -10,10 +10,12 @@
 	import LiquidGlass from '$lib/components/ui/effect/LiquidGlass.svelte';
 	import { t, locale } from '$lib/i18n/store';
 	import Crossfade from '$lib/components/ui/effect/Crossfade.svelte';
+	import Marquee from '$lib/components/ui/display/Marquee.svelte';
 	import { numberToChinese, numberToEnglish } from '$lib/utils/format/number';
+	import { seoConfig } from '$lib/config/index';
 
 	// 配置
-	const SITE_START_DATE = '2016-11-20';
+	const SITE_START_DATE = seoConfig.startDate;
 
 	// 状态
 	let timeRunning = $state('');
@@ -120,27 +122,30 @@
 					><span>{$t('home.hero.time_capsule.subtitle')}</span></Crossfade
 				>
 			</p>
-			<div
-				class="min-h-14 font-mono font-bold text-orange-400 select-none {$locale !== 'zh-CN'
-					? 'text-sm'
-					: 'text-xl'}"
+			<Marquee
+				class="h-14 font-mono font-bold text-orange-400 select-none text-xl"
+				direction="vertical"
+				autoPlay={true}
+				fadeSize="1rem"
 			>
-				{#each timeRunning.split('\n') as line, lineIdx}
-					{#if lineIdx > 0}<br />{/if}
-					{#each line.split(' ') as word, wordIdx}
-						{#if wordIdx > 0}<span class="inline-block whitespace-pre">{'\u00A0'}</span
-							>{/if}<span class="inline-block"
-							>{#each word.split('') as char, charIdx}
-								<Crossfade
-									key={`${lineIdx}-${wordIdx}-${charIdx}-${char}`}
-									duration={150}
-									class="inline-grid"
-									><span>{char}</span></Crossfade
-								>{/each}</span
-						>
+				<div>
+					{#each timeRunning.split('\n') as line, lineIdx}
+						{#if lineIdx > 0}<br />{/if}
+						{#each line.split(' ') as word, wordIdx}
+							{#if wordIdx > 0}<span class="inline-block whitespace-pre">{'\u00A0'}</span
+								>{/if}<span class="inline-block"
+								>{#each word.split('') as char, charIdx}
+									<Crossfade
+										key={`${lineIdx}-${wordIdx}-${charIdx}-${char}`}
+										duration={150}
+										class="inline-grid"
+										><span>{char}</span></Crossfade
+									>{/each}</span
+							>
+						{/each}
 					{/each}
-				{/each}
-			</div>
+				</div>
+			</Marquee>
 		</div>
 	</LiquidGlass>
 </div>

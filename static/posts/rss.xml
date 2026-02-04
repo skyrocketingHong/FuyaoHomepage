@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+    <channel>
+        <title>skyrocketingHong</title>
+        <link>https://example.com</link>
+        <description>Fuyao Homepage 演示版本</description>
+        <language>zh-CN</language>
+        <lastBuildDate>Wed, 04 Feb 2026 14:34:01 GMT</lastBuildDate>
+        <atom:link href="https://example.com/rss.xml" rel="self" type="application/rss+xml"/>
+    <item>
+        <title>代码高亮与媒体展示 (Code &amp; Media)</title>
+        <link>https://example.com/blog/example-category/code-and-media-test/</link>
+        <guid isPermaLink="true">https://example.com/blog/example-category/code-and-media-test/</guid>
+        <pubDate>Tue, 03 Feb 2026 14:00:00 GMT</pubDate>
+        <description>全面测试各种编程语言的语法高亮显示效果，以及图片、视频等媒体资源的嵌入表现。</description>
+        <category>example-category</category>
+        <category>tech</category>
+    </item>
+    <item>
+        <title>数学公式与复杂表格展示 (Math &amp; Tables)</title>
+        <link>https://example.com/blog/life/math-and-tables-test/</link>
+        <guid isPermaLink="true">https://example.com/blog/life/math-and-tables-test/</guid>
+        <pubDate>Tue, 03 Feb 2026 13:00:00 GMT</pubDate>
+        <description>测试 Markdown 中数学公式的渲染（如 KaTeX）以及各种复杂表格样式的展示效果。</description>
+        <category>life</category>
+    </item>
+    <item>
+        <title>极端长度标题测试：这是一个非常非常长的标题，目的是为了测试在列表页、详情页 Header 以及 SEO 标签中，超长标题是否会导致布局错乱或者显示异常，原则上标题不应该这么长，但是为了鲁棒性测试，我们需要验证这种情况的处理机制 (Long Title Test)</title>
+        <link>https://example.com/blog/reading/long-title-long-description-stress-test/</link>
+        <guid isPermaLink="true">https://example.com/blog/reading/long-title-long-description-stress-test/</guid>
+        <pubDate>Tue, 03 Feb 2026 12:00:00 GMT</pubDate>
+        <description>这是一个极其冗长的描述文本，通常描述应该在 150-160 个字符之间以便于搜索引擎抓取，但这里我们故意填充了大量的无意义文本，以测试详情页 Header 区域的描述文本是否能够正确截断或者完整显示，以及是否会遮挡背景图片或者溢出容器。This description is intentionally made extremely long to test the UI&apos;s capability to handle overflow text gracefully without breaking the layout or overlapping with other critical elements on the page.</description>
+        <category>reading</category>
+    </item>
+    <item>
+        <title>Markdown 语法全集测试：从入门到精通的排版艺术展示 (Markdown All-in-One)</title>
+        <link>https://example.com/blog/tech/markdown-all-in-one-test/</link>
+        <guid isPermaLink="true">https://example.com/blog/tech/markdown-all-in-one-test/</guid>
+        <pubDate>Tue, 03 Feb 2026 11:00:00 GMT</pubDate>
+        <description>这是一篇旨在测试 Markdown 渲染器对所有基础及进阶语法支持情况的测试文章。包含了标题、列表、引言、强调、链接等各种样式的组合使用。</description>
+        <category>tech</category>
+    </item>
+    <item>
+        <title>Svelte 5 新特性探索</title>
+        <link>https://example.com/blog/tech/svelte-5-features/</link>
+        <guid isPermaLink="true">https://example.com/blog/tech/svelte-5-features/</guid>
+        <pubDate>Tue, 03 Feb 2026 10:00:00 GMT</pubDate>
+        <description>深入了解 Svelte 5 带来的 Runes 响应式系统改革以及其他激动人心的新特性。</description>
+        <category>tech</category>
+    </item>
+    <item>
+        <title>这是一篇示例文章</title>
+        <link>https://example.com/blog/example-category/example-article/</link>
+        <guid isPermaLink="true">https://example.com/blog/example-category/example-article/</guid>
+        <pubDate>Sat, 31 Jan 2026 16:00:00 GMT</pubDate>
+        <description>这是一篇用于演示目录结构和文章格式的示例文章。</description>
+        <category>example-category</category>
+    </item>
+    <item>
+        <title>读《有限与无限的游戏》</title>
+        <link>https://example.com/blog/reading/infinite-game-review/</link>
+        <guid isPermaLink="true">https://example.com/blog/reading/infinite-game-review/</guid>
+        <pubDate>Thu, 15 Jan 2026 20:00:00 GMT</pubDate>
+        <description>世界上至少有两种游戏：有限游戏与无限游戏。有限游戏以取胜为目的，而无限游戏以延续游戏为目的。</description>
+        <category>reading</category>
+    </item>
+    <item>
+        <title>京都红叶狩</title>
+        <link>https://example.com/blog/life/kyoto-autumn-travel/</link>
+        <guid isPermaLink="true">https://example.com/blog/life/kyoto-autumn-travel/</guid>
+        <pubDate>Thu, 20 Nov 2025 09:00:00 GMT</pubDate>
+        <description>记录在京都深秋的岚山与清水寺的徒步旅程，感受古都的季节流转。</description>
+        <category>life</category>
+    </item>
+    </channel>
+</rss>

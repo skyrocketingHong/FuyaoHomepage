@@ -13,12 +13,16 @@
 	 */
 	import { onMount, onDestroy } from 'svelte';
 	import { browser } from '$app/environment';
+	import { themeState } from '$lib/stores/app.svelte';
 
 	// 地图配置 Props
 	let { apiKey = '', securityCode = '', markers = [], center = [105, 35], zoom = 4 } = $props();
 
 	let mapContainer: HTMLDivElement;
 	let mapInstance: any = null;
+
+	// 根据主题派生样式
+	let mapStyle = $derived(themeState.isDark ? 'amap://styles/dark' : 'amap://styles/whitesmoke');
 
 	onMount(async () => {
 		if (!browser) return;
@@ -47,12 +51,27 @@
 			viewMode: '2D', // 3D 模式可能需要更复杂的样式适配
 			zoom: zoom,
 			center: center,
-			mapStyle: 'amap://styles/whitesmoke' // 或根据主题动态选择
+			mapStyle: mapStyle
 		});
 
 		// 添加标记点
-		// 目前为简化实现。生产环境下可考虑标记点的响应式增量更新。
 		updateMarkers(markers);
+	});
+
+	// 监听主题变化并动态切换地图样式
+	$effect(() => {
+		if (mapInstance && mapStyle) {
+			mapInstance.setMapStyle(mapStyle);
+		}
+	});
+
+	// 联动：响应式更新中心点和缩放层级
+	$effect(() => {
+		if (mapInstance) {
+			// 使用 setZoomAndCenter 以获得更平滑的过渡效果
+			// 第三个参数为是否立即执行（false 表示开启动画），第四个参数为动画时长
+			mapInstance.setZoomAndCenter(zoom, center, false, 500);
+		}
 	});
 
 	function updateMarkers(newMarkers: any[]) {
@@ -64,12 +83,12 @@
 			const marker = new (window as any).AMap.Marker({
 				position: markerData.position,
 				title: markerData.title
-				// 如果需要支持自定义内容，可在此添加 content 属性
 			});
 			mapInstance.add(marker);
 		});
 
-		// 自动调整视野以包含所有标记
+		// 只有在初始加载且没有指定特定视角时，才自动调整视野以包含所有标记
+		// 如果 markers 长度有很大变化，通常也意味着需要重设视野
 		if (newMarkers.length > 0) {
 			mapInstance.setFitView();
 		}
@@ -89,7 +108,7 @@
 	});
 </script>
 
-<div bind:this={mapContainer} class="absolute top-0 left-0 -z-10 h-full w-full"></div>
+<div bind:this={mapContainer} class="absolute top-0 left-0 h-full w-full"></div>
 
 <style>
 	/* 隐藏高德地图 Logo 和版权信息以保持界面简洁 */

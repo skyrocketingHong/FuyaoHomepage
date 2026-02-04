@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+    <url>
+        <loc>https://example.com/home/</loc>
+        <lastmod>2026-02-04T14:34:01.390Z</lastmod>
+        <changefreq>daily</changefreq>
+        <priority>1.0</priority>
+    </url>
+    <url>
+        <loc>https://example.com/blog/</loc>
+        <lastmod>2026-02-04T14:34:01.390Z</lastmod>
+        <changefreq>daily</changefreq>
+        <priority>0.8</priority>
+    </url>
+    <url>
+        <loc>https://example.com/pay/</loc>
+        <lastmod>2026-02-04T14:34:01.390Z</lastmod>
+        <changefreq>daily</changefreq>
+        <priority>0.8</priority>
+    </url>
+    <url>
+        <loc>https://example.com/friends/</loc>
+        <lastmod>2026-02-04T14:34:01.390Z</lastmod>
+        <changefreq>daily</changefreq>
+        <priority>0.8</priority>
+    </url>
+    <url>
+        <loc>https://example.com/blog/example-category/code-and-media-test/</loc>
+        <lastmod>Tue Feb 03 2026 22:00:00 GMT+0800 (China Standard Time)</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.6</priority>
+    </url>
+    <url>
+        <loc>https://example.com/blog/tech/code-and-media-test/</loc>
+        <lastmod>Tue Feb 03 2026 22:00:00 GMT+0800 (China Standard Time)</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.6</priority>
+    </url>
+    <url>
+        <loc>https://example.com/blog/life/math-and-tables-test/</loc>
+        <lastmod>Tue Feb 03 2026 21:00:00 GMT+0800 (China Standard Time)</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.6</priority>
+    </url>
+    <url>
+        <loc>https://example.com/blog/reading/long-title-long-description-stress-test/</loc>
+        <lastmod>Tue Feb 03 2026 20:00:00 GMT+0800 (China Standard Time)</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.6</priority>
+    </url>
+    <url>
+        <loc>https://example.com/blog/tech/markdown-all-in-one-test/</loc>
+        <lastmod>Tue Feb 03 2026 19:00:00 GMT+0800 (China Standard Time)</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.6</priority>
+    </url>
+    <url>
+        <loc>https://example.com/blog/tech/svelte-5-features/</loc>
+        <lastmod>Tue Feb 03 2026 18:00:00 GMT+0800 (China Standard Time)</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.6</priority>
+    </url>
+    <url>
+        <loc>https://example.com/blog/example-category/example-article/</loc>
+        <lastmod>Sun Feb 01 2026 00:00:00 GMT+0800 (China Standard Time)</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.6</priority>
+    </url>
+    <url>
+        <loc>https://example.com/blog/reading/infinite-game-review/</loc>
+        <lastmod>Fri Jan 16 2026 04:00:00 GMT+0800 (China Standard Time)</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.6</priority>
+    </url>
+    <url>
+        <loc>https://example.com/blog/life/kyoto-autumn-travel/</loc>
+        <lastmod>Sat Nov 22 2025 18:00:00 GMT+0800 (China Standard Time)</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.6</priority>
+    </url>
+</urlset>

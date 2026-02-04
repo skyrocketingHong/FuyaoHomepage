@@ -11,7 +11,7 @@
 	import { Folder, FolderOpen } from 'lucide-svelte';
 	import SidebarItem from './Item.svelte';
 	import SidebarTree from './SidebarTree.svelte'; // 递归引用
-	import type { SidebarItemType } from '$lib/components/layout/sidebar/types';
+	import type { SidebarItemType } from '$lib/types/sidebar';
 	import { untrack } from 'svelte';
 
 	let { item, depth = 0 } = $props<{

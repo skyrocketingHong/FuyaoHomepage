@@ -10,15 +10,15 @@
 	import { t, locale } from '$lib/i18n/store';
 	import Crossfade from '$lib/components/ui/effect/Crossfade.svelte';
 	import { calculateAge } from '$lib/utils/datetime/age';
-	import { getAvatarUrl, seoConfig, repoConfig } from '$lib/config';
+	import { getAvatarUrl, seoConfig, repoConfig, profileConfig } from '$lib/config/index';
 
 	const age = calculateAge();
-	const avatarUrl = getAvatarUrl();
+	const avatarUrl = profileConfig.avatar;
 	const siteUrl = seoConfig.baseURL;
 	const issueUrl = `${repoConfig.url}/issues/new?q=is%3Aissue+state%3Aopen`;
 </script>
 
-<div class="mt-1">
+<div class="mt-1 mb-4">
 	<LiquidGlass opaque={true} class="gap-1 rounded-xl p-3">
 		<div class="flex flex-col items-start gap-3 md:flex-row md:items-center md:justify-between">
 			<div class="flex w-full flex-row gap-3 md:w-auto md:flex-row md:items-center">
@@ -37,7 +37,7 @@
 								<span>{$t('friends.profile.name_label')}</span>
 							</Crossfade>:
 							<Crossfade key={$locale} class="inline-grid">
-								<span>{$t('home.hero.profile.name', { age })}</span>
+								<span>{profileConfig.name}</span>
 							</Crossfade>
 						</p>
 						<p>
@@ -45,7 +45,7 @@
 								<span>{$t('friends.profile.desc_label')}</span>
 							</Crossfade>:
 							<Crossfade key={$locale} class="inline-grid">
-								<span>{$t('home.hero.profile.quote')}</span>
+								<span>{profileConfig.quote[$locale === 'zh-CN' ? 'zh' : 'en']}</span>
 							</Crossfade>
 						</p>
 					</div>

@@ -30,21 +30,28 @@
 ├── tsconfig.json         # TypeScript 配置文件
 ├── vite.config.ts        # Vite 构建配置
 ├── scripts/              # 工具脚本及版本管理
-│   ├── generate-blog-index.js # 博客索引生成脚本
-│   ├── generate-redirects.js  # 重定向配置生成脚本
-│   ├── rename-posts-to-slug.cjs # 批量重命名文章脚本
+│   ├── generate-blog-index.js # 博客索引生成脚本 (支持 RSS/Sitemap)
+│   ├── watch-posts.js         # 博客递归监听脚本 (服务端自动化)
 │   └── update-version.js      # 版本更新与日志生成脚本
 ├── src/
-│   ├── app.css           # 全局样式 (Tailwind @apply 等)
 │   ├── app.d.ts          # TypeScript 类型定义
 │   ├── app.html          # HTML 模版
 │   ├── service-worker.ts # Service Worker
 │   ├── lib/              # 核心库代码
-│   │   ├── config.ts         # 网站配置文件
-│   │   ├── state.svelte.ts   # 全局状态管理 (Svelte 5 runes)
-│   │   ├── utils.ts          # 通用工具函数 (cn 合并、类型工具等)
+│   │   ├── actions/          # Svelte Actions
+│   │   │   └── linkEnhancer.svelte.ts # 链接增强
+│   │   ├── config/           # 网站配置
+│   │   │   └── index.ts      # 配置入口
 │   │   ├── plugins/          # Vite 插件
 │   │   │   └── vite-plugin-blog-watcher.ts # 博客文件监听插件
+│   │   ├── stores/           # 全局状态管理
+│   │   │   ├── app.svelte.ts     # 应用级状态
+│   │   │   └── search.svelte.ts  # 搜索状态
+│   │   ├── styles/           # 全局样式
+│   │   │   ├── app.css       # 全局样式
+│   │   │   └── reader.css    # 阅读器样式
+│   │   ├── types/            # 类型定义
+│   │   │   └── sidebar.ts    # 侧边栏类型
 │   │   ├── components/       # Svelte 组件库
 │   │   │   ├── footprint/    # 足迹页面组件
 │   │   │   │   └── FootprintList.svelte     # 足迹列表展示
@@ -137,19 +144,10 @@
 │   │   │       └── zh-CN.json
 │   │   └── utils/            # 实用工具函数
 │   │       ├── datetime/     # 时间处理
-│   │       │   ├── age.ts    # 年龄计算逻辑
-│   │       │   └── date.ts   # 通用日期格式化
-│   │       ├── domain/       # 业务逻辑相关
-│   │       │   ├── blog.ts       # 博客核心逻辑 (排序、搜索等)
-│   │       │   ├── footprints.ts # 足迹数据处理
-│   │       │   ├── markdown.ts   # Markdown 解析与渲染逻辑
-│   │       │   └── nav.ts        # 导航相关计算
+│   │       ├── domain/       # 业务逻辑 (博客、足迹等)
 │   │       ├── format/       # 内容格式化
-│   │       │   ├── number.ts # 数字转换 (如万、亿)
-│   │       │   └── slugify.ts# 字符串 Slug 化
-│   │       └── network/      # 网络与加载
-│   │           ├── loading.ts    # 资源预加载
-│   │           └── urlMetadata.ts# 获取网页元数据
+│   │       ├── network/      # 网络与加载
+│   │       └── index.ts      # 工具出口
 │   └── routes/               # 路由定义 (SvelteKit)
 │       ├── +layout.svelte    # 全局布局 (Header, Sidebar)
 │       ├── +layout.ts        # 客户端适配加载 logic
@@ -170,6 +168,9 @@
 │       └── sitemap.xml/      # 站点地图生成
 │           └── +server.ts
 ├── static/                   # 静态资源目录
+│   ├── blog/                 # 博客静态资源
+│   │   └── rss.xml           # 自动生成的 RSS Feed
+│   ├── sitemap.xml           # 自动生成的站点地图
 │   ├── data/                 # 静态配置数据 (YAML)
 │   │   ├── footprints.yaml   # 足迹坐标与信息
 │   │   ├── friends.yaml      # 友情链接列表
@@ -196,7 +197,7 @@
 
 ### Z-Index 层级策略
 
-所有 z-index 均在 `src/app.css` 中以类名形式统一管理，**禁止**在组件样式中硬编码数值。
+所有 z-index 均在 `src/lib/styles/app.css` 中以类名形式统一管理，**禁止**在组件样式中硬编码数值。
 
 | 层级 (Layer)   | 类名 (Class)    | Value | 说明                 |
 | :------------- | :-------------- | :---- | :------------------- |

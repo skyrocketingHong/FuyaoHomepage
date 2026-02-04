@@ -2,9 +2,11 @@
 	"common": {
 		"loading": "加载中...",
 		"travingto": "正在前往",
-		"copyright": "{{startYear}} - {{currentYear}} 扶摇skyrocketing",
+		"copyright": "{{startYear}} - {{currentYear}} {{siteName}}",
 		"copied": "已复制",
-		"site_name": "扶摇skyrocketing",
+		"copy": "复制",
+		"copy_link": "复制链接",
+		"site_name": "{{siteName}}",
 		"none": "无",
 		"status": {
 			"online": "在线",
@@ -45,11 +47,8 @@
 			"profile": {
 				"hello": "你好！",
 				"im": "我是",
-				"name": "扶摇skyrocketing",
 				"age": "{{age}}岁",
-				"role": "是科研技术专员",
-				"status": "在线",
-				"quote": "“尝试在互联网上留下一些属于自己的痕迹”"
+				"status": "在线"
 			},
 			"time_capsule": {
 				"title": "时间胶囊",
@@ -82,7 +81,8 @@
 		}
 	},
 	"footprint": {
-		"title": "足迹"
+		"title": "足迹",
+		"load_error": "加载足迹失败"
 	},
 	"blog": {
 		"title": "博客",
@@ -93,6 +93,7 @@
 		"toc": "目录",
 		"contents": "目录",
 		"loading_error": "加载文章失败。",
+		"fetch_error": "加载博客文章失败",
 		"close": "关闭",
 		"toggle_toc": "切换目录",
 		"latest_news": "最新动态",
@@ -102,10 +103,11 @@
 		"more_stories": "更多文章",
 		"load_more": "加载更多",
 		"no_stories": "暂无文章",
+		"category_description": "分类 {{category}} 下的文章",
 		"no_posts_in_category": "该分类下暂无文章。",
 		"view_all": "查看所有文章",
 		"unknown_year": "年份未知",
-		"back_to_list": "返回列表",
+		"back_to_list": "返回",
 		"share_article": "分享文章",
 		"published_at": "发布于",
 		"updated_at": "更新于",
@@ -114,7 +116,14 @@
 		"year": "年份",
 		"tag": "标签",
 		"tag_filtering": "正在查看标签：",
-		"clear_tag": "清除标签过滤"
+		"clear_tag": "清除标签过滤",
+		"search": {
+			"placeholder": "搜索文章...",
+			"no_results": "未找到关于 \"{{query}}\" 的结果",
+			"title": "搜索",
+			"open": "搜索",
+			"close": "关闭"
+		}
 	},
 	"friends": {
 		"title": "友链",

@@ -7,9 +7,10 @@
 	import { onMount, onDestroy } from 'svelte';
 	import AMap from '$lib/components/map/AMap.svelte';
 	import FootprintList from '$lib/components/footprint/FootprintList.svelte';
-	import { sidebarState, layoutState } from '$lib/state.svelte';
+	import { sidebarState, layoutState } from '$lib/stores/app.svelte';
 	import { loadFootprints, type Place } from '$lib/utils/domain/footprints';
 	import LoadingState from '$lib/components/ui/feedback/LoadingState.svelte';
+	import { t } from '$lib/i18n/store';
 
 	let places = $state<Place[]>([]);
 	let loading = $state(true);
@@ -24,8 +25,8 @@
 		try {
 			places = await loadFootprints();
 		} catch (e) {
-			console.error('Failed to load footprints', e);
-			error = 'Failed to load footprints';
+			console.error('加载足迹数据失败', e);
+			error = $t('footprint.load_error');
 		} finally {
 			loading = false;
 		}
@@ -56,14 +57,14 @@
 	});
 </script>
 
-<div class="relative h-full w-full">
+<div class="pointer-events-none relative h-full w-full">
 	{#if loading || error}
 		<div class="flex h-full w-full items-center justify-center">
 			<LoadingState {loading} {error} />
 		</div>
 	{:else}
 		<!-- 地图背景 (使用 fixed 定位以覆盖全屏，z-index 低于 Sidebar 但高于 BackgroundLayer) -->
-		<div class="fixed inset-0 -z-10 bg-transparent transition-opacity duration-500">
+		<div class="pointer-events-auto fixed inset-0 z-0 bg-transparent transition-opacity duration-500">
 			<AMap 
 				apiKey={amapKey}
 				securityCode={amapSecurityCode}

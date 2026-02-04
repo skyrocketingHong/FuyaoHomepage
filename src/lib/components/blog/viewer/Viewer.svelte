@@ -10,20 +10,18 @@
 	 */
 	import LoadingState from '$lib/components/ui/feedback/LoadingState.svelte';
 	import { slugify } from '$lib/utils/format/slugify';
-	import yaml from 'js-yaml';
 	import { t } from '$lib/i18n/store';
 	import { tick, untrack, onDestroy } from 'svelte';
 	import { page } from '$app/state';
 	import { replaceState } from '$app/navigation';
-	import { sidebarState, headerState } from '$lib/state.svelte';
-	import { loadText } from '$lib/utils/network/loading';
-    import { getCategoryTitle } from '$lib/utils/domain/blog';
+	import { sidebarState, headerState } from '$lib/stores/app.svelte';
+    import { loadPostContent } from '$lib/utils/domain/loader';
 	
 	import Crossfade from '$lib/components/ui/effect/Crossfade.svelte';
     import LiquidGlass from '$lib/components/ui/effect/LiquidGlass.svelte';
 	
-	import BlogHeader from './BlogHeader.svelte';
-    import BlogTOC from './BlogTOC.svelte';
+	import Header from './Header.svelte';
+    import TableOfContents from './TableOfContents.svelte';
     import BackButton from './BackButton.svelte';
     
     // 异步加载渲染器以优化首屏
@@ -41,22 +39,9 @@
 	let toc: { id: string; text: string; depth: number }[] = $state([]);
     let tocListId = '';
     let leftActionId = '';
-    let additionalMetadata = $state<any>({});
     
-	// 聚合文章元数据
-	let displayPost = $derived.by(() => {
-        const metadata = additionalMetadata;
-        const cats = post.categories || (post.category ? [post.category] : []);
-        return {
-            ...post,
-            ...metadata,
-            date: metadata.date ? new Date(metadata.date).toISOString().split('T')[0] : post.date,
-            lastmod: metadata.lastmod ? new Date(metadata.lastmod).toISOString().split('T')[0] : (post.lastmod || ''),
-            categoryTitles: cats.map((c: string) => ({ slug: c, title: getCategoryTitle(c, categories) })),
-            categories: cats,
-            tags: metadata.tags || post.tags || []
-        };
-    });
+    // 文章数据状态
+    let displayPost = $state(untrack(() => post));
     
 	$effect(() => {
 		if (post) {
@@ -76,7 +61,7 @@
 
     $effect(() => {
         if (toc.length > 0) {
-            tocListId = sidebarState.setList(BlogTOC, {
+            tocListId = sidebarState.setList(TableOfContents, {
                 toc: toc,
                 onItemClick: (id: string) => {
                     handleTocClick(id);
@@ -114,23 +99,10 @@
         
 		toc = [];
 		try {
-			const text = await loadText(`/posts/${currentPost.file}`);
-			let cleanText = text;
-			
-			const frontmatterMatch = text.match(/^\uFEFF?---([\s\S]+?)---/);
-			if (frontmatterMatch) {
-				try {
-					additionalMetadata = yaml.load(frontmatterMatch[1]) as any;
-					cleanText = text.replace(/^\uFEFF?---[\s\S]+?---\s*/, '');
-				} catch (e) {
-					additionalMetadata = {};
-				}
-			} else {
-                additionalMetadata = {};
-            }
-
-			content = cleanText; 
-			loadedFile = currentPost.file;
+            const result = await loadPostContent(currentPost, categories);
+			content = result.content; 
+            displayPost = result.displayPost;
+			loadedFile = result.loadedFile;
 		} catch (e) {
 			content = `<p class="text-red-400">${$t('blog.loading_error')}</p>`;
 		} finally {
@@ -221,13 +193,14 @@
                 </div>
             {:else}
                 <Crossfade key={displayPost.file} class="w-full">
-                    <BlogHeader 
+                    <Header 
                         title={displayPost.title} 
                         date={displayPost.date} 
                         lastmod={displayPost.lastmod}
                         categories={displayPost.categoryTitles || []} 
                         subtitle={displayPost.description}
                         tags={displayPost.tags}
+                        cover={displayPost.cover}
                     />
                     <div>
                         {#await MarkdownRendererPromise then module}

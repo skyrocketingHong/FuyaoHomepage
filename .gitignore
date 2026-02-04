@@ -66,7 +66,7 @@ web_modules/
 .yarn-integrity
 
 # dotenv environment variable files
-.env
+# .env
 .env.*
 !.env.example
 
@@ -142,6 +142,8 @@ vite.config.ts.timestamp-*
 .vscode
 
 # Static files
-static
+# static (templates are kept in main, personal files in workspace)
+# static
 node_modules
 .agent
+react

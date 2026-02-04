@@ -12,10 +12,10 @@
 	import { t, locale } from '$lib/i18n/store';
 	import Crossfade from '$lib/components/ui/effect/Crossfade.svelte';
 	import { calculateAge } from '$lib/utils/datetime/age';
-	import { getAvatarUrl } from '$lib/config';
+	import { profileConfig } from '$lib/config/index';
 
 	const age = calculateAge();
-	const avatarUrl = getAvatarUrl();
+	const avatarUrl = profileConfig.avatar;
 </script>
 
 <!-- 个人信息与描述区域 -->
@@ -37,12 +37,12 @@
 			<div>
 				<Crossfade key={$locale} class="inline-grid">
 					<h1 class="text-4xl font-bold whitespace-pre-line text-foreground">
-						{$t('home.hero.profile.hello')}{$t('home.hero.profile.im')}<TextEffect text={$t('home.hero.profile.name')} />
+						{$t('home.hero.profile.hello')}{$t('home.hero.profile.im')}<TextEffect text={profileConfig.name} />
 					</h1>
 				</Crossfade>
 				<p class="mt-2 text-lg text-muted-foreground">
 					<Crossfade key={$locale} class="inline-grid"
-						><span>{$t('home.hero.profile.age', { age })}</span><span>{$t('common.comma')}</span><span>{$t('home.hero.profile.role')}</span></Crossfade
+						><span>{$t('home.hero.profile.age', { age })}</span><span>{$t('common.comma')}</span><span>{profileConfig.role[$locale === 'zh-CN' ? 'zh' : 'en']}</span></Crossfade
 					>
 				</p>
 			</div>
@@ -52,7 +52,7 @@
 				</span>
 				<p class="pl-6 text-muted-foreground italic">
 					<Crossfade key={$locale} class="inline-grid"
-						><span>{$t('home.hero.profile.quote')}</span></Crossfade
+						><span>{profileConfig.quote[$locale === 'zh-CN' ? 'zh' : 'en']}</span></Crossfade
 					>
 				</p>
 			</div>

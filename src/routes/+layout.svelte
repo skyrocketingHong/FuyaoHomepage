@@ -4,11 +4,11 @@
 	 *
 	 * 负责应用的基础骨架搭建，处理响应式导航、侧边栏、全局加载状态及 SEO 逻辑。
 	 */
-	import '../app.css';
+	import '$lib/styles/app.css';
 
-	import { navItems, getBackgroundMode } from '$lib/config';
+	import { navItems, getBackgroundMode } from '$lib/config/index';
 	import { page } from '$app/state';
-	import { backgroundState, layoutState } from '$lib/state.svelte';
+	import { backgroundState, layoutState } from '$lib/stores/app.svelte';
 	import { t } from '$lib/i18n/store';
 
 	// 引入新的模块化组件
@@ -26,7 +26,10 @@
 	let { children, data } = $props();
 
 	// 派生当前页面标题
-	let currentNavItem = $derived(navItems.find((item) => page.url.pathname.startsWith(item.href)));
+	let currentNavItem = $derived(navItems.find((item) => {
+		if (item.href === '/') return page.url.pathname === '/';
+		return page.url.pathname.startsWith(item.href);
+	}));
 	let pageLabel = $derived(currentNavItem ? $t(currentNavItem.i18nKey) : $t('nav.home'));
     
     // 从当前导航项派生 SEO 数据
@@ -66,7 +69,7 @@
 
 <!-- 全局背景层 -->
 <BackgroundLayer 
-	spotlightUrl={data.spotlightUrl ?? data.appConfig?.wallpaper?.default ?? ''}
+	spotlightUrl={data.appConfig?.wallpaper?.default ?? ''}
 	mode={backgroundMode}
 />
 
@@ -85,7 +88,7 @@
 		<!-- 主布局容器：统一管理移动端和桌面端结构 -->
 		<div class="flex h-screen w-full overflow-hidden">
 			<!-- PC/平板：左侧侧边栏 (仅在桌面端显示) -->
-			<div class="relative z-controls hidden pt-4 pb-4 pl-4 md:block">
+			<div class="relative z-controls hidden pt-2 pb-2 pl-2 md:block lg:pt-4 lg:pb-4 lg:pl-4">
 				<Sidebar 
 					backgroundMode={backgroundMode}
 					infoComponent={backgroundInfoComponent}
@@ -101,7 +104,7 @@
 				<!-- 头部栏：统一管理，适配移动端和桌面端 -->
 				<Header
 					{pageLabel}
-					class="pointer-events-auto absolute top-0 right-0 left-0 z-controls flex items-center justify-between p-2 md:pt-4 md:pl-4 md:pb-4"
+					class="pointer-events-auto absolute top-0 right-0 left-0 z-controls flex items-center justify-between p-2 lg:p-4"
 				/>
 
 				<!-- 可滚动的内容区域：统一实例，内部处理响应式差异 -->

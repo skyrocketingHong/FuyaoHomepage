@@ -4,10 +4,10 @@
 	 *
 	 * 包含主题切换和语言切换按钮。
 	 */
-	import HeaderActionButton from '$lib/components/layout/header/button/HeaderActionButton.svelte';
+	import HeaderActionButton from '$lib/components/layout/header/ActionButton.svelte';
 
 	import { Moon, Sun, Monitor } from 'lucide-svelte';
-	import { themeState } from '$lib/state.svelte';
+	import { themeState } from '$lib/stores/app.svelte';
 	import { locale, t } from '$lib/i18n/store';
 
 	function toggleTheme() {

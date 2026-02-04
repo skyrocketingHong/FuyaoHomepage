@@ -6,7 +6,7 @@
 	 * 支持自动切换主题色、平滑颜色过渡以及 MTR 车站预设。
 	 */
 	import { onMount, onDestroy } from 'svelte';
-	import { themeState, mosaicState } from '$lib/state.svelte';
+	import { themeState, mosaicState } from '$lib/stores/app.svelte';
     import { 
         MOSAIC_DEFAULT_CONFIG, 
         MTR_PRESETS_DAY, 
@@ -14,7 +14,7 @@
         RAINBOW_COLORS,
         type MosaicConfig,
         type MtrStation 
-    } from '$lib/mosaic';
+    } from '$lib/config/mosaic';
 
 	// ==========================================
 	// 配置与内部状态

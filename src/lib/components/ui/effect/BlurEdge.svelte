@@ -13,7 +13,7 @@
 	 * @prop class - 额外的 CSS 类名
 	 * @prop style - 额外的 CSS 样式
 	 */
-	import { cn } from '$lib/utils';
+	import { cn } from '$lib/utils/index';
 	import { fade } from 'svelte/transition';
 
 	let {

@@ -10,6 +10,7 @@
 	import LiquidGlass from '$lib/components/ui/effect/LiquidGlass.svelte';
 	import Avatar from '$lib/components/ui/display/Avatar.svelte';
 	import Marquee from '$lib/components/ui/display/Marquee.svelte';
+	import ScrollContainer from '$lib/components/ui/layout/ScrollContainer.svelte';
 	import { t } from '$lib/i18n/store';
 
 	interface Friend {
@@ -29,11 +30,14 @@
 
 			<div class="flex min-w-0 flex-1 flex-col gap-1">
 				<div class="flex items-center gap-2">
-					<h3
-						class="truncate text-lg font-bold text-foreground transition-colors duration-300 group-hover:text-primary"
-					>
-						{friend.name}
-					</h3>
+					<div class="min-w-0 flex-1 overflow-hidden">
+						<Marquee 
+							text={friend.name}
+							direction="horizontal" 
+							class="text-lg font-bold text-foreground transition-colors duration-300 group-hover:text-primary"
+							fadeSize="10%"
+						/>
+					</div>
 					<svg
 						xmlns="http://www.w3.org/2000/svg"
 						class="size-4 -translate-x-2 opacity-0 transition-all duration-300 group-hover:translate-x-0 group-hover:text-primary group-hover:opacity-100"
@@ -59,10 +63,15 @@
 			<Avatar src={friend.avatar} alt={friend.name} size="md" />
 
 			<div class="flex min-w-0 flex-1 flex-col gap-1">
-				<div class="flex items-center gap-2">
-					<h3 class="truncate text-lg font-bold text-foreground/70">
-						{friend.name}
-					</h3>
+				<div class="flex items-center gap-2 overflow-hidden">
+					<div class="min-w-0 flex-1 overflow-hidden">
+						<Marquee 
+							text={friend.name}
+							direction="horizontal" 
+							class="text-lg font-bold text-foreground/70"
+							fadeSize="10%"
+						/>
+					</div>
 				</div>
 				<div class="h-[2.5rem] text-sm leading-relaxed text-muted-foreground">
 					<Marquee text={friend.description === '' ? $t('common.none') : friend.description} direction="vertical" class="h-full w-full" />

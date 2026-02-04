@@ -1,5 +1,5 @@
 
-import { navItems, seoConfig } from '$lib/config';
+import { navItems, seoConfig } from '$lib/config/index';
 import fs from 'fs';
 import path from 'path';
 
@@ -16,7 +16,7 @@ export async function GET() {
         return {
             loc: `${siteUrl}${item.href}`,
             changefreq: 'daily',
-            priority: item.href === '/home/' ? '1.0' : '0.8',
+            priority: item.href === '/' ? '1.0' : '0.8',
             lastmod: new Date().toISOString()
         };
     });

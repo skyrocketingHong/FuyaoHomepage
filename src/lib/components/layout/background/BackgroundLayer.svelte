@@ -4,11 +4,13 @@
 	 *
 	 * 负责渲染全站的背景，可以是动态组件、静态图片、纯色或流动背景。
 	 */
-	import { backgroundState } from '$lib/state.svelte';
+	import { onMount, untrack } from 'svelte';
+    import { backgroundState, layoutState } from '$lib/stores/app.svelte';
 	import SolidBackground from '../../ui/background/SolidBackground.svelte';
 	import FlowingBackground from '../../ui/background/FlowingBackground.svelte';
 	import MosaicBackground from '../../ui/background/MosaicBackground.svelte';
 	import Crossfade from '$lib/components/ui/effect/Crossfade.svelte';
+	import LazyImage from '$lib/components/ui/display/LazyImage.svelte';
 
 	// Props 定义
 	let { spotlightUrl = '', onImageLoad, mode = 'image' } = $props<{
@@ -16,6 +18,16 @@
 		onImageLoad?: () => void; // 可选，用于通知外部图片加载完成
 		mode?: 'image' | 'solid' | 'flowing' | 'none' | 'mosaic';
 	}>();
+
+    // 当前使用的壁纸 URL (支持从 API 动态加载覆盖传入的默认值)
+    let activeUrl = $state(untrack(() => spotlightUrl));
+
+    // 监听 props 变化，如果外部传入的 url 变了 (且不是空)，则更新 activeUrl
+    $effect(() => {
+        if (spotlightUrl) {
+            activeUrl = spotlightUrl;
+        }
+    });
 
 	// 本地图片加载状态，用于控制透明度过渡
 	let isImageLoaded = $state(false);
@@ -25,6 +37,27 @@
 		backgroundState.setLoaded(true);
 		onImageLoad?.();
 	}
+
+    onMount(async () => {
+        // 仅在图片模式下尝试加载动态壁纸
+        if (mode === 'image') {
+            const wallpaperApi = import.meta.env.VITE_WALLPAPER_API;
+            if (wallpaperApi) {
+                try {
+                    const res = await fetch(wallpaperApi);
+                    if (res.ok) {
+                        const url = await res.text();
+                        if (url && url.trim()) {
+                            activeUrl = url.trim();
+                        }
+                    }
+                } catch (error) {
+                    console.error("Client-side wallpaper fetch failed:", error);
+                    // 失败时保持使用 activeUrl (即默认值)
+                }
+            }
+        }
+    });
 
 	// 如果是非图片模式，立即触发加载完成，以便移除 Loader
 	$effect(() => {
@@ -57,12 +90,11 @@
 			{:else}
 				<!-- 默认/图片模式 -->
 				<div class="absolute inset-0 bg-black/40">
-					<img
-						src={spotlightUrl}
+					<LazyImage
+						src={activeUrl}
 						alt="Background Wallpaper"
-						class="h-full w-full object-cover transition-opacity duration-700 {isImageLoaded
-							? 'opacity-100'
-							: 'opacity-0'}"
+						class="h-full w-full"
+						fill
 						onload={handleLoad}
 					/>
 					<!-- 暗色遮罩 -->

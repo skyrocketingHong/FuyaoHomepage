@@ -13,7 +13,7 @@
 	 * @prop hasScrollTop - (bindable) 是否有顶部滚动距离
 	 * @prop hasScrollBottom - (bindable) 是否有底部滚动余量
 	 */
-	import { cn } from '$lib/utils';
+	import { cn } from '$lib/utils/index';
 	import FadeEdge from '$lib/components/ui/effect/FadeEdge.svelte';
 	import type { Snippet } from 'svelte';
 
@@ -25,6 +25,7 @@
 		useMask = true,
 		hasScrollTop = $bindable(false),
 		hasScrollBottom = $bindable(false),
+		orientation = 'vertical',
 		...rest 
 	} = $props<{ 
 		children: Snippet; 
@@ -35,6 +36,7 @@
 		useMask?: boolean;
 		hasScrollTop?: boolean;
 		hasScrollBottom?: boolean;
+		orientation?: 'horizontal' | 'vertical';
 		[key: string]: any; 
 	}>();
 
@@ -47,14 +49,20 @@
 	function updateScrollMask() {
 		if (!container || !enabled) return;
 		
-		const { scrollTop, scrollHeight, clientHeight } = container;
-		
-		const top = scrollTop > 0;
-		// 允许 1px 的浮点计算误差
-		const bottom = Math.ceil(scrollTop + clientHeight) < scrollHeight - 1;
-
-		hasScrollTop = top;
-		hasScrollBottom = bottom;
+		if (orientation === 'horizontal') {
+			const { scrollLeft, scrollWidth, clientWidth } = container;
+			// 映射到 hasScrollTop/Bottom 以保持 API 兼容 (Top -> Start/Left, Bottom -> End/Right)
+			const left = scrollLeft > 0;
+			const right = Math.ceil(scrollLeft + clientWidth) < scrollWidth - 1;
+			hasScrollTop = left;
+			hasScrollBottom = right;
+		} else {
+			const { scrollTop, scrollHeight, clientHeight } = container;
+			const top = scrollTop > 0;
+			const bottom = Math.ceil(scrollTop + clientHeight) < scrollHeight - 1;
+			hasScrollTop = top;
+			hasScrollBottom = bottom;
+		}
 	}
 
 	$effect(() => {
@@ -95,7 +103,7 @@
 	bind:ref={container}
 	onscroll={enabled ? updateScrollMask : undefined}
 	class={cn("scroll-smooth", className)}
-    orientation="vertical"
+    orientation={orientation}
     visible={enabled && useMask}
     showStart={hasScrollTop}
     showEnd={hasScrollBottom}

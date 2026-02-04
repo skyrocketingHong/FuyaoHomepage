@@ -7,7 +7,7 @@
 	 * @prop size - 尺寸：sm | md | lg (默认 'md')
 	 * @prop class - 额外的 CSS 类名
 	 */
-	import { cn } from '$lib/utils';
+	import { cn } from '$lib/utils/index';
 
 	interface Props {
 		/** 尺寸：sm (16px), md (24px), lg (32px) */

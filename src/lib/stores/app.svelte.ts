@@ -327,6 +327,18 @@ export class HeaderState {
         this.middleKey = '';
     }
 
+    /**
+     * 更新中间区域组件参数
+     * @param id 创建时返回的ID
+     * @param props 新的组件参数
+     */
+    updateMiddle(id: string, props: Record<string, unknown>) {
+        if (id && id !== this.currentMiddleId) {
+            return;
+        }
+        this.middleProps = props;
+    }
+
     // 左侧区域组件 (新增)
     leftComponent = $state<Component<any> | null>(null);
     leftProps = $state<Record<string, unknown>>({});

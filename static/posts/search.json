@@ -1,0 +1,121 @@
+[
+  {
+    "title": "代码高亮与媒体展示 (Code & Media)",
+    "slug": "code-and-media-test",
+    "categories": [
+      "example-category",
+      "tech"
+    ],
+    "tags": [
+      "Code",
+      "Images",
+      "Videos"
+    ],
+    "description": "全面测试各种编程语言的语法高亮显示效果，以及图片、视频等媒体资源的嵌入表现。",
+    "content": "1. 代码高亮 (Syntax Highlighting) JavaScript / TypeScript Rust Python HTML / CSS Bash / Shell JSON 2. 行内代码 (Inline Code) 在 JavaScript 中，我们使用 console.log() 来输出信息。在 Python 中则是 print()。 无论是什么语言，Map 都是常见的数据结构。 3. 媒体嵌入 (Media) 图片 (Images) 普通图片： !Mountain 带标题的图片： !Ocean 动图 (GIFs) 假设这里应该有一个 GIF 动图（使用静态图模拟）： !Animation Placeholder 链接点击测试 点击 这里 跳转到 GitHub。 点击 这里 什么都不做（锚点测试）。"
+  },
+  {
+    "title": "这是一篇示例文章",
+    "slug": "example-article",
+    "categories": [
+      "example-category"
+    ],
+    "tags": [
+      "示例"
+    ],
+    "description": "这是一篇用于演示目录结构和文章格式的示例文章。",
+    "content": "文本样式 你可以使用 加粗、斜体 以及 ~~删除线~~。 数学公式 可以使用 LaTeX 编写公式： 行内公式：$E = mc^2$ 块状公式： $$ \\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a} $$ 表格示例 | 属性 | 说明 | 示例 | | :--- | :--- | :--- | | 标题 | 文章的标题 | 这是一篇示例文章 | | 日期 | 发布日期 | 2026-01-31 | | 状态 | 发布状态 | publish | 引用与列表 > 这是一段引用文本。 > —— 某位著名的鲁迅先生（没说过） 任务列表： - [x] 完成示例文章编写 - [ ] 添加更多交互组件 - [ ] 优化移动端显示 脚注 我们可以添加一个脚注[^1]来解释某些术语。 --- [^1]: 这是一个脚注示例。"
+  },
+  {
+    "title": "数学公式与复杂表格展示 (Math & Tables)",
+    "slug": "math-and-tables-test",
+    "categories": [
+      "life"
+    ],
+    "tags": [
+      "MathJax",
+      "KaTeX",
+      "Tables"
+    ],
+    "description": "测试 Markdown 中数学公式的渲染（如 KaTeX）以及各种复杂表格样式的展示效果。",
+    "content": "1. 数学公式 (Physics & Math) 本博客支持 LaTeX 格式的数学公式渲染。 行内公式 (Inline) 爱因斯坦的质能方程是 $E=mc^2$。 欧拉公式被誉为最美的公式：$e^{i\\pi} + 1 = 0$。 块级公式 (Block) 高斯积分： $$ \\int{-\\infty}^{\\infty} e^{-x^2} dx = \\sqrt{\\pi} $$ 麦克斯韦方程组： $$ \\begin{aligned} \\nabla \\cdot \\mathbf{E} &= \\frac{\\rho}{\\varepsilon0} \\\\ \\nabla \\cdot \\mathbf{B} &= 0 \\\\ \\nabla \\times \\mathbf{E} &= -\\frac{\\partial \\mathbf{B}}{\\partial t} \\\\ \\nabla \\times \\mathbf{B} &= \\mu0\\mathbf{J} + \\mu0\\varepsilon0\\frac{\\partial \\mathbf{E}}{\\partial t} \\end{aligned} $$ 矩阵： $$ A = \\begin{pmatrix} a{11} & a{12} & \\cdots & a{1n} \\\\ a{21} & a{22} & \\cdots & a{2n} \\\\ \\vdots & \\vdots & \\ddots & \\vdots \\\\ a{m1} & a{m2} & \\cdots & a{mn} \\end{pmatrix} $$ 2. 表格样式 (Tables) 基础表格 (默认对齐) | 姓名 | 年龄 | 职业 | |------|------|------| | 张三 | 25 | 工程师 | | 李四 | 30 | 设计师 | | 王五 | 28 | 产品经理 | 指定对齐方式 | 左对齐 (Left) | 居中对齐 (Center) | 右对齐 (Right) | | :--- | :---: | ---: | | 靠左内容 | 居中内容 | 靠右内容 | | 1 | 2 | 3 | | Long text content | Long text content | Long text content | 混合内容表格 | 样式 | 示例 | 备注 | |---|---|---| | 粗体 | Bold | 用于强调 | | 斜体 | Italic | 用于引用 | | 代码 | const a = 1; | 变量声明 | | 链接 | Google | 外部链接 | | 图片 | !Icon | 小图标 | 长表格 (滚动测试) | ID | Title | Description | Date | Status | Author | Category | Tags | |----|-------|-------------|------|--------|--------|----------|------| | 001 | Test | A long description to test table overflow scroll behavior on mobile devices. | 2026-02-03 | Active | Admin | Tech | A, B, C | | 002 | Demo | Another row with substantial content. | 2026-02-04 | Inactive | Guest | Life | D, E, F | | 003 | Sample | Yet another row to fill space. | 2026-02-05 | Pending | Robot | News | G, H, I |"
+  },
+  {
+    "title": "京都红叶狩",
+    "slug": "kyoto-autumn-travel",
+    "categories": [
+      "life"
+    ],
+    "tags": [
+      "旅行",
+      "摄影",
+      "日本"
+    ],
+    "description": "记录在京都深秋的岚山与清水寺的徒步旅程，感受古都的季节流转。",
+    "content": "岚山的清晨 清晨六点，岚山还没有被游客占领。空气中带着深秋特有的寒意，渡月桥下的桂川水流缓缓流淌。 > \"山明水净夜来霜，数树深红出浅黄。\" —— 刘禹锡 虽然是在异国他乡，但看着漫山遍野的红叶，脑海中浮现的却是唐诗的意境。 天龙寺的庭院 走进天龙寺，曹源池庭园的借景手法令人叹为观止。借着背后的岚山，庭园显得无限宽广。红叶倒映在池水中，与锦鲤相映成趣。 !天龙寺红叶 清水舞台的黄昏 下午转战清水寺。夕阳下的清水舞台被红叶包围，仿佛漂浮在火海之上。 旅行小贴士 1. 交通：建议购买京都市营巴士一日券，非常划算。 2. 时间：热门景点务必赶早（早上7点前）或赶晚（夜间参拜）。 3. 美食：不要错过豆腐料理，清淡却回味悠长。 后记 旅行不仅仅是看风景，更是一次与自己独处的机会。在古都的街巷中漫步，时间仿佛慢了下来。"
+  },
+  {
+    "title": "读《有限与无限的游戏》",
+    "slug": "infinite-game-review",
+    "categories": [
+      "reading"
+    ],
+    "tags": [
+      "读书笔记",
+      "哲学"
+    ],
+    "description": "世界上至少有两种游戏：有限游戏与无限游戏。有限游戏以取胜为目的，而无限游戏以延续游戏为目的。",
+    "content": "核心观点 詹姆斯·卡斯在书中提出了一个振聋发聩的二分法： 有限游戏：目的是为了赢，有明确的边界、规则和终点。比如战争、生意、考试。 无限游戏：目的是为了让游戏继续进行下去，边界是开放的，规则是可以改变的。比如文化、生命、探索。 > \"有限游戏参与者在界限内游戏，无限游戏参与者与界限游戏。\" 对生活的启示 我们将太多的人生场景看作了有限游戏。 教育：把学习看作是为了通过考试（有限游戏），而不是为了探索知识（无限游戏）。 职业：把工作看作是为了升职加薪（有限游戏），而不是为了创造价值和自我实现（无限游戏）。 如何转向无限游戏？ 1. 拥抱变化：不要害怕规则的改变，无限游戏就是在不断重塑规则。 2. 不仅仅是赢：胜利只是有限游戏的终结，而无限游戏关注的是过程和延续。 3. 视角的转换：当我们用无限游戏的视角看世界，竞争对手不再是敌人，而是共同将游戏延续下去的伙伴。 结语 我们要追求的不是在某一场战役中获胜，而是保持一直在场上。生活本身就是一场无限游戏。"
+  },
+  {
+    "title": "极端长度标题测试：这是一个非常非常长的标题，目的是为了测试在列表页、详情页 Header 以及 SEO 标签中，超长标题是否会导致布局错乱或者显示异常，原则上标题不应该这么长，但是为了鲁棒性测试，我们需要验证这种情况的处理机制 (Long Title Test)",
+    "slug": "long-title-long-description-stress-test",
+    "categories": [
+      "reading"
+    ],
+    "tags": [
+      "TagForTest1",
+      "TagForTest2",
+      "TagForTest3",
+      "TagForTest4",
+      "TagForTest5",
+      "TagForTest6",
+      "TagForTest7",
+      "TagForTest8",
+      "TagForTest9",
+      "TagForTest10",
+      "TagForTest11",
+      "TagForTest12"
+    ],
+    "description": "这是一个极其冗长的描述文本，通常描述应该在 150-160 个字符之间以便于搜索引擎抓取，但这里我们故意填充了大量的无意义文本，以测试详情页 Header 区域的描述文本是否能够正确截断或者完整显示，以及是否会遮挡背景图片或者溢出容器。This description is intentionally made extremely long to test the UI's capability to handle overflow text gracefully without breaking the layout or overlapping with other critical elements on the page.",
+    "content": "第一章：无尽的文本 这是一个关于测试极限的文档。为了确保我们的博客系统能够处理各种极端情况，我们必须模拟最坏的输入场景。长文本不仅考验排版引擎，也考验读者的耐心。但在技术层面，我们需要关注的是：行高是否合适？段间距是否拥挤？字体渲染是否清晰？ Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque euismod, nisi eu consectetur consectetur, nisl nisl consectetur nisl, euismod consectetur nisl nisl euismod. Pellentesque euismod, nisi eu consectetur consectetur, nisl nisl consectetur nisl, euismod consectetur nisl nisl euismod. 1.1 重复的艺术 重复是测试长文本最简单的方法。下面我们将重复一段经典的中文文本，直到它占据了足够多的垂直空间。 > 道可道，非常道。名可名，非常名。无名天地之始；有名万物之母。故常无欲，以观其妙；常有欲，以观其徼。此两者，同出而异名，同谓之玄。玄之又玄，众妙之门。 道可道，非常道。名可名，非常名。无名天地之始；有名万物之母。故常无欲，以观其妙；常有欲，以观其徼。此两者，同出而异名，同谓之玄。玄之又玄，众妙之门。 道可道，非常道。名可名，非常名。无名天地之始；有名万物之母。故常无欲，以观其妙；常有欲，以观其徼。此两者，同出而异名，同谓之玄。玄之又玄，众妙之门。 道可道，非常道。名可名，非常名。无名天地之始；有名万物之母。故常无欲，以观其妙；常有欲，以观其徼。此两者，同出而异名，同谓之玄。玄之又玄，众妙之门。 道可道，非常道。名可名，非常名。无名天地之始；有名万物之母。故常无欲，以观其妙；常有欲，以观其徼。此两者，同出而异名，同谓之玄。玄之又玄，众妙之门。 道可道，非常道。名可名，非常名。无名天地之始；有名万物之母。故常无欲，以观其妙；常有欲，以观其徼。此两者，同出而异名，同谓之玄。玄之又玄，众妙之门。 道可道，非常道。名可名，非常名。无名天地之始；有名万物之母。故常无欲，以观其妙；常有欲，以观其徼。此两者，同出而异名，同谓之玄。玄之又玄，众妙之门。 道可道，非常道。名可名，非常名。无名天地之始；有名万物之母。故常无欲，以观其妙；常有欲，以观其徼。此两者，同出而异名，同谓之玄。玄之又玄，众妙之门。 道可道，非常道。名可名，非常名。无名天地之始；有名万物之母。故常无欲，以观其妙；常有欲，以观其徼。此两者，同出而异名，同谓之玄。玄之又玄，众妙之门。 道可道，非常道。名可名，非常名。无名天地之始；有名万物之母。故常无欲，以观其妙；常有欲，以观其徼。此两者，同出而异名，同谓之玄。玄之又玄，众妙之门。 1.2 英文长文本压力测试 Here is a block of text designed to test word wrapping behavior with very long words that might not break naturally, such as: Supercalifragilisticexpialidocious Pneumonoultramicroscopicsilicovolcanoconiosis Hippopotomonstrosesquippedaliophobia And a continuous string without spaces to test overflow handling: 123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890 第二章：深层嵌套结构 我们还需要验证深层嵌套结构下的排版稳定性。 1. 第一层 1. 第二层 1. 第三层 1. 第四层 - 列表项 A - 列表项 B > 这是一个在四级列表中的引用。 > > 这行文字应该被正确缩进。 第三章：复杂组件压力测试 3.1 复杂表格 (Complex Tables) 测试表格的边框、对齐、背景色以及在容器溢出时的处理。 | 标题渲染 | 靠左对齐 (Left) | 居中对齐 (Center) | 靠右对齐 (Right) | 长文本测试 | | :--- | :--- | :---: | ---: | :--- | | 项目 A | 内容 1 | 内容 2 | 100.00 | 这是一个非常长的单元格内容，旨在测试表格在小屏幕下是否会自动触发横向滚动，或者是否会撑破父容器。 | | 项目 B | 内容 3 | 内容 4 | 200.00 | Lorem ipsum dolor sit amet, consectetur adipiscing elit. | | 项目 C | 内容 5 | 内容 6 | 300.00 | 带有下划线的内容 | 3.2 数学公式 (LaTeX) 测试 KaTeX/MathJax 渲染效果。 行内公式：$E = mc^2$ 以及 $\\sqrt{a^2 + b^2} = c$。 块级公式： $$ \\frac{d}{dx} \\left( \\int{a}^{x} f(t) dt \\right) = f(x) $$ $$ \\begin{pmatrix} a & b \\\\ c & d \\end{pmatrix} \\cdot \\begin{pmatrix} x \\\\ y \\end{pmatrix} = \\begin{pmatrix} ax + by \\\\ cx + dy \\end{pmatrix} $$ 3.3 代码块压力测试 (Code Block Stress Test) 测试语法高亮、长行滚动、行号以及不同语言的渲染。 3.4 增强型列表 (Advanced Lists) - [x] 已完成的任务项 - [ ] 未完成的任务项 - [ ] 包含多段落的列表项 这是列表项内部的第二个段落，应该保持正确的缩进。 - 嵌套的任务列表点 - [x] 嵌套且已完成 3.5 脚注测试 (Footnotes) 这是一个带脚注的句子[^1]。 这是另一个带脚注的句子，指向同一个脚注[^1]。 这是一个指向第二个脚注的句子[^2]。 3.6 媒体增强 (Media) !测试图片：带标题的占位图 图 1：这是一个测试图片的说明文字，通常应该居中且字号稍小。这里我们添加了一段非常长的文本，目的是为了测试在图片说明文字过长的情况下，是否能够正确地换行，并且依然保持左对齐的样式，同时观察它与下方文字的间距是否合理。这段文字需要足够长，以至于在大多数屏幕尺寸下都会触发换行。 (Testing long image caption wrapping and alignment robustness in various screen sizes.) 第四章：极限内容压测 4.1 巨型表格 (The Mega Table) 测试 15 列宽度下的横向滚动条及单元格对齐稳定性。 | ID | 关键指标 | 状态 | 负责人 | 优先级 | 创建日期 | 更新日期 | 标签 | 复杂备注 | 值 A | 值 B | 值 C | 值 D | 值 E | 最终操作 | | :--- | :--- | :---: | :--- | :---: | :---: | :---: | :--- | :--- | ---: | ---: | ---: | ---: | ---: | :---: | | 001 | 渲染引擎 | OK | 张三 | 高 | 2024-01-01 | 2024-02-01 | 测试, 核心 | 这是一个极其长的备注，用于撑开表格的单元格。 | 12 | 34 | 56 | 78 | 90 | [编辑] | | 002 | 样式解析 | BUSY | 李四 | 中 | 2024-01-02 | 2024-02-02 | 样式, UI | 另一个超长文本备注，测试自动换行还是强制撑开。 | 23 | 45 | 67 | 89 | 01 | [查看] | | 003 | 逻辑验证 | FAIL | 王五 | 低 | 2024-01-03 | 2024-02-03 | 逻辑, 后端 | 逻辑删除标志位测试。 | 34 | 56 | 78 | 90 | 12 | [重试] | | 004 | 性能指标 | OK | 赵六 | 高 | 2024-01-04 | 2024-02-04 | 性能, 监控 | 斜体备注测试 | 45 | 67 | 89 | 01 | 23 | [导出] | | 005 | 安全审核 | OK | 钱七 | 高 | 2024-01-05 | 2024-02-05 | 安全, 加密 | 加粗备注测试 | 56 | 78 | 90 | 12 | 34 | [归档] | 4.2 十级超级深度嵌套 (Hyper Nesting) 验证 CSS 递归缩进和标记渲染的稳定性。 1. 第一层索引 - 1.1 子项 A 1. 1.1.1 孙项 - 1.1.1.1 曾孙项 1. 1.1.1.1.1 玄孙项 - 1.1.1.1.1.1 第六层 1. 1.1.1.1.1.1.1 第七层 - 1.1.1.1.1.1.1.1 第八层 > 引用测试：在八级列表中插入引用。 > > > 二次引用测试。 1. 1.1.1.1.1.1.1.1.1 第九层 - 1.1.1.1.1.1.1.1.1.1 第十层：终极深度测试点 - [x] 完成深度验证 - Code at level 10 4.3 混合引用内容 (Mixed Content in Blockquotes) > #### 这是一个引用块中的标题 > > 在引用块中可以包含列表： > - 列表项 1 > - 列表项 2 > > 甚至可以包含表格： > > | A | B | > |---|---| > | 1 | 2 | > > 还可以包含代码块： > > > > 嵌套引用测试。 > > —— 某不知名测试员 4.4 行内元素极限组合 (Inline Element Mashup) 这是一段加粗、斜体、加粗斜体、~~删除线~~、行内代码、超链接、以及带脚注[^1]的复合段落。我们还可以加入上标x2和下标H2O。如果这一行在各种设备上都能保持正确的行高和对齐（特别是包含各种特殊字符和符号时），说明我们的底层 CSS 样式非常坚固。我们还要测试在一段文字中不断地、重复地、毫无章法地加入这些元素：BOLD ITALIC CODE LINK ~~STRIKE~~ BOLD ITALIC CODE LINK ~~STRIKE~~ BOLD ITALIC CODE LINK ~~STRIKE~~。 4.5 垂直节奏平衡测试 (Vertical Rhythm Stress) 测试在大量连续列表项下的视觉连贯性。 1. 压力测试项 001 2. 压力测试项 002 3. 压力测试项 003 4. 压力测试项 004 5. 压力测试项 005 6. 压力测试项 006 7. 压力测试项 007 8. 压力测试项 008 9. 压力测试项 009 10. 压力测试项 010 11. 压力测试项 011 12. 压力测试项 012 13. 压力测试项 013 14. 压力测试项 014 15. 压力测试项 015 16. 压力测试项 016 17. 压力测试项 017 18. 压力测试项 018 19. 压力测试项 019 20. 压力测试项 020 21. 压力测试项 021 22. 压力测试项 022 23. 压力测试项 023 24. 压力测试项 024 25. 压力测试项 025 26. 压力测试项 026 27. 压力测试项 027 28. 压力测试项 028 29. 压力测试项 029 30. 压力测试项 030 31. 压力测试项 031 32. 压力测试项 032 33. 压力测试项 033 34. 压力测试项 034 35. 压力测试项 035 36. 压力测试项 036 37. 压力测试项 037 38. 压力测试项 038 39. 压力测试项 039 40. 压力测试项 040 4.6 深度嵌套引用 (Recursive Blockquotes) > 等级 1 的引用 > > 等级 2 的引用 > > > 等级 3 的引用 > > > > 等级 4 的引用 > > > > > 等级 5 的最高深度引用测试。 > > > > > 如果背景色和边框能正确叠加排布，则 CSS 鲁棒性达标。 4.7 巨量代码文本 (Massive Code Content) 测试大文件预览下的加载与渲染。 4.8 复杂多行公式 (Multi-line KaTeX Stress) 测试在块级公式中处理复杂的对齐和分式嵌套。 $$ \\begin{aligned} \\nabla \\cdot \\mathbf{E} &= \\frac{\\rho}{\\varepsilon0} \\\\ \\nabla \\cdot \\mathbf{B} &= 0 \\\\ \\nabla \\times \\mathbf{E} &= -\\frac{\\partial \\mathbf{B}}{\\partial t} \\\\ \\nabla \\times \\mathbf{B} &= \\mu0\\left(\\mathbf{J} + \\varepsilon0\\frac{\\partial \\mathbf{E}}{\\partial t}\\right) \\end{aligned} $$ $$ x = \\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a} + \\sum{n=1}^{\\infty} \\frac{1}{n^s} + \\int{-\\infty}^{\\infty} e^{-x^2} dx $$ 4.9 密集链接压测 (Hyperlink Parade) 测试在极短距离内大量链接的点击区域和换行表现。 Link1 Link2 Link3 Link4 Link5 Link6 Link7 Link8 Link9 Link10 Link11 Link12 Link13 Link14 Link15 Link16 Link17 Link18 Link19 Link20 Link21 Link22 Link23 Link24 Link25 Link26 Link27 Link28 Link29 Link30 Link31 Link32 Link33 Link34 Link35 Link36 Link37 Link38 Link39 Link40 Link41 Link42 Link43 Link44 Link45 Link46 Link47 Link48 Link49 Link50 4.10 任务列表混沌 (Task List Chaos) - [ ] 初始未完成 - [x] 快速完成项 - [ ] 包含粗体词汇的未完成项 - [x] 包含斜体词汇的已完成项 - [ ] 包含Inline Code的项 - [x] 带有链接的项 - [ ] 极长极长极长极长极长极长极长极长极长极长极长极长极长极长极长极长的任务描述，测试它在小屏幕下的换行是否会遮挡 Checkbox。 - [x] 嵌套任务 - [ ] 子任务 1 - [x] 子任务 2 - [ ] 子任务 3 - [ ] 任务后的普通段落内容。 结语 [^1]: 这是第一个脚注的压力测试。它包含了一个非常长的段落，用于测试在脚注区域内长文本的换行和行高表现。除此之外，它还包含了一个列表： - 列表项 A - 列表项 B - 列表项 C 以及一个代码片段：const test = \"footnote stress test\";。这有助于验证脚注中复杂元素的排版是否会溢出或错乱。 [^2]: 这是第二个脚注的压力测试。 它包含了多个段落，以测试脚注项内部的段间距。这是第二个段落，包含了一个超链接测试。 甚至可以尝试在脚注里放一个微型代码块： (Note: Some markdown parsers have limited support for complex content within footnotes, this test verifies our renderer's limits.) 如果上述所有内容都能被优雅地渲染，没有溢出屏幕，没有奇怪的重叠，即使在移动端也能保持良好的阅读体验，那么我们的样式表 (CSS) 就通过了这次压力测试。"
+  },
+  {
+    "title": "Markdown 语法全集测试：从入门到精通的排版艺术展示 (Markdown All-in-One)",
+    "slug": "markdown-all-in-one-test",
+    "categories": [
+      "tech"
+    ],
+    "tags": [
+      "Markdown",
+      "Testing",
+      "Syntax"
+    ],
+    "description": "这是一篇旨在测试 Markdown 渲染器对所有基础及进阶语法支持情况的测试文章。包含了标题、列表、引言、强调、链接等各种样式的组合使用。",
+    "content": "1. 标题测试 (Headings) H1 标题 H2 标题 H3 标题 H4 标题 H5 标题 H6 标题 2. 强调 (Emphasis) 这也应该是斜体 这也是斜体 这也是粗体 这也是粗体 这应该是粗斜体 这也应该是粗斜体 ~~这是删除线~~ 3. 引用 (Blockquotes) > 这是一个一级引用。 > > > 这是一个嵌套的二级引用。 > > > > > 这是一个嵌套的三级引用。 > > 回到一级引用。 4. 列表 (Lists) 无序列表 项目 A 项目 B 子项目 B-1 子项目 B-2 子子项目 B-2-a 项目 C 有序列表 1. 第一项 2. 第二项 3. 第三项 1. 子项 3.1 2. 子项 3.2 任务列表 - [x] 已完成任务 - [ ] 未完成任务 - [ ] 另一个未完成任务 5. 分割线 (Horizontal Rules) --- 6. 链接与自动链接 (Links) 这是一个普通链接 带标题的链接 自动链接: 7. 脚注 (Footnotes) 这是一个脚注引用[^1]。 这是另一个脚注引用[^longnote]。 [^1]: 这里是脚注的文本。 [^longnote]: 这里是一个较长的脚注文本，甚至可以包含多行内容。 8. HTML 元素混用 定义列表标题 定义列表描述。 9. 字符转义 \\literal asterisks\\ 10. 长段落文本展示 这是一个非常长的段落，用于测试文本换行和段落间距的显示效果。Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. 中文长文本测试：这是另一段非常长的中文文本，旨在测试中文字符在不同屏幕宽度下的换行表现，以及行高是否舒适。春江潮水连海平，海上明月共潮生。滟滟随波千万里，何处春江无月明！江流宛转绕芳甸，月照花林皆似霰；空里流霜不觉飞，汀上白沙看不见。江天一色无纤尘，皎皎空中孤月轮。江畔何人初见月？江月何年初照人？人生代代无穷已，江月年年望相似。不知江月待何人，但见长江送流水。"
+  },
+  {
+    "title": "Svelte 5 新特性探索",
+    "slug": "svelte-5-features",
+    "categories": [
+      "tech"
+    ],
+    "tags": [
+      "Svelte",
+      "前端",
+      "JavaScript"
+    ],
+    "description": "深入了解 Svelte 5 带来的 Runes 响应式系统改革以及其他激动人心的新特性。",
+    "content": "引言 Svelte 5 带来了框架历史上最大的变革之一：Runes。这不仅仅是语法的改变，更是响应式模型的重构。 什么是 Runes？ Runes 是 Svelte 5 引入的一组新原语，用于明确地声明响应式状态。 为什么需要变革？ Svelte 4 的响应式系统依赖于编译时的变量赋值分析。虽然这在组件内部工作良好，但在处理复杂状态逻辑提取（例如 hooks）时会遇到限制。Runes 解决了这个问题，使得响应式逻辑在 .svelte 文件之外也能通用。 性能提升 除了开发者体验的升级，Svelte 5 在运行时性能上也做了大量优化... 总结 Svelte 5 的发布标志着这个框架走向成熟。虽然 API 发生了变化，但\"编写更少代码\"的核心理念依然未变。"
+  }
+]

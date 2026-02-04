@@ -9,6 +9,7 @@
 	import { onMount } from 'svelte';
 	import { fetchLinkMetadata, type LinkMetadata } from '$lib/utils/network/urlMetadata';
 	import { ExternalLink } from 'lucide-svelte';
+	import LazyImage from '$lib/components/ui/display/LazyImage.svelte';
 
 	let { url } = $props<{ url: string }>();
 
@@ -41,11 +42,12 @@
 		class="group my-6 block overflow-hidden rounded-2xl border border-white/10 bg-white/5 no-underline transition-all hover:bg-white/10"
 	>
 		{#if metadata.image}
-			<div class="h-48 w-full overflow-hidden bg-white/5">
-				<img
+			<div class="h-48 w-full overflow-hidden bg-white/5 relative">
+				<LazyImage
 					src={metadata.image}
 					alt={metadata.title}
-					class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+					class="h-full w-full transition-transform duration-500 group-hover:scale-105"
+					fill
 				/>
 			</div>
 		{/if}

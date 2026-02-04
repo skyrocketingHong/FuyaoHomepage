@@ -20,7 +20,7 @@
 	 * @prop showGloss - 是否显示表面光泽层 (默认 true)
 	 * @prop class - 额外的 CSS 类名
 	 */
-	import { cn } from '$lib/utils';
+	import { cn } from '$lib/utils/index';
 	import { onMount } from 'svelte';
 
 	let { children, class: className, tag = 'div', tilt = false, lazyBlur = false, opaque = false, showLighting = true, showGloss = true, ...rest } = $props();

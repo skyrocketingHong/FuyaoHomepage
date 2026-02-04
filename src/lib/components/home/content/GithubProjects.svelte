@@ -11,7 +11,7 @@
 	import { t, locale } from '$lib/i18n/store';
 	import Crossfade from '$lib/components/ui/effect/Crossfade.svelte';
 	import LoadingState from '$lib/components/ui/feedback/LoadingState.svelte';
-	import { cn } from '$lib/utils';
+	import { cn } from '$lib/utils/index';
 
 	import Marquee from '$lib/components/ui/display/Marquee.svelte';
 

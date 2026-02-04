@@ -2,7 +2,7 @@
 	/**
 	 * 博客 RSS 订阅按钮
 	 */
-	import HeaderActionButton from '$lib/components/layout/header/button/HeaderActionButton.svelte';
+	import HeaderActionButton from '$lib/components/layout/header/ActionButton.svelte';
 	import { Rss } from 'lucide-svelte';
 	import { t } from '$lib/i18n/store';
 

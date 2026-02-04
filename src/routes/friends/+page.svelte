@@ -11,6 +11,8 @@
 	import LoadingState from '$lib/components/ui/feedback/LoadingState.svelte';
 	import CategoryNav from '$lib/components/layout/header/nav/CategoryNav.svelte';
 	import { t } from '$lib/i18n/store';
+	import Crossfade from '$lib/components/ui/effect/Crossfade.svelte';
+	import { headerState } from '$lib/stores/app.svelte';
 
 	interface Friend {
 		name: string;
@@ -34,47 +36,73 @@
 	let activeCategory = $state('online');
 	let loading = $state(true);
 	let error = $state('');
+	
+	// Header ID for cleanup and updates
+	let headerId = '';
 
 	// 根据分类获取友链
 	let filteredFriends = $derived(
 		activeCategory === 'online' ? friendsData.online : friendsData.offline
 	);
 
-	onMount(async () => {
-		try {
-			friendsData = await loadYaml<FriendsData>('/data/friends.yaml');
-		} catch (e) {
-			console.error('Failed to load friends list', e);
-			error = 'Failed to load friends list';
-		} finally {
-			loading = false;
-		}
-	});
-
 	function handleCategorySelect(slug: string) {
 		activeCategory = slug;
 	}
+
+	onMount(() => {
+		// 注册到 Header
+		headerId = headerState.setMiddle(CategoryNav, {
+			categories,
+			activeCategory,
+			onSelect: handleCategorySelect
+		}, 'friends-nav');
+
+		async function loadData() {
+			try {
+				friendsData = await loadYaml<FriendsData>('/data/friends.yaml');
+			} catch (e) {
+				console.error('Failed to load friends list', e);
+				error = 'Failed to load friends list';
+			} finally {
+				loading = false;
+			}
+		}
+		loadData();
+
+		// 清理 Header
+		return () => {
+			headerState.clearMiddle(headerId);
+		};
+	});
+
+	// 同步 Header 状态
+	$effect(() => {
+		if (headerId) {
+			headerState.updateMiddle(headerId, {
+				categories,
+				activeCategory,
+				onSelect: handleCategorySelect
+			});
+		}
+	});
 </script>
 
-<!-- 个人信息卡片 -->
-<ProfileCard />
+<Crossfade key={activeCategory}>
+	<div class="flex flex-col">
+		<!-- 个人信息卡片 -->
+		{#if activeCategory !== 'offline'}
+			<ProfileCard />
+		{/if}
 
-<!-- 分类导航 -->
-<div class="flex justify-center py-4">
-	<CategoryNav
-		{categories}
-		{activeCategory}
-		onSelect={handleCategorySelect}
-	/>
-</div>
-
-<!-- 友链列表 -->
-<div class="flex w-full flex-col gap-10">
-	<LoadingState {loading} {error} class="w-full justify-center pt-10 pb-0">
-		<div class="grid grid-cols-[repeat(auto-fill,minmax(300px,1fr))] gap-4">
-			{#each filteredFriends as friend}
-				<FriendCard {friend} isOnline={activeCategory === 'online'} />
-			{/each}
+		<!-- 友链列表 -->
+		<div class="flex w-full flex-col gap-10">
+			<LoadingState {loading} {error} class="w-full justify-center pb-0">
+				<div class="grid grid-cols-[repeat(auto-fill,minmax(300px,1fr))] gap-4">
+					{#each filteredFriends as friend}
+						<FriendCard {friend} isOnline={activeCategory === 'online'} />
+					{/each}
+				</div>
+			</LoadingState>
 		</div>
-	</LoadingState>
-</div>
+	</div>
+</Crossfade>

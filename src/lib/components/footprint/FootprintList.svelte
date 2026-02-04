@@ -8,7 +8,7 @@
 	 * @prop onSelect - 选择地点时的回调函数
 	 */
 	import SidebarTree from '$lib/components/layout/sidebar/SidebarTree.svelte';
-	import type { SidebarItemType } from '$lib/components/layout/sidebar/types';
+	import type { SidebarItemType } from '$lib/types/sidebar';
 
 	let { places = [], onSelect } = $props();
 

@@ -13,10 +13,11 @@
 	 * @prop adaptiveStatus - 自适应展示状态：头像可加载时显示在线，否则显示离线 (默认 false)
 	 * @prop class - 额外的 CSS 类名
 	 */
-	import { cn } from '$lib/utils';
+	import { cn } from '$lib/utils/index';
 	import { fade } from 'svelte/transition';
 	import LoadingSpinner from '../feedback/LoadingSpinner.svelte';
 	import Crossfade from '../effect/Crossfade.svelte';
+	import LazyImage from './LazyImage.svelte';
 
 	interface Props {
 		/** 头像图片 URL */
@@ -63,7 +64,12 @@
 		lg: '-right-1.5 -bottom-1.5 p-1.5'
 	};
 
-	let loading = $state(true);
+	/* 
+	 * 使用 LazyImage 替代了原有的 loading 状态管理。
+	 * 加载失败逻辑通过 LazyImage 的 onerror 回调处理。
+	 * 在线状态逻辑 (isOnline) 依赖 loadFailed 状态。
+	 */
+
 	let loadFailed = $state(false);
 
 	// 计算是否应该显示状态指示器
@@ -77,29 +83,17 @@
 		statusTitle || (adaptiveStatus ? (isOnline ? '在线' : '离线') : '')
 	);
 
+	function handleImageError() {
+		loadFailed = true;
+	}
+
+	// 监听 src 变化，重置失败状态
 	$effect(() => {
-		loading = true;
-		loadFailed = false;
-		const img = new Image();
-		img.src = src;
-
-		let active = true;
-		img.onload = () => {
-			if (active) {
-				loading = false;
-				loadFailed = false;
-			}
-		};
-		img.onerror = () => {
-			if (active) {
-				loading = false;
-				loadFailed = true;
-			}
-		};
-
-		return () => {
-			active = false;
-		};
+		// 只要 src 存在，我们假设它可能是有效的，先重置失败状态
+		// LazyImage 组件内部会处理实际的加载
+		if (src) {
+			loadFailed = false;
+		}
 	});
 </script>
 
@@ -124,23 +118,13 @@
 				❔
 			</div>
 		{:else}
-			<img
+			<LazyImage
 				{src}
 				{alt}
-				class={cn(
-					'h-full w-full object-cover transition-all duration-300 group-hover:scale-105',
-					loading ? 'opacity-0' : 'opacity-100'
-				)}
+				class="h-full w-full transition-all duration-300 group-hover:scale-105"
+				fill
+				onerror={handleImageError}
 			/>
-		{/if}
-
-		<!-- 加载动画 -->
-		{#if loading}
-			<Crossfade key={loading} class="absolute inset-0 bg-background/10 backdrop-blur-sm rounded-full">
-				<div class="h-full w-full flex items-center justify-center">
-					<LoadingSpinner {size} />
-				</div>
-			</Crossfade>
 		{/if}
 	</div>
 

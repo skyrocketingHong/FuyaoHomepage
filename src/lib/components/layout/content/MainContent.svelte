@@ -11,9 +11,9 @@
 	import Crossfade from '$lib/components/ui/effect/Crossfade.svelte';
 	import ScrollContainer from '$lib/components/ui/layout/ScrollContainer.svelte';
 	import BlurEdge from '$lib/components/ui/effect/BlurEdge.svelte';
-	import { layoutState, headerState } from '$lib/state.svelte';
+	import { layoutState, headerState } from '$lib/stores/app.svelte';
 	import type { Snippet } from 'svelte';
-    import { cn } from '$lib/utils';
+    import { cn } from '$lib/utils/index';
 	import { beforeNavigate, afterNavigate } from '$app/navigation';
 	import { tick } from 'svelte';
 
@@ -32,7 +32,7 @@
     let hasScrollBottom = $state(false);
 	let scrollRef = $state<HTMLElement>();
 
-	// Map to store scroll positions: pathname -> scrollTop
+	// 存储滚动位置的 Map: pathname -> scrollTop
 	let scrollPositions = new Map<string, number>();
 
 	beforeNavigate(() => {
@@ -46,11 +46,11 @@
 		if (!scrollRef || !isScrollable) return;
 
 		if (type === 'popstate' && to?.url.pathname) {
-			// Restore position for back/forward navigation
+			// 为后退/前进导航恢复位置
 			const savedPosition = scrollPositions.get(to.url.pathname) ?? 0;
 			scrollRef.scrollTop = savedPosition;
 		} else {
-			// Reset to top for normal navigation
+			// 正常导航时重置回顶部
 			scrollRef.scrollTop = 0;
 		}
 	});
@@ -58,15 +58,16 @@
 
 <ScrollContainer
 	class={cn(
-        // Base styles for both (using responsive prefixes for differences)
+        // 两者的基础样式 (使用响应式前缀区分)
         "w-full flex flex-col transition-all duration-300 ease-in-out",
-        // Mobile specific: 100dvh, padding. Dynamic top padding for extended header.
+        // 移动端特定: 100dvh, padding. 针对扩展头部动态调整顶部 padding.
         "h-[100dvh] pr-2 pl-2",
         isHeaderExtended ? "pt-25" : "pt-13",
-        // Desktop specific: h-full (nested in restricted container), different padding
-        "md:h-full md:min-h-0 md:pt-16 md:pr-4 md:pb-4 md:pl-4",
-        // Scroll state styling
-        isScrollable ? "overflow-y-auto pointer-events-auto" : "overflow-hidden pointer-events-auto",
+        // 桌面端特定: h-full (嵌套在受限容器中), 不同的 padding
+        "lg:h-full lg:min-h-0 lg:pt-16 lg:pr-4 lg:pb-4 lg:pl-4",
+        // 滚动状态样式
+        isScrollable ? "overflow-y-auto" : "overflow-hidden",
+        layoutState.isContentTransparent ? "pointer-events-none" : "pointer-events-auto",
         className
     )}
 	enabled={isScrollable}

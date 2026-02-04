@@ -5,7 +5,7 @@
 	 * 展示当前马赛克背景对应的车站信息。
 	 * 包含车站的中英文名称及 MTR 图标。
 	 */
-	import { mosaicState } from '$lib/state.svelte';
+	import { mosaicState } from '$lib/stores/app.svelte';
 	import { SiMtr } from '@icons-pack/svelte-simple-icons';
 </script>
 

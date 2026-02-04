@@ -9,10 +9,14 @@
 	 */
 	import Marquee from '$lib/components/ui/display/Marquee.svelte';
 	import SidebarTree from '$lib/components/layout/sidebar/SidebarTree.svelte';
-	import type { SidebarItemType } from '$lib/components/layout/sidebar/types';
+	import type { SidebarItemType } from '$lib/types/sidebar';
 	import { t } from '$lib/i18n/store';
     import { page } from '$app/state';
-	import { getBlogListUrl } from '$lib/utils/domain/blog';
+	import { groupPostsByYear, getBlogListUrl } from '$lib/utils/domain/blog';
+    
+    // ... imports
+
+
 
 	let { posts = [], activeCategory = 'All', onSelect } = $props<{ 
 		posts: any[]; 
@@ -21,7 +25,7 @@
 	}>();
 
 	import { Calendar, Tag } from 'lucide-svelte';
-	import { sidebarState } from '$lib/state.svelte';
+	    import { sidebarState } from '$lib/stores/app.svelte';
 	import { onMount, untrack } from 'svelte';
 
 	// 定义模式常量
@@ -87,23 +91,9 @@
 		const currentMode = sidebarState.viewMode || 'year';
 		if (currentMode !== 'year') return [];
 
-		const groups: Record<string, typeof posts> = {};
-		
-		// 如果有激活标签，则年份视图也只展示包含该标签的文章
-		const filteredPosts = activeTag 
-			? posts.filter((p: any) => p.tags && p.tags.includes(activeTag))
-			: posts;
+        const groupedPosts = groupPostsByYear(posts, activeTag);
 
-		filteredPosts.forEach((post: any) => {
-			const year = post.date ? post.date.substring(0, 4) : 'unknown';
-			if (!groups[year]) groups[year] = [];
-			groups[year].push(post);
-		});
-
-		const sortedKeys = Object.keys(groups).sort((a, b) => b.localeCompare(a));
-
-		return sortedKeys.map(key => {
-			const groupPosts = groups[key];
+		return groupedPosts.map(([year, groupPosts]) => {
 			const items: SidebarItemType[] = groupPosts.map((post: any) => ({
 				label: post.title, 
 				onClick: () => onSelect(post),
@@ -113,8 +103,8 @@
 			}));
             
 			return {
-				id: key,
-				label: key === 'unknown' ? $t('blog.unknown_year') : key,
+				id: year,
+				label: year === 'unknown' ? $t('blog.unknown_year') : year,
 				items: items,
                 defaultExpanded: true
 			} as SidebarItemType & { id: string };

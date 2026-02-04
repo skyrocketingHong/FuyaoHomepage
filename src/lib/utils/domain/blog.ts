@@ -111,6 +111,30 @@ export function getBlogListUrl(category: string = 'All', tag: string = '') {
         path += `/tag/${encodeURIComponent(tag)}`;
     }
     
-    // 始终添加末尾斜杠以匹配 trailingSlash = 'always'
+	// 始终添加末尾斜杠以匹配 trailingSlash = 'always'
     return `${path}/`;
+}
+
+/**
+ * 按年份对文章进行分组
+ * @param posts 文章列表
+ * @param activeTag 当前选中的标签 (可选)
+ * @returns [year, posts[]] 格式的元组数组，按年份降序排列
+ */
+export function groupPostsByYear(posts: any[], activeTag: string = '') {
+    const groups: Record<string, typeof posts> = {};
+    
+    const filteredPosts = activeTag 
+        ? posts.filter((p: any) => p.tags && p.tags.includes(activeTag))
+        : posts;
+
+    filteredPosts.forEach((post: any) => {
+        const year = post.date ? post.date.substring(0, 4) : 'unknown';
+        if (!groups[year]) groups[year] = [];
+        groups[year].push(post);
+    });
+
+    // 按年份降序排序
+    return Object.entries(groups)
+        .sort(([yearA], [yearB]) => yearB.localeCompare(yearA));
 }

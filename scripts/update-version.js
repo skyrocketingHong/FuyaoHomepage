@@ -49,15 +49,15 @@ function updateChangelog(newVersion) {
     const date = new Date().toISOString().split('T')[0];
     const content = fs.readFileSync(CHANGELOG_PATH, 'utf-8');
 
-    const header = `## [${newVersion}] - ${date}`;
+    const header = `## ${newVersion} (${date})`;
     const template = `
-### ✨ 新增
+### 新增
 - 
 
-### 🔧 优化
+### 优化
 - 
 
-### 🐛 修复
+### 修复
 - 
 `;
 

@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { fade } from 'svelte/transition';
-	import { cn } from '$lib/utils';
+	import { cn } from '$lib/utils/index';
 
 	/**
 	 * 交叉淡入淡出组件

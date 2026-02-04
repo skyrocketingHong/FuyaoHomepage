@@ -16,8 +16,10 @@
  * @param src - 原始 Markdown 字符串源码
  * @returns 包含渲染后的 HTML 字符串和解析出的 TOC 结构
  */
-export async function renderMarkdown(src: string) {
+export async function renderMarkdown(src: string, options: { copyLabel?: string } = {}) {
     if (!src) return { html: '', toc: [] };
+
+    const copyLabel = options.copyLabel || 'Copy';
 
     // 1. 并行动态加载所有依赖，确保模块上下文一致
     const [
@@ -101,7 +103,7 @@ export async function renderMarkdown(src: string) {
                             properties: { className: ['code-header'] },
                             children: [
                                 { type: 'element', tagName: 'span', properties: { className: ['lang-label'] }, children: [{ type: 'text', value: lang }] },
-                                { type: 'element', tagName: 'button', properties: { className: ['copy-btn'], 'data-code': encoded }, children: [{ type: 'text', value: 'Copy' }] }
+                                { type: 'element', tagName: 'button', properties: { className: ['copy-btn'], 'data-code': encoded }, children: [{ type: 'text', value: copyLabel }] }
                             ]
                         },
                         {
@@ -122,6 +124,82 @@ export async function renderMarkdown(src: string) {
         });
     };
 
+    // 4. 自定义插件：表格包裹器 (解决横向滚动)
+    const rehypeTableWrapper = () => (tree: unknown) => {
+         // @ts-expect-error - visitor pattern types
+        visit(tree, 'element', (node: any, index: number | undefined, parent: any) => {
+            if (node.tagName === 'table') {
+                // 防止重复包裹
+                if (parent && parent.properties && parent.properties.className && 
+                    Array.isArray(parent.properties.className) && 
+                    parent.properties.className.includes('table-container')) {
+                    return SKIP;
+                }
+
+                const wrapperNode = {
+                    type: 'element',
+                    tagName: 'div',
+                    properties: { className: ['table-container'] },
+                    children: [node]
+                };
+
+                if (parent && typeof index === 'number') {
+                    parent.children[index] = wrapperNode;
+                    return SKIP;
+                }
+            }
+        });
+    };
+
+    // 5. 自定义插件：图片说明检测 (Image Caption)
+    const rehypeImageCaption = () => (tree: any) => {
+        visit(tree, 'element', (node: any, index: number | undefined, parent: any) => {
+            // 检查当前段落是否仅包含一个图片
+            if (node.tagName === 'p' && node.children && parent && typeof index === 'number') {
+                const realChildren = node.children.filter((c: any) => 
+                    c.type === 'element' || (c.type === 'text' && c.value.trim().length > 0)
+                );
+                
+                const hasOnlyImage = realChildren.length === 1 && realChildren[0].tagName === 'img';
+                
+                if (hasOnlyImage) {
+                    // 寻找下一个非空元素段落作为说明文字
+                    let nextIndex = index + 1;
+                    while (parent.children[nextIndex] && 
+                           (parent.children[nextIndex].type === 'text' && !parent.children[nextIndex].value.trim())) {
+                        nextIndex++;
+                    }
+
+                    const nextNode = parent.children[nextIndex];
+                    if (nextNode && nextNode.type === 'element' && nextNode.tagName === 'p') {
+                        const text = toString(nextNode).trim();
+                        const isLikelyCaption = text.startsWith('图') || 
+                                              text.toLowerCase().startsWith('figure') || 
+                                              (nextNode.children.length === 1 && nextNode.children[0].tagName === 'em');
+                        
+                        if (isLikelyCaption) {
+                            nextNode.properties = nextNode.properties || {};
+                            nextNode.properties.className = [...(nextNode.properties.className || []), 'image-caption'];
+                            node.properties = node.properties || {};
+                            node.properties.className = [...(node.properties.className || []), 'image-paragraph'];
+                        }
+                    }
+                } else {
+                    // 情况 B: 图片和说明在同一个段落里
+                    const imgNode = realChildren.find((c: any) => c.tagName === 'img');
+                    if (imgNode && realChildren.length === 2) {
+                        const otherNode = realChildren.find((c: any) => c !== imgNode);
+                        const text = toString(otherNode).trim();
+                        if (text.length > 0 && text.length < 200 && (text.startsWith('图') || text.toLowerCase().startsWith('figure') || otherNode.tagName === 'em')) {
+                            node.properties = node.properties || {};
+                            node.properties.className = [...(node.properties.className || []), 'image-caption'];
+                        }
+                    }
+                }
+            }
+        });
+    };
+
     let processor = unified()
         .use(remarkParse)
         .use(remarkGfm)
@@ -133,7 +211,7 @@ export async function renderMarkdown(src: string) {
             import('remark-math'),
             import('rehype-katex')
         ]);
-        // @ts-expect-error - 按需加载的插件类型在动态调用时难以静态校验
+
         processor = processor.use(remarkMath).use(rehypeKatex);
     }
 
@@ -147,9 +225,11 @@ export async function renderMarkdown(src: string) {
     // 执行解析
     const file = await processor
         .use(rehypeSlug)
-        // @ts-expect-error - 自定义处理器函数类型匹配
+
         .use(rehypeCodeWrapper)
-        // @ts-expect-error - 自定义处理器函数类型匹配
+
+        .use(rehypeTableWrapper)
+        .use(rehypeImageCaption)
         .use(rehypeExtractToc)
         .use(rehypeStringify, { allowDangerousHtml: true })
         .process(src);

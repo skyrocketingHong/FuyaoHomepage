@@ -9,10 +9,77 @@ import fs from 'fs';
 import path from 'path';
 import matter from 'gray-matter';
 
+// 手动加载 .env 环境变量
+function loadEnv() {
+    const envPath = path.join(process.cwd(), '.env');
+    if (fs.existsSync(envPath)) {
+        console.log(`[DEBUG] 正在从 ${envPath} 加载环境变量...`);
+        const envContent = fs.readFileSync(envPath, 'utf-8');
+        const lines = envContent.split(/\r?\n/);
+        lines.forEach(line => {
+            const trimmedLine = line.trim();
+            // 跳过注释和空行
+            if (!trimmedLine || trimmedLine.startsWith('#')) return;
+
+            const match = trimmedLine.match(/^([\w.-]+)\s*=\s*(.*)$/);
+            if (match) {
+                const key = match[1];
+                let value = match[2].trim();
+                
+                // 移除可能的行尾注释 (例如 KEY=VALUE # comment)
+                if (value.includes('#')) {
+                    value = value.split('#')[0].trim();
+                }
+
+                // 移除包围的引号
+                if (value.startsWith('"') && value.endsWith('"')) {
+                    value = value.substring(1, value.length - 1);
+                } else if (value.startsWith("'") && value.endsWith("'")) {
+                    value = value.substring(1, value.length - 1);
+                }
+                
+                process.env[key] = value;
+            }
+        });
+    }
+}
+
+loadEnv();
+
 // 定义路径
-const POSTS_DIR = path.join(process.cwd(), 'static/posts');
-const OUTPUT_ALL = path.join(POSTS_DIR, 'all.json');
-const OUTPUT_CATEGORIES = path.join(POSTS_DIR, 'categories.json');
+// VITE_BLOG_SOURCE_DIR: 指向存放源 .md 文件的目录 (默认为 static/posts)
+const POSTS_DIR = process.env.VITE_BLOG_SOURCE_DIR || path.join(process.cwd(), 'static/posts');
+
+// 支持通过环境变量指定输出目录（用于服务端自动化部署）
+// VITE_BLOG_OUTPUT_DIR: 指向 Web 服务器的 posts 目录 (例如 /home/caddy/www/index/posts)
+// VITE_STATIC_OUTPUT_DIR: 指向 Web 服务器的根目录 (例如 /home/caddy/www/index)
+const BLOG_OUTPUT_DIR = process.env.VITE_BLOG_OUTPUT_DIR || POSTS_DIR;
+const STATIC_OUTPUT_DIR = process.env.VITE_STATIC_OUTPUT_DIR || path.join(process.cwd(), 'static');
+
+const OUTPUT_ALL = path.join(BLOG_OUTPUT_DIR, 'all.json');
+const OUTPUT_CATEGORIES = path.join(BLOG_OUTPUT_DIR, 'categories.json');
+const OUTPUT_RSS = path.join(STATIC_OUTPUT_DIR, 'posts/rss.xml');
+const OUTPUT_SITEMAP = path.join(STATIC_OUTPUT_DIR, 'sitemap.xml');
+
+// 确保输出目录存在
+[BLOG_OUTPUT_DIR, path.dirname(OUTPUT_RSS), path.dirname(OUTPUT_SITEMAP)].forEach(dir => {
+    if (!fs.existsSync(dir)) {
+        fs.mkdirSync(dir, { recursive: true });
+    }
+});
+
+// 输出初始化信息
+console.log('--- 路径配置 ---');
+console.log(`项目根目录: ${process.cwd()}`);
+console.log(`博文源码 (Source): ${POSTS_DIR}`);
+console.log(`索引输出 (Blog Output): ${BLOG_OUTPUT_DIR}`);
+console.log(`静态文件输出 (Static Output): ${STATIC_OUTPUT_DIR}`);
+console.log('----------------\n');
+
+// 获取配置信息（从环境变量或默认值）
+const siteUrl = (process.env.VITE_SITE_URL).replace(/\/$/, '');
+const siteName = process.env.VITE_SEO_AUTHOR;
+const siteDescription = process.env.VITE_SEO_DESCRIPTION;
 
 /**
  * 递归获取目录下的所有 Markdown 文件
@@ -236,6 +303,164 @@ try {
     console.log(`成功生成索引:`);
     console.log(`- 全部文章 (All): ${posts.length}`);
     console.log(`- 分类数量 (Categories): ${categoriesList.length}`);
+
+    // --- 生成 RSS Feed ---
+    console.log('正在生成 RSS Feed...');
+    
+    function escapeXml(text) {
+        return (text || '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&apos;');
+    }
+
+    function formatRfc822Date(dateString) {
+        const date = new Date(dateString);
+        return date.toUTCString();
+    }
+
+    const rssItems = posts.map(post => {
+        const primaryCategory = post.categories?.[0] || '';
+        const postUrl = primaryCategory 
+            ? `${siteUrl}/blog/${primaryCategory}/${post.slug}/`
+            : `${siteUrl}/blog/${post.slug}/`;
+        
+        const pubDate = formatRfc822Date(post.date);
+        const description = post.description || post.title;
+        const categoryTags = (post.categories || [])
+            .map(cat => `        <category>${escapeXml(cat)}</category>`)
+            .join('\n');
+
+        return `    <item>
+        <title>${escapeXml(post.title)}</title>
+        <link>${postUrl}</link>
+        <guid isPermaLink="true">${postUrl}</guid>
+        <pubDate>${pubDate}</pubDate>
+        <description>${escapeXml(description)}</description>
+${categoryTags}
+    </item>`;
+    }).join('\n');
+
+    const rss = `<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+    <channel>
+        <title>${escapeXml(siteName)}</title>
+        <link>${siteUrl}</link>
+        <description>${escapeXml(siteDescription)}</description>
+        <language>zh-CN</language>
+        <lastBuildDate>${formatRfc822Date(new Date().toISOString())}</lastBuildDate>
+        <atom:link href="${siteUrl}/rss.xml" rel="self" type="application/rss+xml"/>
+${rssItems}
+    </channel>
+</rss>`;
+
+    fs.writeFileSync(OUTPUT_RSS, rss);
+    console.log(`- RSS 已生成: ${path.relative(process.cwd(), OUTPUT_RSS)}`);
+
+    // --- 生成 Sitemap ---
+    console.log('正在生成 Sitemap...');
+    
+    const staticPages = [
+        { loc: `${siteUrl}/home/`, priority: '1.0' },
+        { loc: `${siteUrl}/blog/`, priority: '0.8' },
+        { loc: `${siteUrl}/pay/`, priority: '0.8' },
+        { loc: `${siteUrl}/friends/`, priority: '0.8' }
+    ].map(p => ({
+        ...p,
+        changefreq: 'daily',
+        lastmod: new Date().toISOString()
+    }));
+
+    const blogSitemapEntries = posts.flatMap(post => {
+        const cats = post.categories || [];
+        if (cats.length === 0) {
+            return [{
+                loc: `${siteUrl}/blog/${post.slug}/`,
+                changefreq: 'weekly',
+                priority: '0.6',
+                lastmod: post.lastmod || post.date
+            }];
+        }
+        return cats.map(category => ({
+            loc: `${siteUrl}/blog/${category}/${post.slug}/`,
+            changefreq: 'weekly',
+            priority: '0.6',
+            lastmod: post.lastmod || post.date
+        }));
+    });
+
+    const allSitemapUrls = [...staticPages, ...blogSitemapEntries];
+    const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${allSitemapUrls.map(url => `    <url>
+        <loc>${url.loc}</loc>
+        <lastmod>${url.lastmod}</lastmod>
+        <changefreq>${url.changefreq}</changefreq>
+        <priority>${url.priority}</priority>
+    </url>`).join('\n')}
+</urlset>`;
+
+    fs.writeFileSync(OUTPUT_SITEMAP, sitemap);
+    console.log(`- Sitemap 已生成: ${path.relative(process.cwd(), OUTPUT_SITEMAP)}`);
+
+    // --- 生成 Search Index (包含全文) ---
+    console.log('正在生成 Search Index...');
+    
+    function stripMarkdown(markdown) {
+        if (!markdown) return '';
+        // 简单的 Markdown 去除逻辑
+        return markdown
+            // 移除 Frontmatter (已被移除，但防万一)
+            .replace(/^---[\s\S]*?---\s*/, '')
+            // 移除标题 #
+            .replace(/^#+\s+/gm, '')
+            // 移除链接 [text](url) -> text
+            .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+            // 移除图片 ![alt](url) -> alt
+            .replace(/!\[([^\]]*)\]\([^)]+\)/g, '$1')
+            // 移除粗体/斜体
+            .replace(/[*_]{1,3}([^*_]+)[*_]{1,3}/g, '$1')
+            // 移除代码块
+            .replace(/```[\s\S]*?```/g, '')
+            // 移除行内代码
+            .replace(/`([^`]+)`/g, '$1')
+             // 移除 HTML 标签
+            .replace(/<[^>]+>/g, '')
+            // 移除多余空白
+            .replace(/\s+/g, ' ')
+            .trim();
+    }
+
+    const searchIndex = allFiles.map(filePath => {
+        try {
+            const content = fs.readFileSync(filePath, 'utf-8');
+            const { data, content: markdownBody } = matter(content);
+            
+            if (data.draft) return null;
+
+            const relativePath = path.relative(POSTS_DIR, filePath);
+            const dirName = path.dirname(relativePath);
+            const dirCategory = dirName === '.' ? 'Uncategorized' : dirName;
+            const categories = buildCategoriesArray(dirCategory, data.categories);
+
+            return {
+                title: data.title || path.basename(filePath, '.md'),
+                slug: data.slug || generateSlugFromFilename(relativePath),
+                categories: categories,
+                tags: data.tags || [],
+                description: data.description || data.summary || '',
+                content: stripMarkdown(markdownBody)
+            };
+        } catch {
+            return null;
+        }
+    }).filter(item => item !== null);
+
+    const OUTPUT_SEARCH = path.join(BLOG_OUTPUT_DIR, 'search.json');
+    fs.writeFileSync(OUTPUT_SEARCH, JSON.stringify(searchIndex, null, 2));
+    console.log(`- Search Index 已生成: ${path.relative(process.cwd(), OUTPUT_SEARCH)}`);
 
 } catch (e) {
     console.error('生成索引时出错:', e);

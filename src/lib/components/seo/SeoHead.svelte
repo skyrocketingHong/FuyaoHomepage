@@ -12,7 +12,7 @@
 	 * @prop type - 页面类型 (website | article | profile)
 	 * @prop jsonLd - 结构化数据对象
 	 */
-	import { seoConfig } from '$lib/config';
+	import { seoConfig } from '$lib/config/index';
 	import { page } from '$app/state';
 	import { t } from '$lib/i18n/store';
 

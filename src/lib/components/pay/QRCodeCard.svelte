@@ -12,6 +12,7 @@
 	import LoadingSpinner from '$lib/components/ui/feedback/LoadingSpinner.svelte';
 	import LiquidGlass from '$lib/components/ui/effect/LiquidGlass.svelte';
 	import Crossfade from '$lib/components/ui/effect/Crossfade.svelte';
+	import LazyImage from '$lib/components/ui/display/LazyImage.svelte';
 	import { t, locale } from '$lib/i18n/store';
 	import { fade, slide } from 'svelte/transition';
 	
@@ -166,10 +167,13 @@
 						<div class="flex flex-col items-center gap-4">
 							{#if payment.qrCodeDataUrl}
 								<Crossfade key={payment.qrCodeDataUrl} class="rounded-2xl bg-white p-3 shadow-lg">
-									<img
+									<LazyImage
 										src={payment.qrCodeDataUrl}
 										alt="{payment.name} QR Code"
 										class="w-64 h-64 md:w-72 md:h-72 object-contain"
+										fit="contain"
+										width="auto"
+										height="auto"
 									/>
 								</Crossfade>
 							{:else}

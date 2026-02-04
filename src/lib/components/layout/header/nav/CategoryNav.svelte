@@ -23,7 +23,7 @@
 	}>();
 
 	// 将 categories 转换为 SegmentedControl 所需的格式
-	let controlItems = $derived(categories.map(cat => ({
+	let controlItems = $derived(categories.map((cat: Category) => ({
 		id: cat.slug,
 		label: cat.title
 	})));

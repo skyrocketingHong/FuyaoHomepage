@@ -4,7 +4,7 @@
  * 包含用于增强原生 HTML 交互能力的自定义逻辑。
  */
 import { mount, unmount } from 'svelte';
-import LinkPreview from './LinkPreview.svelte';
+import LinkPreview from '$lib/components/blog/viewer/LinkPreview.svelte';
 
 /**
  * 链接增强 Action

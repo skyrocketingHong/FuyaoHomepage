@@ -10,7 +10,7 @@
 	 */
 	import { t, locale } from '$lib/i18n/store';
 	import { SiGithub } from '@icons-pack/svelte-simple-icons';
-	import { repoConfig, type BackgroundMode } from '$lib/config';
+	import { repoConfig, seoConfig, type BackgroundMode } from '$lib/config/index';
 	import Crossfade from '$lib/components/ui/effect/Crossfade.svelte';
     import type { Component } from 'svelte';
 
@@ -46,7 +46,7 @@
 
 {#snippet copyrightText()}
 	<span class={separatorClass}><br></span>
-	<span>© {$t('common.copyright', { startYear, currentYear })}</span>
+	<span>© {$t('common.copyright', { startYear, currentYear, siteName: seoConfig.siteName })}</span>
 	<span class={separatorClass}><br></span>
 	<span class="inline-flex items-center gap-1 justify-end">
 		<span>Version {__APP_VERSION__} of</span>
