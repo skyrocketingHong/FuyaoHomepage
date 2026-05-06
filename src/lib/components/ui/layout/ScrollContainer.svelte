@@ -17,8 +17,8 @@
 	import FadeEdge from '$lib/components/ui/effect/FadeEdge.svelte';
 	import type { Snippet } from 'svelte';
 
-	let { 
-		children, 
+	let {
+		children,
 		class: className = '',
 		ref = $bindable(),
 		enabled = true,
@@ -26,9 +26,9 @@
 		hasScrollTop = $bindable(false),
 		hasScrollBottom = $bindable(false),
 		orientation = 'vertical',
-		...rest 
-	} = $props<{ 
-		children: Snippet; 
+		...rest
+	} = $props<{
+		children: Snippet;
 		class?: string;
 		ref?: HTMLElement;
 		style?: string;
@@ -37,7 +37,7 @@
 		hasScrollTop?: boolean;
 		hasScrollBottom?: boolean;
 		orientation?: 'horizontal' | 'vertical';
-		[key: string]: any; 
+		[key: string]: unknown;
 	}>();
 
 	let container = $state<HTMLElement>();
@@ -48,7 +48,7 @@
 
 	function updateScrollMask() {
 		if (!container || !enabled) return;
-		
+
 		if (orientation === 'horizontal') {
 			const { scrollLeft, scrollWidth, clientWidth } = container;
 			// 映射到 hasScrollTop/Bottom 以保持 API 兼容 (Top -> Start/Left, Bottom -> End/Right)
@@ -68,13 +68,13 @@
 	$effect(() => {
 		// 初始化时检查
 		if (enabled) updateScrollMask();
-		
+
 		// 添加 ResizeObserver 以处理窗口大小调整或内容大小变化
 		if (container && enabled) {
 			const update = () => {
 				requestAnimationFrame(updateScrollMask);
 			};
-			
+
 			const ro = new ResizeObserver(update);
 			ro.observe(container);
 			// 如果存在第一个子元素，也监听它，因为它的尺寸通常决定了 scrollHeight
@@ -82,9 +82,14 @@
 				ro.observe(container.firstElementChild);
 			}
 
-            // 监听 DOM 变动，以捕捉可能不会立即触发 Resize 的内容变化（例如图片加载状态更改，尚未改变布局但稍后可能会改变）
-            const mo = new MutationObserver(update);
-            mo.observe(container, { childList: true, subtree: true, attributes: true, attributeFilter: ['style', 'class'] });
+			// 监听 DOM 变动，以捕捉可能不会立即触发 Resize 的内容变化（例如图片加载状态更改，尚未改变布局但稍后可能会改变）
+			const mo = new MutationObserver(update);
+			mo.observe(container, {
+				childList: true,
+				subtree: true,
+				attributes: true,
+				attributeFilter: ['style', 'class']
+			});
 
 			return () => {
 				ro.disconnect();
@@ -102,12 +107,12 @@
 <FadeEdge
 	bind:ref={container}
 	onscroll={enabled ? updateScrollMask : undefined}
-	class={cn("scroll-smooth", className)}
-    orientation={orientation}
-    visible={enabled && useMask}
-    showStart={hasScrollTop}
-    showEnd={hasScrollBottom}
-    fadeSize="32px"
+	class={cn('scroll-smooth', className)}
+	{orientation}
+	visible={enabled && useMask}
+	showStart={hasScrollTop}
+	showEnd={hasScrollBottom}
+	fadeSize="32px"
 	{...rest}
 >
 	{@render children()}

@@ -31,7 +31,7 @@
 <LiquidGlass
 	tag="button"
 	{onclick}
-	class="group h-9 box-border w-auto rounded-full p-2 text-foreground hover:bg-secondary/50 {className}"
+	class="group box-border h-9 w-auto rounded-full p-2 text-foreground hover:bg-secondary/50 {className}"
 	{title}
 >
 	<div class="flex items-center justify-center">
@@ -41,7 +41,7 @@
 			<div class="overflow-hidden">
 				<Crossfade key={crossfadeKey}>
 					<span
-						class="block whitespace-nowrap pr-2 text-sm font-medium opacity-0 transition-opacity duration-300 group-hover:opacity-100 group-data-[interacting=true]:opacity-100"
+						class="block pr-2 text-sm font-medium whitespace-nowrap opacity-0 transition-opacity duration-300 group-hover:opacity-100 group-data-[interacting=true]:opacity-100"
 					>
 						{@render text()}
 					</span>

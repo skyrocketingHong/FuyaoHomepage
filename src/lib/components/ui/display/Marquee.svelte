@@ -14,10 +14,10 @@
 	import FadeEdge from '$lib/components/ui/effect/FadeEdge.svelte';
 	import { tick, type Snippet } from 'svelte';
 
-	let { 
-		text = '', 
-		class: className = '', 
-		direction = 'horizontal', 
+	let {
+		text = '',
+		class: className = '',
+		direction = 'horizontal',
 		fadeSize = '10%',
 		autoPlay = false,
 		children
@@ -35,7 +35,7 @@
 	let isOverflowing = $state(false);
 	let scrollDistance = $state(0);
 	let isHovered = $state(false);
-	
+
 	let isActive = $derived(autoPlay || isHovered);
 
 	$effect(() => {
@@ -43,7 +43,7 @@
 			const check = async () => {
 				await tick();
 				if (!containerRef || !spanRef) return;
-				
+
 				if (direction === 'horizontal') {
 					const contentWidth = spanRef.scrollWidth;
 					const containerWidth = containerRef.clientWidth;
@@ -57,7 +57,7 @@
 				}
 			};
 			check();
-			
+
 			const ro = new ResizeObserver(check);
 			ro.observe(containerRef);
 			ro.observe(spanRef); // Also observe content changes
@@ -74,11 +74,11 @@
 		isActive && 'active',
 		className
 	)}
-    orientation={direction}
-    visible={isOverflowing}
-    showStart={isActive}
-    showEnd={true}
-    fadeSize={fadeSize}
+	orientation={direction}
+	visible={isOverflowing}
+	showStart={isActive}
+	showEnd={true}
+	{fadeSize}
 	title={isOverflowing && text ? text : undefined}
 	role="group"
 	onmouseenter={() => (isHovered = true)}
@@ -90,15 +90,20 @@
 	<div
 		class={cn(
 			'flex will-change-transform',
-			direction === 'horizontal' ? 'items-center flex-row gap-8' : 'flex-col gap-4',
-			isOverflowing && isActive && (direction === 'horizontal' 
-				? 'animate-[auto-scroll-text_linear_infinite]' 
-				: 'animate-[auto-scroll-vertical_linear_infinite]')
+			direction === 'horizontal' ? 'flex-row items-center gap-8' : 'flex-col gap-4',
+			isOverflowing &&
+				isActive &&
+				(direction === 'horizontal'
+					? 'animate-[auto-scroll-text_linear_infinite]'
+					: 'animate-[auto-scroll-vertical_linear_infinite]')
 		)}
 		style:--scroll-dist="-{scrollDistance}px"
-		style:animation-duration="{Math.max(scrollDistance / (direction === 'horizontal' ? 50 : 30), 2)}s"
+		style:animation-duration="{Math.max(
+			scrollDistance / (direction === 'horizontal' ? 50 : 30),
+			2
+		)}s"
 	>
-		<span bind:this={spanRef} class="flex items-center shrink-0">
+		<span bind:this={spanRef} class="flex shrink-0 items-center">
 			{#if children}
 				{@render children()}
 			{:else}
@@ -106,7 +111,7 @@
 			{/if}
 		</span>
 		{#if isOverflowing}
-			<span aria-hidden="true" class="flex items-center shrink-0">
+			<span aria-hidden="true" class="flex shrink-0 items-center">
 				{#if children}
 					{@render children()}
 				{:else}
@@ -116,5 +121,3 @@
 		{/if}
 	</div>
 </FadeEdge>
-
-

@@ -6,14 +6,10 @@
 	import { Search } from 'lucide-svelte';
 	import { t } from '$lib/i18n/store';
 
-    let { onclick } = $props<{ onclick: () => void }>();
+	let { onclick } = $props<{ onclick: () => void }>();
 </script>
 
-<HeaderActionButton
-	{onclick}
-	title={$t('blog.search.title')}
-	crossfadeKey="blog-search-button"
->
+<HeaderActionButton {onclick} title={$t('blog.search.title')} crossfadeKey="blog-search-button">
 	{#snippet text()}
 		{$t('blog.search.open')}
 	{/snippet}

@@ -3,14 +3,13 @@
 	 * 友链卡片组件
 	 *
 	 * 展示单个友链的卡片，包含头像、名称、描述和链接。
-	 * 
+	 *
 	 * @prop friend - 友链数据对象
 	 * @prop isOnline - 是否在线，控制链接可点击性和状态显示
 	 */
 	import LiquidGlass from '$lib/components/ui/effect/LiquidGlass.svelte';
 	import Avatar from '$lib/components/ui/display/Avatar.svelte';
 	import Marquee from '$lib/components/ui/display/Marquee.svelte';
-	import ScrollContainer from '$lib/components/ui/layout/ScrollContainer.svelte';
 	import { t } from '$lib/i18n/store';
 
 	interface Friend {
@@ -23,17 +22,32 @@
 	let { friend, isOnline = true }: { friend: Friend; isOnline?: boolean } = $props();
 </script>
 
-<LiquidGlass tilt opaque={true} class="group relative h-full overflow-hidden rounded-2xl p-0 {!isOnline ? 'opacity-60' : ''}">
+<LiquidGlass
+	tilt
+	opaque={true}
+	class="group relative h-full overflow-hidden rounded-2xl p-0 {!isOnline ? 'opacity-60' : ''}"
+>
 	{#if isOnline}
-		<a href={friend.url} target="_blank" rel="noopener noreferrer" class="flex h-full items-center gap-3 p-3">
-			<Avatar showStatus src={friend.avatar} alt={friend.name} size="md" statusTitle={$t('common.status.online')} />
+		<a
+			href={friend.url}
+			target="_blank"
+			rel="noopener noreferrer"
+			class="flex h-full items-center gap-3 p-3"
+		>
+			<Avatar
+				showStatus
+				src={friend.avatar}
+				alt={friend.name}
+				size="md"
+				statusTitle={$t('common.status.online')}
+			/>
 
 			<div class="flex min-w-0 flex-1 flex-col gap-1">
 				<div class="flex items-center gap-2">
 					<div class="min-w-0 flex-1 overflow-hidden">
-						<Marquee 
+						<Marquee
 							text={friend.name}
-							direction="horizontal" 
+							direction="horizontal"
 							class="text-lg font-bold text-foreground transition-colors duration-300 group-hover:text-primary"
 							fadeSize="10%"
 						/>
@@ -54,27 +68,35 @@
 					</svg>
 				</div>
 				<div class="h-[2.5rem] text-sm leading-relaxed text-muted-foreground">
-					<Marquee text={friend.description === '' ? $t('common.none') : friend.description} direction="vertical" class="h-full w-full" />
+					<Marquee
+						text={friend.description === '' ? $t('common.none') : friend.description}
+						direction="vertical"
+						class="h-full w-full"
+					/>
 				</div>
 			</div>
 		</a>
 	{:else}
-		<div class="flex h-full items-center gap-3 p-3 cursor-not-allowed">
+		<div class="flex h-full cursor-not-allowed items-center gap-3 p-3">
 			<Avatar src={friend.avatar} alt={friend.name} size="md" />
 
 			<div class="flex min-w-0 flex-1 flex-col gap-1">
 				<div class="flex items-center gap-2 overflow-hidden">
 					<div class="min-w-0 flex-1 overflow-hidden">
-						<Marquee 
+						<Marquee
 							text={friend.name}
-							direction="horizontal" 
+							direction="horizontal"
 							class="text-lg font-bold text-foreground/70"
 							fadeSize="10%"
 						/>
 					</div>
 				</div>
 				<div class="h-[2.5rem] text-sm leading-relaxed text-muted-foreground">
-					<Marquee text={friend.description === '' ? $t('common.none') : friend.description} direction="vertical" class="h-full w-full" />
+					<Marquee
+						text={friend.description === '' ? $t('common.none') : friend.description}
+						direction="vertical"
+						class="h-full w-full"
+					/>
 				</div>
 			</div>
 		</div>

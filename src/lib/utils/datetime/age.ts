@@ -17,7 +17,7 @@ export const BIRTH_DATE = import.meta.env.VITE_USER_BIRTH_DATE;
  * calculateAge('1999-02-11') // 26 (取决于当前日期)
  */
 export function calculateAge(birthDate: string = BIRTH_DATE): number {
-    return Math.floor(
-        (new Date().getTime() - new Date(birthDate).getTime()) / (1000 * 60 * 60 * 24 * 365)
-    );
+	return Math.floor(
+		(new Date().getTime() - new Date(birthDate).getTime()) / (1000 * 60 * 60 * 24 * 365)
+	);
 }

@@ -15,12 +15,12 @@
 
 <Crossfade
 	key={sidebarState.isMobileDrawerOpen}
-	class="fixed inset-0 z-modal md:hidden pointer-events-none"
+	class="z-modal pointer-events-none fixed inset-0 md:hidden"
 >
 	{#if sidebarState.isMobileDrawerOpen && sidebarState.listComponent}
 		<!-- 背景遮罩 -->
 		<div
-			class="pointer-events-auto absolute inset-0 bg-background/60 backdrop-blur-sm cursor-pointer"
+			class="pointer-events-auto absolute inset-0 cursor-pointer bg-background/60 backdrop-blur-sm"
 			onclick={() => sidebarState.toggleMobileDrawer()}
 			role="button"
 			tabindex="0"
@@ -33,34 +33,40 @@
 		></div>
 
 		<!-- 抽屉内容 -->
-		<div
-			class="pointer-events-auto absolute top-0 right-0 left-0 max-h-[80vh] w-full"
-		>
+		<div class="pointer-events-auto absolute top-0 right-0 left-0 max-h-[80vh] w-full">
 			<!-- 包裹 LiquidGlass 以作为背景 -->
-			<div class="relative w-full h-full max-h-[80vh] rounded-b-2xl overflow-hidden">
+			<div class="relative h-full max-h-[80vh] w-full overflow-hidden rounded-b-2xl">
 				<!-- 背景 LiquidGlass -->
 				<LiquidGlass
-					class="absolute inset-0 w-full h-full rounded-b-2xl border-b border-border bg-background/80"
+					class="absolute inset-0 h-full w-full rounded-b-2xl border-b border-border bg-background/80"
 				>
-                    <!-- 空子元素仅用于视觉效果 -->
-                    <div></div>
-                </LiquidGlass>
+					<!-- 空子元素仅用于视觉效果 -->
+					<div></div>
+				</LiquidGlass>
 
 				<!-- 实际内容覆盖且可滚动 -->
-				<div class="relative z-10 flex flex-col h-full max-h-[80vh]">
+				<div class="relative z-10 flex h-full max-h-[80vh] flex-col">
 					<div class="mb-4 flex items-center justify-between p-4 pb-0">
 						<!-- 更新标题以使用翻译 -->
 						<div class="flex items-center gap-3">
 							<h2 class="text-lg font-bold text-foreground">
-								<Crossfade key={(sidebarState.listTitle || 'nav.list') + $locale} class="inline-grid">
-									<span>{sidebarState.listTitle ? $t(sidebarState.listTitle) : $t('nav.list')}</span>
+								<Crossfade
+									key={(sidebarState.listTitle || 'nav.list') + $locale}
+									class="inline-grid"
+								>
+									<span>{sidebarState.listTitle ? $t(sidebarState.listTitle) : $t('nav.list')}</span
+									>
 								</Crossfade>
 							</h2>
 
 							{#if sidebarState.availableModes.length > 1}
 								<Crossfade key={sidebarState.listTitle} class="ml-1">
-									<SegmentedControl 
-										items={sidebarState.availableModes.map(m => ({ id: m.id, label: $t(m.label), icon: m.icon }))}
+									<SegmentedControl
+										items={sidebarState.availableModes.map((m) => ({
+											id: m.id,
+											label: $t(m.label),
+											icon: m.icon
+										}))}
 										activeId={sidebarState.viewMode}
 										onSelect={(id) => sidebarState.setViewMode(id)}
 										size="sm"
@@ -70,7 +76,7 @@
 								</Crossfade>
 							{/if}
 						</div>
-						
+
 						<button
 							class="rounded-full p-2 text-muted-foreground transition-all hover:bg-secondary/20 hover:text-foreground"
 							onclick={() => sidebarState.toggleMobileDrawer()}

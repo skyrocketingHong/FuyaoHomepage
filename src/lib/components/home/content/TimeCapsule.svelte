@@ -7,7 +7,8 @@
 	 */
 	import { onMount, onDestroy } from 'svelte';
 	import { Clock } from 'lucide-svelte';
-	import LiquidGlass from '$lib/components/ui/effect/LiquidGlass.svelte';
+	import SectionHeader from '$lib/components/home/content/common/SectionHeader.svelte';
+	import ContentCard from '$lib/components/home/content/common/ContentCard.svelte';
 	import { t, locale } from '$lib/i18n/store';
 	import Crossfade from '$lib/components/ui/effect/Crossfade.svelte';
 	import Marquee from '$lib/components/ui/display/Marquee.svelte';
@@ -80,7 +81,6 @@
 
 	// 响应语言变化
 	$effect(() => {
-		const _ = $locale;
 		calculateTimeRunning();
 	});
 
@@ -95,21 +95,15 @@
 </script>
 
 <div class="pt-4">
-	<div class="mb-4 flex items-center gap-4">
-		<LiquidGlass
-			class="h-12 w-12 rounded-2xl bg-orange-500/20 p-3 text-orange-400 transition-transform group-hover:scale-110"
-		>
-			<Clock size={24} />
-		</LiquidGlass>
-		<h2 class="text-2xl font-bold text-foreground">
-			<Crossfade key={$locale} class="inline-grid"
-				><span>{$t('home.hero.time_capsule.title')}</span></Crossfade
-			>
-		</h2>
-	</div>
-	<LiquidGlass
+	<SectionHeader
+		icon={Clock}
+		iconBgColor="bg-orange-500/20"
+		iconColor="text-orange-400"
+		titleKey="home.hero.time_capsule.title"
+	/>
+	<ContentCard
 		opaque={true}
-		class="cursor-pointer p-4"
+		class="h-[116px] cursor-pointer"
 		tilt={true}
 		onclick={toggleFormat}
 		role="button"
@@ -123,7 +117,7 @@
 				>
 			</p>
 			<Marquee
-				class="h-14 font-mono font-bold text-orange-400 select-none text-xl"
+				class="h-14 font-mono text-xl font-bold text-orange-400 select-none"
 				direction="vertical"
 				autoPlay={true}
 				fadeSize="1rem"
@@ -132,14 +126,13 @@
 					{#each timeRunning.split('\n') as line, lineIdx}
 						{#if lineIdx > 0}<br />{/if}
 						{#each line.split(' ') as word, wordIdx}
-							{#if wordIdx > 0}<span class="inline-block whitespace-pre">{'\u00A0'}</span
-								>{/if}<span class="inline-block"
+							{#if wordIdx > 0}<span class="inline-block whitespace-pre">{'\u00A0'}</span>{/if}<span
+								class="inline-block"
 								>{#each word.split('') as char, charIdx}
 									<Crossfade
 										key={`${lineIdx}-${wordIdx}-${charIdx}-${char}`}
 										duration={150}
-										class="inline-grid"
-										><span>{char}</span></Crossfade
+										class="inline-grid"><span>{char}</span></Crossfade
 									>{/each}</span
 							>
 						{/each}
@@ -147,5 +140,5 @@
 				</div>
 			</Marquee>
 		</div>
-	</LiquidGlass>
+	</ContentCard>
 </div>

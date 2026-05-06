@@ -4,7 +4,7 @@
 	 *
 	 * 展示支付方式列表，点击后在原地展开显示二维码。
 	 * 使用 LiquidGlass 效果和 i18n 国际化。
-	 * 
+	 *
 	 * @prop payments - 支付方式配置数组 (包含名称、URL、颜色及图标)
 	 */
 	import { onMount } from 'svelte';
@@ -14,14 +14,9 @@
 	import Crossfade from '$lib/components/ui/effect/Crossfade.svelte';
 	import LazyImage from '$lib/components/ui/display/LazyImage.svelte';
 	import { t, locale } from '$lib/i18n/store';
-	import { fade, slide } from 'svelte/transition';
-	
-	import {
-		SiAlipay,
-		SiWechat,
-		SiQq,
-		SiContactlesspayment
-	} from '@icons-pack/svelte-simple-icons';
+	import { slide } from 'svelte/transition';
+
+	import { SiAlipay, SiWechat, SiQq, SiContactlesspayment } from '@icons-pack/svelte-simple-icons';
 
 	interface PaymentOriginal {
 		name: string;
@@ -108,32 +103,26 @@
 		<LoadingSpinner size="lg" />
 	</div>
 {:else}
-	<div class="mx-auto w-full max-w-3xl flex flex-col gap-3">
-		{#each processedPayments as payment, i}
+	<div class="mx-auto flex w-full max-w-3xl flex-col gap-3">
+		{#each processedPayments as payment, i (payment.name)}
 			<LiquidGlass
 				opaque={true}
-				class="rounded-2xl p-0 overflow-hidden transition-all duration-300"
+				class="overflow-hidden rounded-2xl p-0 transition-all duration-300"
 				tilt={selectedIndex !== i}
 			>
 				<!-- 卡片头部 -->
 				<button
-					class="w-full p-4 flex items-center gap-4 text-left"
+					class="flex w-full items-center gap-4 p-4 text-left"
 					onclick={() => togglePayment(i)}
 				>
 					<!-- 图标 -->
 					{#if iconMap[payment.icon]}
 						{@const IconComponent = iconMap[payment.icon]}
-						<div
-							class="shrink-0 rounded-xl bg-white/10 p-3"
-							style="color: {payment.color}"
-						>
+						<div class="shrink-0 rounded-xl bg-white/10 p-3" style="color: {payment.color}">
 							<IconComponent size={24} />
 						</div>
 					{:else}
-						<div
-							class="shrink-0 rounded-xl bg-secondary/50 p-3"
-							style="color: {payment.color}"
-						>
+						<div class="shrink-0 rounded-xl bg-secondary/50 p-3" style="color: {payment.color}">
 							<span class="text-lg font-bold">{payment.name.charAt(0)}</span>
 						</div>
 					{/if}
@@ -152,7 +141,17 @@
 						class="shrink-0 text-muted-foreground transition-transform duration-300"
 						class:rotate-180={selectedIndex === i}
 					>
-						<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+						<svg
+							xmlns="http://www.w3.org/2000/svg"
+							width="18"
+							height="18"
+							viewBox="0 0 24 24"
+							fill="none"
+							stroke="currentColor"
+							stroke-width="2"
+							stroke-linecap="round"
+							stroke-linejoin="round"
+						>
 							<polyline points="6 9 12 15 18 9"></polyline>
 						</svg>
 					</div>
@@ -160,17 +159,14 @@
 
 				<!-- 展开区域 - 二维码 -->
 				{#if selectedIndex === i}
-					<div
-						class="px-4 pb-5"
-						transition:slide={{ duration: 250 }}
-					>
+					<div class="px-4 pb-5" transition:slide={{ duration: 250 }}>
 						<div class="flex flex-col items-center gap-4">
 							{#if payment.qrCodeDataUrl}
 								<Crossfade key={payment.qrCodeDataUrl} class="rounded-2xl bg-white p-3 shadow-lg">
 									<LazyImage
 										src={payment.qrCodeDataUrl}
 										alt="{payment.name} QR Code"
-										class="w-64 h-64 md:w-72 md:h-72 object-contain"
+										class="h-64 w-64 object-contain md:h-72 md:w-72"
 										fit="contain"
 										width="auto"
 										height="auto"
@@ -195,15 +191,15 @@
 								<Crossfade key={$locale} class="inline-grid">
 									<span>{$t('pay.modal.open_link')}</span>
 								</Crossfade>
-								<svg 
-									xmlns="http://www.w3.org/2000/svg" 
-									width="12" 
-									height="12" 
-									viewBox="0 0 24 24" 
-									fill="none" 
-									stroke="currentColor" 
-									stroke-width="2" 
-									stroke-linecap="round" 
+								<svg
+									xmlns="http://www.w3.org/2000/svg"
+									width="12"
+									height="12"
+									viewBox="0 0 24 24"
+									fill="none"
+									stroke="currentColor"
+									stroke-width="2"
+									stroke-linecap="round"
 									stroke-linejoin="round"
 								>
 									<path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>

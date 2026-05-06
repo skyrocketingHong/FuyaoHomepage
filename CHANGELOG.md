@@ -2,6 +2,30 @@
 
 格式基于 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.0.0/)
 
+## 3.0.0 (2026-02-10)
+
+完成了足迹地图的重构与上线和 CSS 架构的模块化，大幅增强了足迹地图的交互与功能体验。
+
+### 新增
+
+- 字体展示测试文档 (`static/posts/example-category/font-test.md`)
+- 模块化 CSS 架构 (`src/lib/styles/` 下的 `fonts.css`, `theme.css`, `base.css` 等)
+- 足迹功能相关组件与工具 (`FootprintActions.svelte`, `GeneratorModal.svelte`, `footprintYaml.ts` 等)
+- Svelte 5 状态管理 Store (`mosaic.svelte.ts`)
+
+### 优化
+
+- **样式架构重构**：将大型 CSS 文件拆分为高内聚的模块化文件
+- **注释规范**：统一注释
+- **地图功能**：优化 AMap 组件的类型安全与交互逻辑
+- **目录结构**：整合 `utils` 目录，提升代码组织质量
+
+### 修复
+
+- **类型安全**：修正 AMap 相关的接口和类型定义
+- **网络请求**：通过添加时间戳解决文件加载的缓存问题
+- **界面细节**：修复侧边栏及地图版权信息的样式同步问题
+
 ## 2.2.0 (2026-02-04)
 
 全站国际化支持，实施分支策略与数据分离，重构友链页面与博客索引，持续优化视觉体验与 SEO

@@ -1,9 +1,9 @@
 <script lang="ts">
 	/**
 	 * 侧边栏基础项组件
-	 * 
+	 *
 	 * 侧边栏列表中的原子项，可能是链接 (a) 或按钮 (button)。
-	 * 
+	 *
 	 * @prop label - 显示的文本标签
 	 * @prop icon - 图标组件
 	 * @prop href - 跳转链接
@@ -36,9 +36,9 @@
 	}>();
 
 	// 使用来自 app.css 的全局类名以保持一致性
-	const baseClasses = "sidebar-item-base";
-	const activeClasses = "sidebar-item-active";
-	const inactiveClasses = "sidebar-item-inactive";
+	const baseClasses = 'sidebar-item-base';
+	const activeClasses = 'sidebar-item-active';
+	const inactiveClasses = 'sidebar-item-inactive';
 </script>
 
 {#if href}

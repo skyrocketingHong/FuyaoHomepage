@@ -1,18 +1,19 @@
 {
 	"name": "fuyao-homepage",
 	"private": true,
-	"version": "2.2.0",
+	"version": "3.0.0",
 	"type": "module",
 	"scripts": {
-		"dev": "vite dev",
-		"build": "vite build",
+		"dev": "npm run update-build-num && vite dev --mode dev",
+		"update-build-num": "node scripts/bump-build.js",
+		"build": "npm run update-build-num && vite build",
 		"preview": "vite preview",
 		"prepare": "svelte-kit sync || echo ''",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
 		"lint": "prettier --check . && eslint .",
 		"format": "prettier --write .",
-		"gen-blog": "node scripts/generate-blog-index.js",
+		"gen-blog": "NODE_ENV=development node scripts/generate-blog-index.js",
 		"release": "node scripts/update-version.js"
 	},
 	"devDependencies": {

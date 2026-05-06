@@ -9,7 +9,7 @@
 	import ProfileCard from '$lib/components/friends/ProfileCard.svelte';
 	import FriendCard from '$lib/components/friends/FriendCard.svelte';
 	import LoadingState from '$lib/components/ui/feedback/LoadingState.svelte';
-	import CategoryNav from '$lib/components/layout/header/nav/CategoryNav.svelte';
+	import CategoryNav from '$lib/components/layout/nav/CategoryNav.svelte';
 	import { t } from '$lib/i18n/store';
 	import Crossfade from '$lib/components/ui/effect/Crossfade.svelte';
 	import { headerState } from '$lib/stores/app.svelte';
@@ -36,7 +36,7 @@
 	let activeCategory = $state('online');
 	let loading = $state(true);
 	let error = $state('');
-	
+
 	// Header ID for cleanup and updates
 	let headerId = '';
 
@@ -51,11 +51,15 @@
 
 	onMount(() => {
 		// 注册到 Header
-		headerId = headerState.setMiddle(CategoryNav, {
-			categories,
-			activeCategory,
-			onSelect: handleCategorySelect
-		}, 'friends-nav');
+		headerId = headerState.setMiddle(
+			CategoryNav,
+			{
+				categories,
+				activeCategory,
+				onSelect: handleCategorySelect
+			},
+			'friends-nav'
+		);
 
 		async function loadData() {
 			try {
@@ -98,7 +102,7 @@
 		<div class="flex w-full flex-col gap-10">
 			<LoadingState {loading} {error} class="w-full justify-center pb-0">
 				<div class="grid grid-cols-[repeat(auto-fill,minmax(300px,1fr))] gap-4">
-					{#each filteredFriends as friend}
+					{#each filteredFriends as friend (friend.url)}
 						<FriendCard {friend} isOnline={activeCategory === 'online'} />
 					{/each}
 				</div>

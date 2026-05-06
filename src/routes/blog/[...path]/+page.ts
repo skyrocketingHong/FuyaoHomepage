@@ -23,7 +23,7 @@ interface Category {
 
 /**
  * 博客路由验证与数据加载函数
- * 
+ *
  * @param event - SvelteKit 页面加载事件，包含 params 和 fetch
  * @returns 返回包含 posts 和 categories 的数据对象，供页面组件使用
  * @throws {Error} 如果路径不匹配任何文章或分类，抛出 404 错误
@@ -33,15 +33,11 @@ export const load: PageLoad = async ({ params, fetch }) => {
 	const currentPath = (params.path || '').replace(/\/$/, '');
 
 	try {
-		const [catsRes, postsRes] = await Promise.all([
-			fetch('/posts/categories.json'),
-			fetch('/posts/all.json')
+		const { loadJson } = await import('$lib/utils/network/loading');
+		const [categories, posts] = await Promise.all([
+			loadJson<Category[]>('/posts/categories.json', fetch),
+			loadJson<Post[]>('/posts/all.json', fetch)
 		]);
-
-		if (!catsRes.ok || !postsRes.ok) return { posts: [], categories: [] };
-
-		const categories: Category[] = await catsRes.json();
-		const posts: Post[] = await postsRes.json();
 
 		// 情况 A：根路径 /blog 或手动指定为 All 或 search
 		if (currentPath === '' || currentPath === 'All' || currentPath === 'search') {
@@ -51,10 +47,12 @@ export const load: PageLoad = async ({ params, fetch }) => {
 		// 情况 B：验证是否为具体文章
 		const isPost = posts.some((p: Post) => {
 			const cats = p.categories || (p.category ? [p.category] : []);
-			return cats.some((cat) => {
-				const postPath = !cat || cat === 'Uncategorized' ? p.slug : `${cat}/${p.slug}`;
-				return postPath === currentPath;
-			}) || p.slug === currentPath;
+			return (
+				cats.some((cat) => {
+					const postPath = !cat || cat === 'Uncategorized' ? p.slug : `${cat}/${p.slug}`;
+					return postPath === currentPath;
+				}) || p.slug === currentPath
+			);
 		});
 
 		if (isPost) return { posts, categories };

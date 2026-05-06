@@ -6,11 +6,13 @@
 	 * 支持自动加载状态、骨架屏占位及响应式网格布局。
 	 */
 	import { onMount } from 'svelte';
-	import { Github, Star, GitFork } from 'lucide-svelte';
-	import LiquidGlass from '$lib/components/ui/effect/LiquidGlass.svelte';
-	import { t, locale } from '$lib/i18n/store';
+	import { Github, Star, GitFork, ArrowRight } from 'lucide-svelte';
+	import SectionHeader from '$lib/components/home/content/common/SectionHeader.svelte';
+	import ContentCard from '$lib/components/home/content/common/ContentCard.svelte';
+
 	import Crossfade from '$lib/components/ui/effect/Crossfade.svelte';
-	import LoadingState from '$lib/components/ui/feedback/LoadingState.svelte';
+	import Skeleton from '$lib/components/ui/feedback/Skeleton.svelte';
+	import { loadJson } from '$lib/utils/network/loading';
 	import { cn } from '$lib/utils/index';
 
 	import Marquee from '$lib/components/ui/display/Marquee.svelte';
@@ -31,12 +33,6 @@
 
 	let githubData = $state<GithubRepo[]>([]);
 	let loadingGithub = $state(true);
-	let loadingText = $state('');
-
-	$effect(() => {
-		// 国际化加载文本
-		loadingText = $t('home.hero.github.loading');
-	});
 
 	/**
 	 * 获取 GitHub 仓库数据
@@ -46,46 +42,38 @@
 		try {
 			// 1. 尝试获取 Pinned 项目 (通过第三方 API)
 			// 注意：官方 API 获取 Pinned 需要 GraphQL 和 Token，这里使用第三方开源服务无需 Token
-			const pinnedResponse = await fetch(
+			const data = await loadJson<any[]>(
 				`https://gh-pinned-repos-tsj7ta5xfhep.deno.dev/?username=${GITHUB_USERNAME}`
 			);
 
-			if (pinnedResponse.ok) {
-				const data = await pinnedResponse.json();
-				if (Array.isArray(data) && data.length > 0) {
-					githubData = data.map((repo: any) => ({
-						name: repo.repo,
-						description: repo.description,
-						stars: Number(repo.stars) || 0,
-						forks: Number(repo.forks) || 0,
-						watchers: 0, // 置顶 API 不返回关注者数量
-						language: repo.language,
-						url: repo.link,
-						updatedAt: '' // 置顶 API 不返回更新时间
-					}));
-					return; // 成功获取置顶项目，直接返回
-				}
+			if (Array.isArray(data) && data.length > 0) {
+				githubData = data.map((repo: any) => ({
+					name: repo.repo,
+					description: repo.description,
+					stars: Number(repo.stars) || 0,
+					forks: Number(repo.forks) || 0,
+					watchers: 0, // 置顶 API 不返回关注者数量
+					language: repo.language,
+					url: repo.link,
+					updatedAt: '' // 置顶 API 不返回更新时间
+				}));
+				return; // 成功获取置顶项目，直接返回
 			}
 
 			// 2. 如果 Pinned 获取失败或为空，回退到原来的逻辑 (最近更新)
-			const response = await fetch(
+			const fallbackData = await loadJson<any[]>(
 				`https://api.github.com/users/${GITHUB_USERNAME}/repos?sort=updated&per_page=6`
 			);
-			if (response.ok) {
-				const data = await response.json();
-				githubData = data.map((repo: any) => ({
-					name: repo.name,
-					description: repo.description,
-					stars: repo.stargazers_count,
-					forks: repo.forks_count,
-					watchers: repo.watchers_count,
-					language: repo.language,
-					url: repo.html_url,
-					updatedAt: repo.updated_at
-				}));
-			} else {
-				throw new Error('Github API failed');
-			}
+			githubData = fallbackData.map((repo: any) => ({
+				name: repo.name,
+				description: repo.description,
+				stars: repo.stargazers_count,
+				forks: repo.forks_count,
+				watchers: repo.watchers_count,
+				language: repo.language,
+				url: repo.html_url,
+				updatedAt: repo.updated_at
+			}));
 		} catch (e) {
 			console.error('获取 GitHub 数据失败', e);
 			// API 请求失败时使用备用数据
@@ -112,14 +100,14 @@
 </script>
 
 {#snippet projectCard(repo: GithubRepo | null, loading: boolean)}
-	<LiquidGlass
-		opaque={true}
+	<ContentCard
 		tag="div"
 		class={cn(
 			'group transition-all duration-300',
-			loading ? 'h-[142px] border-border/50' : 'hover:border-purple-500/30'
+			loading ? 'h-[116px] border-border/50' : 'h-[116px] hover:border-purple-500/30'
 		)}
 		tilt={true}
+		opaque={true}
 	>
 		<svelte:element
 			this={loading ? 'div' : 'a'}
@@ -129,62 +117,77 @@
 		>
 			<Crossfade key={loading ? 'loading' : 'loaded'} class="h-full w-full">
 				{#if loading}
-					<div class="h-full w-full animate-pulse">
-						<div class="mb-3 flex items-start justify-between gap-2">
-							<div class="h-6 w-2/3 rounded bg-muted/40"></div>
-							<div class="h-5 w-12 rounded-full bg-muted/30"></div>
+					<div class="flex h-full flex-col justify-between">
+						<div class="flex shrink-0 items-start justify-between gap-2">
+							<Skeleton class="h-5 w-2/3" />
+							<Skeleton class="h-4 w-12 rounded-full" />
 						</div>
-						<div class="mb-4 space-y-2">
-							<div class="h-3 w-full rounded bg-muted/20"></div>
-							<div class="h-3 w-4/5 rounded bg-muted/20"></div>
+						<div class="min-h-0 flex-1 space-y-1.5 py-2">
+							<Skeleton class="h-3 w-full" />
+							<Skeleton class="h-3 w-4/5" />
 						</div>
-						<div class="flex items-center gap-4">
-							<div class="h-3 w-12 rounded bg-muted/20"></div>
-							<div class="h-3 w-12 rounded bg-muted/20"></div>
+						<div class="flex shrink-0 items-center gap-4">
+							<Skeleton class="h-3 w-12" />
+							<Skeleton class="h-3 w-12" />
 						</div>
 					</div>
 				{:else if repo}
-					<div class="h-full group-hover:no-underline">
-						<div class="mb-2 flex items-start justify-between gap-2">
-							<h3 class="min-w-0 w-0 flex-1 text-lg font-bold transition-colors text-foreground">
+					<div class="flex h-full flex-col group-hover:no-underline">
+						<!-- 顶部：项目名 + 语言 -->
+						<div class="flex shrink-0 items-start justify-between gap-2">
+							<h3
+								class="w-0 min-w-0 flex-1 text-base font-semibold text-foreground transition-colors"
+							>
 								<Marquee text={repo.name} class="w-full" />
 							</h3>
 							<span
-								class="shrink-0 rounded-full border border-border bg-secondary/20 px-2 py-0.5 text-xs text-muted-foreground"
+								class="shrink-0 rounded-full border border-border bg-secondary/20 px-2 py-0.5 text-[10px] whitespace-nowrap text-muted-foreground"
 								>{repo.language || 'N/A'}</span
 							>
 						</div>
-						<div class="mb-4 h-9 text-sm text-muted-foreground">
-							<Marquee text={repo.description || ''} direction="vertical" class="h-full w-full" />
+
+						<!-- 中部：描述 (自适应高度) -->
+						<div class="mt-1 mb-1 min-h-0 flex-1 overflow-hidden text-sm text-muted-foreground">
+							<Marquee
+								text={repo.description || ''}
+								direction="vertical"
+								class="max-h-[43px] w-full"
+								fadeSize="10%"
+							/>
 						</div>
-						<div class="flex items-center gap-4 text-xs text-muted-foreground/70">
-							<div class="flex items-center gap-1">
-								<Star size={14} />
-								<span>{repo.stars}</span>
+
+						<!-- 底部：统计信息 -->
+						<div class="mt-auto flex shrink-0 items-center justify-between">
+							<div class="flex items-center gap-4 text-xs text-muted-foreground/70">
+								<div class="flex items-center gap-1">
+									<Star size={14} />
+									<span>{repo.stars}</span>
+								</div>
+								<div class="flex items-center gap-1">
+									<GitFork size={14} />
+									<span>{repo.forks}</span>
+								</div>
 							</div>
-							<div class="flex items-center gap-1">
-								<GitFork size={14} />
-								<span>{repo.forks}</span>
+							<div
+								class="shrink-0 text-muted-foreground/50 transition-transform group-hover:translate-x-1 group-hover:text-purple-400"
+							>
+								<ArrowRight size={16} />
 							</div>
 						</div>
 					</div>
 				{/if}
 			</Crossfade>
 		</svelte:element>
-	</LiquidGlass>
+	</ContentCard>
 {/snippet}
 
 <div class="pt-4">
-	<div class="mb-4 flex items-center gap-4">
-		<LiquidGlass class="h-12 w-12 rounded-2xl bg-purple-500/20 p-3 text-purple-400">
-			<Github size={24} />
-		</LiquidGlass>
-		<h2 class="text-2xl font-bold text-foreground">
-			<Crossfade key={$locale} class="inline-grid"
-				><span>{$t('home.hero.github.title')}</span></Crossfade
-			>
-		</h2>
-	</div>
+	<SectionHeader
+		icon={Github}
+		iconBgColor="bg-purple-500/20"
+		iconColor="text-purple-400"
+		titleKey="home.hero.github.title"
+	/>
 
 	<div class="grid grid-cols-1 gap-4 md:grid-cols-2">
 		{#each loadingGithub ? Array(6).fill(null) : githubData as repo}

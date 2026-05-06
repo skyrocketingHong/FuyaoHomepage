@@ -1,28 +1,30 @@
 <script lang="ts">
 	/**
 	 * 马赛克背景组件
-	 * 
+	 *
 	 * 动态渲染 MTR 风格的马赛克平铺背景。
 	 * 支持自动切换主题色、平滑颜色过渡以及 MTR 车站预设。
 	 */
 	import { onMount, onDestroy } from 'svelte';
-	import { themeState, mosaicState } from '$lib/stores/app.svelte';
-    import { 
-        MOSAIC_DEFAULT_CONFIG, 
-        MTR_PRESETS_DAY, 
-        MTR_PRESETS_NIGHT, 
-        RAINBOW_COLORS,
-        type MosaicConfig,
-        type MtrStation 
-    } from '$lib/config/mosaic';
+	import { themeState } from '$lib/stores/app.svelte';
+	import { mosaicState } from '$lib/stores/mosaic.svelte';
+	import {
+		MOSAIC_DEFAULT_CONFIG,
+		MTR_PRESETS_DAY,
+		MTR_PRESETS_NIGHT,
+		RAINBOW_COLORS,
+		type MosaicConfig,
+		type MtrStation
+	} from '$lib/config/mosaic';
+	import { SvelteMap } from 'svelte/reactivity';
 
 	// ==========================================
 	// 配置与内部状态
 	// ==========================================
-	
+
 	// 可选：指定固定车站名称（英文）用于测试，如 'Choi Hung'、'Central' 等
 	let { fixedStation = '' }: { fixedStation?: string } = $props();
-	
+
 	let config: MosaicConfig = MOSAIC_DEFAULT_CONFIG;
 
 	// 内部状态
@@ -32,7 +34,7 @@
 	let resizeObserver: ResizeObserver;
 	let needsRedraw = true;
 	let lastFrameTime = 0;
-	let currentColorHex = '#000000';
+	let currentColorHex = $state('#000000');
 	let isRainbowMode = false;
 	let lastUpdate = 0;
 
@@ -48,7 +50,7 @@
 		baseS: number;
 		baseL: number;
 		rowIndex: number; // 行索引，用于彩虹模式
-		
+
 		constructor(r: number, g: number, b: number, rowIndex: number = 0) {
 			this.r = this.targetR = r;
 			this.g = this.targetG = g;
@@ -61,55 +63,61 @@
 		}
 
 		updateTarget(randomness: number, isRainbow: boolean, totalRows: number) {
-		if (isRainbow) {
-			// ========================================
-			// 彩虹站布局计算
-			// ========================================
-			// 布局结构（从上到下）：
-			//   - 顶部青绿区：填充剩余空间的 30%
-			//   - 中间彩虹区：6条色带，每条固定 RAINBOW_BAND_ROWS 行
-			//   - 底部青绿区：填充剩余空间的 70%
-			// 
-			// 调整位置：修改 TOP_RATIO 值（0-1）
-			//   - 0.0 = 彩虹贴顶
-			//   - 0.5 = 彩虹居中（默认）
-			//   - 1.0 = 彩虹贴底
-			// ========================================
-			const RAINBOW_BAND_ROWS = 6;  // 每条彩虹色带固定行数
-			const TOP_RATIO = 0.3;        // 顶部青绿占剩余空间的比例（0.3 = 彩虹偏上）
-			
-			const rainbowTotalRows = 6 * RAINBOW_BAND_ROWS; // 中间6条彩虹总行数（红橙黄绿蓝紫）
-			const remainingRows = totalRows - rainbowTotalRows; // 剩余空间（顶部+底部）
-			const topRows = Math.floor(remainingRows * TOP_RATIO); // 顶部青绿行数
-			const bottomStartRow = topRows + rainbowTotalRows; // 底部青绿起始行
-			
-			let hex: string;
-			if (this.rowIndex < topRows) {
-				// 顶部青绿区域
-				hex = RAINBOW_COLORS[0];
-			} else if (this.rowIndex >= bottomStartRow) {
-				// 底部青绿区域
-				hex = RAINBOW_COLORS[7];
-			} else {
-				// 中间彩虹区域（6条色带）
-				const rainbowRow = this.rowIndex - topRows;
-				const bandIndex = Math.floor(rainbowRow / RAINBOW_BAND_ROWS);
-				// 颜色索引 1-6 对应红橙黄绿蓝紫
-				hex = RAINBOW_COLORS[Math.min(bandIndex + 1, 6)];
+			if (isRainbow) {
+				// ========================================
+				// 彩虹站布局计算
+				// ========================================
+				// 布局结构（从上到下）：
+				//   - 顶部青绿区：填充剩余空间的 30%
+				//   - 中间彩虹区：6条色带，每条固定 RAINBOW_BAND_ROWS 行
+				//   - 底部青绿区：填充剩余空间的 70%
+				//
+				// 调整位置：修改 TOP_RATIO 值（0-1）
+				//   - 0.0 = 彩虹贴顶
+				//   - 0.5 = 彩虹居中（默认）
+				//   - 1.0 = 彩虹贴底
+				// ========================================
+				const RAINBOW_BAND_ROWS = 6; // 每条彩虹色带固定行数
+				const TOP_RATIO = 0.3; // 顶部青绿占剩余空间的比例（0.3 = 彩虹偏上）
+
+				const rainbowTotalRows = 6 * RAINBOW_BAND_ROWS; // 中间6条彩虹总行数（红橙黄绿蓝紫）
+				const remainingRows = totalRows - rainbowTotalRows; // 剩余空间（顶部+底部）
+				const topRows = Math.floor(remainingRows * TOP_RATIO); // 顶部青绿行数
+				const bottomStartRow = topRows + rainbowTotalRows; // 底部青绿起始行
+
+				let hex: string;
+				if (this.rowIndex < topRows) {
+					// 顶部青绿区域
+					hex = RAINBOW_COLORS[0];
+				} else if (this.rowIndex >= bottomStartRow) {
+					// 底部青绿区域
+					hex = RAINBOW_COLORS[7];
+				} else {
+					// 中间彩虹区域（6条色带）
+					const rainbowRow = this.rowIndex - topRows;
+					const bandIndex = Math.floor(rainbowRow / RAINBOW_BAND_ROWS);
+					// 颜色索引 1-6 对应红橙黄绿蓝紫
+					hex = RAINBOW_COLORS[Math.min(bandIndex + 1, 6)];
+				}
+
+				const rgb = hexToRgb(hex);
+				// 添加轻微随机扰动模拟瓷砖质感
+				const variation = 0.05;
+				this.targetR = Math.round(rgb.r * (1 + (Math.random() - 0.5) * variation));
+				this.targetG = Math.round(rgb.g * (1 + (Math.random() - 0.5) * variation));
+				this.targetB = Math.round(rgb.b * (1 + (Math.random() - 0.5) * variation));
+				return;
 			}
-			
-			const rgb = hexToRgb(hex);
-			// 添加轻微随机扰动模拟瓷砖质感
-			const variation = 0.05;
-			this.targetR = Math.round(rgb.r * (1 + (Math.random() - 0.5) * variation));
-			this.targetG = Math.round(rgb.g * (1 + (Math.random() - 0.5) * variation));
-			this.targetB = Math.round(rgb.b * (1 + (Math.random() - 0.5) * variation));
-			return;
-		}	
-			
+
 			// HSL 偏移计算（光感随机化）
-			const randomS = Math.max(0, Math.min(1, this.baseS + (Math.random() * randomness - randomness / 2)));
-			const randomL = Math.max(0, Math.min(1, this.baseL + (Math.random() * randomness - randomness / 2)));
+			const randomS = Math.max(
+				0,
+				Math.min(1, this.baseS + (Math.random() * randomness - randomness / 2))
+			);
+			const randomL = Math.max(
+				0,
+				Math.min(1, this.baseL + (Math.random() * randomness - randomness / 2))
+			);
 			const rgb = hslToRgb(this.baseH, randomS, randomL);
 			this.targetR = rgb.r;
 			this.targetG = rgb.g;
@@ -134,20 +142,33 @@
 	// ==========================================
 	function hexToRgb(hex: string) {
 		const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-		return result ? { r: parseInt(result[1], 16), g: parseInt(result[2], 16), b: parseInt(result[3], 16) } : { r: 0, g: 0, b: 0 };
+		return result
+			? { r: parseInt(result[1], 16), g: parseInt(result[2], 16), b: parseInt(result[3], 16) }
+			: { r: 0, g: 0, b: 0 };
 	}
 
 	function rgbToHsl(r: number, g: number, b: number) {
-		(r /= 255), (g /= 255), (b /= 255);
-		const max = Math.max(r, g, b), min = Math.min(r, g, b);
-		let h = 0, s = 0, l = (max + min) / 2;
+		r /= 255;
+		g /= 255;
+		b /= 255;
+		const max = Math.max(r, g, b),
+			min = Math.min(r, g, b);
+		let h = 0,
+			s = 0,
+			l = (max + min) / 2;
 		if (max !== min) {
 			const d = max - min;
 			s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
 			switch (max) {
-				case r: h = (g - b) / d + (g < b ? 6 : 0); break;
-				case g: h = (b - r) / d + 2; break;
-				case b: h = (r - g) / d + 4; break;
+				case r:
+					h = (g - b) / d + (g < b ? 6 : 0);
+					break;
+				case g:
+					h = (b - r) / d + 2;
+					break;
+				case b:
+					h = (r - g) / d + 4;
+					break;
 			}
 			h /= 6;
 		}
@@ -183,12 +204,12 @@
 		const dayPresets = MTR_PRESETS_DAY;
 		const nightPresets = MTR_PRESETS_NIGHT;
 		const allPresets = [...dayPresets, ...nightPresets];
-		
+
 		let selectedPreset: MtrStation;
-		
+
 		// 如果指定了固定车站，优先使用
 		if (fixedStation) {
-			const found = allPresets.find(p => p.name === fixedStation);
+			const found = allPresets.find((p) => p.name === fixedStation);
 			if (found) {
 				selectedPreset = found;
 			} else {
@@ -200,10 +221,9 @@
 			const presets = themeState.isDark ? nightPresets : dayPresets;
 			selectedPreset = presets[Math.floor(Math.random() * presets.length)];
 		}
-		
-		// @ts-ignore
+
 		mosaicState.setStation(selectedPreset.nameZh, selectedPreset.name);
-		
+
 		if (selectedPreset.isRainbow) {
 			isRainbowMode = true;
 			currentColorHex = selectedPreset.color;
@@ -213,71 +233,97 @@
 		}
 	}
 
-
 	function initGrid(forceReset = true, autoStart = true) {
 		if (!canvas) return;
-		
+
 		// 设置画布分辨率
 		// 优化：将 DPR 限制在 1.5 以减少马赛克效果的填充率消耗 (Fill Rate)
 		const dpr = Math.min(window.devicePixelRatio || 1.5, 1.5);
 		const rect = canvas.getBoundingClientRect();
-		
+
 		// 避免宽高为 0 的情况
 		if (rect.width === 0 || rect.height === 0) return;
 
 		canvas.width = rect.width * dpr;
 		canvas.height = rect.height * dpr;
-		
+
 		if (ctx) {
-             ctx.resetTransform(); // 重置变换以避免累积
-             ctx.scale(dpr, dpr);
-        }
+			ctx.resetTransform(); // 重置变换以避免累积
+			ctx.scale(dpr, dpr);
+		}
 
 		// Pick color if needed
 		if (forceReset || !currentColorHex) {
 			pickRandomPreset();
 		}
 
-		// 基于固定瓦片大小计算网格列数和行数
-		// 默认让瓦片大小接近 config.baseTileSize
-		cols = Math.ceil(rect.width / config.baseTileSize);
-		rows = Math.ceil(rect.height / config.baseTileSize);
-
-		// 计算实际单元格大小以完全填充容器
-		// 总宽度 = cols * cellWidth + (cols - 1) * gap
-		// cellWidth = (rect.width - (cols - 1) * gap) / cols
-		cellWidth = (rect.width - (cols - 1) * config.gap) / cols;
-		cellHeight = (rect.height - (rows - 1) * config.gap) / rows;
-
-		// Initialize cells
-		cells = [];
-		const baseRgb = hexToRgb(currentColorHex);
-		for (let row = 0; row < rows; row++) {
-			for (let col = 0; col < cols; col++) {
-				const cell = new Cell(baseRgb.r, baseRgb.g, baseRgb.b, row);
-				// 初始引导：从基础颜色开始。仅在 autoStart 为 true（如重调大小/主题切换）时设置随机目标
-				// 如果 autoStart 为 false（首次加载），目标设为当前色以保持初始平铺感
-				if (autoStart) {
-					cell.updateTarget(config.randomness, isRainbowMode, rows);
+		// 1. 保存旧网格状态 (Map<"row,col", Cell>)
+		const oldCellMap = new SvelteMap<string, Cell>();
+		if (!forceReset && cells.length > 0 && cols > 0) {
+			for (let r = 0; r < rows; r++) {
+				for (let c = 0; c < cols; c++) {
+					const cell = cells[r * cols + c];
+					if (cell) {
+						oldCellMap.set(`${r},${c}`, cell);
+					}
 				}
-				cells.push(cell);
 			}
 		}
-        
-        // 立即执行绘制（初始状态为平铺颜色）
-        draw();
-        
-        // 标记需要更新以触发入场动画
-        if (autoStart) {
-            needsRedraw = true;
-        }
-	}
 
+		// 2. 计算新网格尺寸 (基于固定 Tile Size)
+		// 不再拉伸格子，而是固定格子大小，计算能容纳多少列/行
+		// 向上取整，确保覆盖整个区域
+		const tileSizeWithGap = config.baseTileSize + config.gap;
+		cols = Math.ceil(rect.width / tileSizeWithGap);
+		rows = Math.ceil(rect.height / tileSizeWithGap);
+
+		cellWidth = config.baseTileSize;
+		cellHeight = config.baseTileSize;
+
+		// 3. 重建网格 (复用旧 Cell)
+		const newCells: Cell[] = [];
+		const baseRgb = hexToRgb(currentColorHex);
+
+		for (let row = 0; row < rows; row++) {
+			for (let col = 0; col < cols; col++) {
+				const key = `${row},${col}`;
+				let cell: Cell;
+
+				if (oldCellMap.has(key)) {
+					// 复用旧格子 (位置稳定，颜色状态保留)
+					cell = oldCellMap.get(key)!;
+					// 注意：如果是彩虹模式，如果 row 索引变了可能会导致颜色错位？
+					// 实际上 row 没变，cell 是跟 (row, col) 绑定的。
+					// 这里的逻辑是：(0,0) 永远在左上角。扩大的区域会有新坐标。
+				} else {
+					// 新增区域：创建新格子
+					cell = new Cell(baseRgb.r, baseRgb.g, baseRgb.b, row);
+					// 仅为新格子计算随机目标，让其从 baseRgb 过渡到目标
+					// 或者如果是首次加载(forceReset)，所有格子都算。
+					// 如果是增量更新(Resize)，新格子也应该开始变化。
+					if (autoStart) {
+						cell.updateTarget(config.randomness, isRainbowMode, rows);
+					}
+				}
+				newCells.push(cell);
+			}
+		}
+
+		cells = newCells;
+
+		// 立即执行绘制
+		draw();
+
+		// 标记需要更新以触发动画（如果有新格子或首次）
+		if (autoStart) {
+			needsRedraw = true;
+		}
+	}
 
 	function draw() {
 		if (!ctx || !canvas) return;
-		const rect = canvas.getBoundingClientRect(); 
-		
+		const rect = canvas.getBoundingClientRect();
+
 		// 清除背景（间隙颜色）
 		ctx.fillStyle = config.gapColor;
 		ctx.fillRect(0, 0, rect.width, rect.height);
@@ -290,19 +336,19 @@
 				const x = c * (cellWidth + config.gap);
 				const y = r * (cellHeight + config.gap);
 
-                const cr = Math.round(cell.r);
-                const cg = Math.round(cell.g);
-                const cb = Math.round(cell.b);
+				const cr = Math.round(cell.r);
+				const cg = Math.round(cell.g);
+				const cb = Math.round(cell.b);
 
 				// 1. 阴影 (右下边缘) - 较深
-                // 混入 10% 黑色 ~= 0.9 * color
+				// 混入 10% 黑色 ~= 0.9 * color
 				ctx.fillStyle = `rgb(${Math.round(cr * 0.9)}, ${Math.round(cg * 0.9)}, ${Math.round(cb * 0.9)})`;
 				ctx.fillRect(x, y, cellWidth, cellHeight);
 
-                // 2. 高光 (左上边缘) - 较浅
-                // 混入 20% 白色 ~= color + (255-color)*0.2
-                ctx.fillStyle = `rgb(${Math.round(cr + (255-cr)*0.2)}, ${Math.round(cg + (255-cg)*0.2)}, ${Math.round(cb + (255-cb)*0.2)})`;
-                ctx.fillRect(x, y, cellWidth - 1, cellHeight - 1);
+				// 2. 高光 (左上边缘) - 较浅
+				// 混入 20% 白色 ~= color + (255-color)*0.2
+				ctx.fillStyle = `rgb(${Math.round(cr + (255 - cr) * 0.2)}, ${Math.round(cg + (255 - cg) * 0.2)}, ${Math.round(cb + (255 - cb) * 0.2)})`;
+				ctx.fillRect(x, y, cellWidth - 1, cellHeight - 1);
 
 				// 3. 核心主体 - 正常颜色
 				ctx.fillStyle = `rgb(${cr}, ${cg}, ${cb})`;
@@ -312,16 +358,16 @@
 	}
 
 	function loop(timestamp: number) {
-        // 如果显式要求静态且已收敛，则停止循环
-        // 使用比前一帧更严格的 'changing' 检查以确保停止
-        if (config.duration === 0 && !needsRedraw) {
-            animationFrameId = 0;
-            return;
-        }
+		// 如果显式要求静态且已收敛，则停止循环
+		// 使用比前一帧更严格的 'changing' 检查以确保停止
+		if (config.duration === 0 && !needsRedraw) {
+			animationFrameId = 0;
+			return;
+		}
 
-        // 确定入场动画的有效 FPS
-        // 如果 config.fps 为 0 (静态模式)，则入场动画使用 30fps
-        const effectiveFps = config.fps > 0 ? config.fps : 30;
+		// 确定入场动画的有效 FPS
+		// 如果 config.fps 为 0 (静态模式)，则入场动画使用 30fps
+		const effectiveFps = config.fps > 0 ? config.fps : 30;
 
 		if (!lastFrameTime) lastFrameTime = timestamp;
 		const elapsed = timestamp - lastFrameTime;
@@ -335,23 +381,23 @@
 		const delta = timestamp - lastUpdate;
 
 		// 定期更新颜色目标
-        // 如果 duration 为 0，视为静态模式（从不更新目标）
+		// 如果 duration 为 0，视为静态模式（从不更新目标）
 		if (config.duration > 0 && delta > config.duration * 1000) {
-			cells.forEach(cell => cell.updateTarget(config.randomness, isRainbowMode, rows));
+			cells.forEach((cell) => cell.updateTarget(config.randomness, isRainbowMode, rows));
 			lastUpdate = timestamp;
-            needsRedraw = true; // 目标已变，开始插值
+			needsRedraw = true; // 目标已变，开始插值
 		}
 
 		// 插值颜色计算
-        let changing = false;
-        // 如果 config.transitionSpeed 为 0 (静态模式)，入场动画使用 0.05 的速度
-        const effectiveSpeed = config.transitionSpeed > 0 ? config.transitionSpeed : 0.05;
+		let changing = false;
+		// 如果 config.transitionSpeed 为 0 (静态模式)，入场动画使用 0.05 的速度
+		const effectiveSpeed = config.transitionSpeed > 0 ? config.transitionSpeed : 0.05;
 
-		cells.forEach(cell => {
+		cells.forEach((cell) => {
 			const dr = cell.targetR - cell.r;
 			const dg = cell.targetG - cell.g;
 			const db = cell.targetB - cell.b;
-			
+
 			// 简单的阈值检查，判断是否足够接近以停止更新，节省 CPU
 			if (Math.abs(dr) > 0.1 || Math.abs(dg) > 0.1 || Math.abs(db) > 0.1) {
 				cell.step(effectiveSpeed);
@@ -359,58 +405,59 @@
 			}
 		});
 
-        if (changing) {
-            needsRedraw = true;
-        }
+		if (changing) {
+			needsRedraw = true;
+		}
 
 		if (needsRedraw) {
-    		draw();
-            // 关键：如果 changing 为 false，标记 needsRedraw 为 false 以在下一帧停止循环
-            // 确保最后一帧绘制（收敛）后静止
-            needsRedraw = changing;
-        }
-		
-        // Re-check sleep condition before requesting next frame
-        if (config.duration === 0 && !needsRedraw) {
-            animationFrameId = 0;
-            return;
-        }
+			draw();
+			// 关键：如果 changing 为 false，标记 needsRedraw 为 false 以在下一帧停止循环
+			// 确保最后一帧绘制（收敛）后静止
+			needsRedraw = changing;
+		}
+
+		// Re-check sleep condition before requesting next frame
+		if (config.duration === 0 && !needsRedraw) {
+			animationFrameId = 0;
+			return;
+		}
 
 		animationFrameId = requestAnimationFrame(loop);
 	}
 
-    function startLoop() {
-        // 如果不需要重绘且配置为静态模式，则不启动循环
-        if (!needsRedraw && config.duration === 0 && config.fps === 0) {
-            return;
-        }
-        
-        if (!animationFrameId) {
-            animationFrameId = requestAnimationFrame(loop);
-        }
-    }
+	function startLoop() {
+		// 如果不需要重绘且配置为静态模式，则不启动循环
+		if (!needsRedraw && config.duration === 0 && config.fps === 0) {
+			return;
+		}
 
+		if (!animationFrameId) {
+			animationFrameId = requestAnimationFrame(loop);
+		}
+	}
 
 	onMount(() => {
 		ctx = canvas.getContext('2d', { alpha: false }); // 禁用 alpha 通道以提升性能
-		
+
 		// 初始加载：不自动运行动画，仅绘制固态
 		initGrid(true, false);
-        
-        // 延迟 250ms 后触发入场动画
-        setTimeout(() => {
-             // 随机分配目标颜色并启动循环
-             cells.forEach(cell => cell.updateTarget(config.randomness, isRainbowMode, rows));
-             needsRedraw = true;
-             startLoop();
-        }, 250);
+
+		// 延迟 250ms 后触发入场动画
+		setTimeout(() => {
+			// 随机分配目标颜色并启动循环
+			cells.forEach((cell) => cell.updateTarget(config.randomness, isRainbowMode, rows));
+			needsRedraw = true;
+			startLoop();
+		}, 250);
 
 		resizeObserver = new ResizeObserver(() => {
 			if (canvas) {
-                // 容器重调大小：立即响应并刷新
-                initGrid(false, true);
-                startLoop(); 
-            } 
+				// 不使用防抖，直接使用 requestAnimationFrame 确保流畅
+				requestAnimationFrame(() => {
+					initGrid(false, true);
+					startLoop();
+				});
+			}
 		});
 		resizeObserver.observe(canvas);
 	});
@@ -427,8 +474,9 @@
 	let isFirstRun = true;
 
 	$effect(() => {
-		const isDark = themeState.isDark;
-		
+		// 访问 themeState.isDark 以建立依赖，但在第一次运行中跳过
+		themeState.isDark;
+
 		if (isFirstRun) {
 			isFirstRun = false;
 			return;
@@ -438,17 +486,30 @@
 		setTimeout(() => {
 			if (canvas) {
 				initGrid(true, true); // 主题变化：立即自动启动动画
-                startLoop();
+				startLoop();
 			}
 		}, 0);
 	});
 
+	// 侧边栏信息注入
+	import { sidebarState } from '$lib/stores/app.svelte';
+	import MosaicInfo from '$lib/components/ui/background/MosaicInfo.svelte';
+
+	onMount(() => {
+		// 组件挂载时，注入 MosaicInfo 到侧边栏
+		const id = sidebarState.setExtraInfo(MosaicInfo, {}, 'mosaic');
+
+		return () => {
+			// 组件销毁时清理
+			sidebarState.clearExtraInfo(id);
+		};
+	});
 </script>
 
-<div class="relative w-full h-full">
-	<canvas 
-		bind:this={canvas} 
-		class="absolute inset-0 w-full h-full block"
+<div class="relative h-full w-full">
+	<canvas
+		bind:this={canvas}
+		class="absolute inset-0 block h-full w-full"
 		style="background-color: {config.gapColor}"
 	></canvas>
 </div>

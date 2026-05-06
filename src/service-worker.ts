@@ -63,14 +63,16 @@ self.addEventListener('fetch', (event) => {
 	if (event.request.method !== 'GET') return;
 
 	const url = new URL(event.request.url);
-	
+
 	// 跳过外部请求
 	if (url.origin !== location.origin) return;
 
 	// 数据文件始终从网络获取，不走 SW
-	if (url.pathname.startsWith('/data/') || 
-		url.pathname.endsWith('.json') || 
-		url.pathname.endsWith('.yaml')) {
+	if (
+		url.pathname.startsWith('/data/') ||
+		url.pathname.endsWith('.json') ||
+		url.pathname.endsWith('.yaml')
+	) {
 		return; // 不调用 respondWith，浏览器直接走网络
 	}
 

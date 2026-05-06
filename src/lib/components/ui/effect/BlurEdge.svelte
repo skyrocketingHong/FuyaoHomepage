@@ -36,14 +36,14 @@
 		style?: string;
 	}>();
 
-	let commonClass = $derived(cn(
-		'pointer-events-none z-mask',
-		position,
-		className
-	));
+	let commonClass = $derived(cn('pointer-events-none z-mask', position, className));
 
-	let effectiveShowStart = $derived(showStart !== undefined ? showStart : (side === 'both' || side === 'start'));
-	let effectiveShowEnd = $derived(showEnd !== undefined ? showEnd : (side === 'both' || side === 'end'));
+	let effectiveShowStart = $derived(
+		showStart !== undefined ? showStart : side === 'both' || side === 'start'
+	);
+	let effectiveShowEnd = $derived(
+		showEnd !== undefined ? showEnd : side === 'both' || side === 'end'
+	);
 </script>
 
 {#if visible}
@@ -51,7 +51,7 @@
 		<!-- 顶部 -->
 		{#if effectiveShowStart}
 			<div
-				class={cn(commonClass, 'top-0 left-0 right-0 h-32 w-full')}
+				class={cn(commonClass, 'top-0 right-0 left-0 h-32 w-full')}
 				style="backdrop-filter: blur(8px); mask-image: linear-gradient(to bottom, black, transparent); -webkit-mask-image: linear-gradient(to bottom, black, transparent); {style}"
 				transition:fade={{ duration: 300 }}
 			></div>
@@ -59,7 +59,7 @@
 		<!-- 底部 -->
 		{#if effectiveShowEnd}
 			<div
-				class={cn(commonClass, 'bottom-0 left-0 right-0 h-40 md:h-12 w-full')}
+				class={cn(commonClass, 'right-0 bottom-0 left-0 h-40 w-full md:h-12')}
 				style="backdrop-filter: blur(8px); mask-image: linear-gradient(to top, black, transparent); -webkit-mask-image: linear-gradient(to top, black, transparent); {style}"
 				transition:fade={{ duration: 300 }}
 			></div>
@@ -68,7 +68,7 @@
 		<!-- 左侧 -->
 		{#if effectiveShowStart}
 			<div
-				class={cn(commonClass, 'left-0 top-0 bottom-0 w-3 md:w-6 h-full')}
+				class={cn(commonClass, 'top-0 bottom-0 left-0 h-full w-3 md:w-6')}
 				style="backdrop-filter: blur(8px); mask-image: linear-gradient(to right, black, transparent); -webkit-mask-image: linear-gradient(to right, black, transparent); {style}"
 				transition:fade={{ duration: 300 }}
 			></div>
@@ -76,7 +76,7 @@
 		<!-- 右侧 -->
 		{#if effectiveShowEnd}
 			<div
-				class={cn(commonClass, 'right-0 top-0 bottom-0 w-3 md:w-6 h-full')}
+				class={cn(commonClass, 'top-0 right-0 bottom-0 h-full w-3 md:w-6')}
 				style="backdrop-filter: blur(8px); mask-image: linear-gradient(to left, black, transparent); -webkit-mask-image: linear-gradient(to left, black, transparent); {style}"
 				transition:fade={{ duration: 300 }}
 			></div>

@@ -3,7 +3,7 @@
 	 * SEO 头部组件
 	 *
 	 * 为页面提供标题、描述、关键词和 Open Graph / Twitter 卡片元标签。
-	 * 
+	 *
 	 * @prop title - 页面标题
 	 * @prop description - 页面描述
 	 * @prop keywords - 关键词数组
@@ -41,13 +41,21 @@
 
 	// 生成最终标题（非首页添加站点名后缀）
 	let displayTitle = $derived(title ?? siteName);
-	let finalTitle = $derived(displayTitle === siteName ? displayTitle : `${displayTitle} | ${siteName}`);
+	let finalTitle = $derived(
+		displayTitle === siteName ? displayTitle : `${displayTitle} | ${siteName}`
+	);
 	// 生成完整 URL
 	let finalUrl = $derived(`${seoConfig.baseURL}${page.url.pathname}`);
 	// 如果关键词是数组则连接为字符串
 	let keywordsString = $derived(Array.isArray(keywords) ? keywords.join(', ') : keywords);
 	// 回退图片逻辑：优先使用传入图片，否则使用默认 favicon
-	let finalImage = $derived(image ? (image.startsWith('http') ? image : `${seoConfig.baseURL}${image}`) : `${seoConfig.baseURL}/favicon/android-chrome-512x512.png`);
+	let finalImage = $derived(
+		image
+			? image.startsWith('http')
+				? image
+				: `${seoConfig.baseURL}${image}`
+			: `${seoConfig.baseURL}/favicon/android-chrome-512x512.png`
+	);
 </script>
 
 <svelte:head>
@@ -77,7 +85,6 @@
 	{/if}
 
 	{#if jsonLd}
-		{@html `<script type="application/ld+json">${JSON.stringify(jsonLd)}</script>`}
+		{@html `<script type="application/ld+json">${JSON.stringify(jsonLd)}</` + `script>`}
 	{/if}
 </svelte:head>
-

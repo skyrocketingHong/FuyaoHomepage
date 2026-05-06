@@ -1,0 +1,50 @@
+/* 字体定义模块 */
+
+/* Source Han Sans VF / 思源黑体 */
+@import url('https://fontsapi.zeoseven.com/69/main/result.css');
+/* Source Han Serif VF / 思源宋体 */
+@import url('https://fontsapi.zeoseven.com/285/main/result.css');
+/* MiSans */
+@import url('https://cdn-font.hyperos.mi.com/font/css?family=MiSans_VF:VF:Chinese_Simplify,Latin&display=swap');
+@import url('https://cdn-font.hyperos.mi.com/font/css?family=MiSans_L3:400:Uncommon&display=swap');
+@import url('https://cdn-font.hyperos.mi.com/font/css?family=MiSans_ArabicUI_VF:VF:ArabicUI&display=swap');
+@import url('https://cdn-font.hyperos.mi.com/font/css?family=MiSans_Devanagari_VF:VF:Devanagari&display=swap');
+@import url('https://cdn-font.hyperos.mi.com/font/css?family=MiSans_Gujarati_VF:VF:Gujarati&display=swap');
+@import url('https://cdn-font.hyperos.mi.com/font/css?family=MiSans_Gurmukhi_VF:VF:Gurmukhi&display=swap');
+@import url('https://cdn-font.hyperos.mi.com/font/css?family=MiSans_Khmer_VF:VF:Khmer&display=swap');
+@import url('https://cdn-font.hyperos.mi.com/font/css?family=MiSans_Lao_VF:VF:Lao&display=swap');
+@import url('https://cdn-font.hyperos.mi.com/font/css?family=MiSans_Myanmar_VF:VF:Myanmar&display=swap');
+@import url('https://cdn-font.hyperos.mi.com/font/css?family=Misans_TC_VF:VF:Chinese_Traditional_TW&display=swap');
+@import url('https://cdn-font.hyperos.mi.com/font/css?family=MiSans_Thai_VF:VF:Thai&display=swap');
+@import url('https://cdn-font.hyperos.mi.com/font/css?family=MiSans_Tibetan_VF:VF:Tibetan&display=swap');
+/* Maple Mono CN */
+@import url('https://fontsapi.zeoseven.com/442/bold/result.css');
+@import url('https://fontsapi.zeoseven.com/442/bold-italic/result.css');
+@import url('https://fontsapi.zeoseven.com/442/extra-bold/result.css');
+@import url('https://fontsapi.zeoseven.com/442/extra-bold-italic/result.css');
+@import url('https://fontsapi.zeoseven.com/442/extra-light/result.css');
+@import url('https://fontsapi.zeoseven.com/442/extra-light-italic/result.css');
+@import url('https://fontsapi.zeoseven.com/442/italic/result.css');
+@import url('https://fontsapi.zeoseven.com/442/light/result.css');
+@import url('https://fontsapi.zeoseven.com/442/light-italic/result.css');
+@import url('https://fontsapi.zeoseven.com/442/medium/result.css');
+@import url('https://fontsapi.zeoseven.com/442/medium-italic/result.css');
+@import url('https://fontsapi.zeoseven.com/442/main/result.css');
+@import url('https://fontsapi.zeoseven.com/442/semi-bold/result.css');
+@import url('https://fontsapi.zeoseven.com/442/semi-bold-italic/result.css');
+@import url('https://fontsapi.zeoseven.com/442/thin/result.css');
+@import url('https://fontsapi.zeoseven.com/442/thin-italic/result.css');
+
+@font-face {
+	font-family: 'MTRSong';
+	src: url('/fonts/MTRSung.woff2') format('woff2');
+	font-weight: normal;
+	font-style: normal;
+}
+
+@font-face {
+	font-family: 'Helvetica Neue Medium';
+	src: url('/fonts/Helvetica Neue - Medium.woff2') format('woff2');
+	font-weight: normal;
+	font-style: normal;
+}

@@ -3,7 +3,7 @@
 	 * 加载指示器组件
 	 *
 	 * 统一的圆形加载动画。
-	 * 
+	 *
 	 * @prop size - 尺寸：sm | md | lg (默认 'md')
 	 * @prop class - 额外的 CSS 类名
 	 */

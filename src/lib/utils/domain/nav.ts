@@ -6,8 +6,8 @@
  * @returns boolean
  */
 export function isActiveRoute(currentPath: string, itemPath: string) {
-    if (itemPath === '/') {
-        return currentPath === '/';
-    }
-    return currentPath.startsWith(itemPath);
+	if (itemPath === '/') {
+		return currentPath === '/';
+	}
+	return currentPath.startsWith(itemPath);
 }

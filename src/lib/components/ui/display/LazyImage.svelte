@@ -26,14 +26,14 @@
 		height?: string | number;
 		/** object-fit 属性 */
 		fit?: 'cover' | 'contain' | 'fill' | 'none' | 'scale-down';
-        /** 是否使用绝对定位填充父容器 (常用模式) */
-        fill?: boolean;
-        /** 图片加载完成回调 */
-        onload?: () => void;
-        /** 内部 img 元素的额外 class */
-        imgClass?: string;
-        /** 图片加载失败回调 */
-        onerror?: () => void;
+		/** 是否使用绝对定位填充父容器 (常用模式) */
+		fill?: boolean;
+		/** 图片加载完成回调 */
+		onload?: () => void;
+		/** 内部 img 元素的额外 class */
+		imgClass?: string;
+		/** 图片加载失败回调 */
+		onerror?: () => void;
 	}
 
 	let {
@@ -43,40 +43,38 @@
 		width,
 		height,
 		fit = 'cover',
-        fill = false,
-        onload,
-        onerror,
-        imgClass = ''
+		fill = false,
+		onload,
+		onerror,
+		imgClass = ''
 	}: Props = $props();
 
 	let loaded = $state(false);
-	let error = $state(false);
 
 	function handleLoad() {
 		loaded = true;
-        onload?.();
+		onload?.();
 	}
 
 	function handleError() {
-		error = true;
 		loaded = true; // 即使出错也停止加载动画
-        onerror?.();
+		onerror?.();
 	}
 </script>
 
 <div
 	class={cn(
 		'relative overflow-hidden bg-muted/20',
-        fill ? 'absolute inset-0 h-full w-full' : '',
+		fill ? 'absolute inset-0 h-full w-full' : '',
 		className
 	)}
-    style:width={width ? (typeof width === 'number' ? `${width}px` : width) : undefined}
-    style:height={height ? (typeof height === 'number' ? `${height}px` : height) : undefined}
+	style:width={width ? (typeof width === 'number' ? `${width}px` : width) : undefined}
+	style:height={height ? (typeof height === 'number' ? `${height}px` : height) : undefined}
 >
 	<!-- 加载动画 -->
 	{#if !loaded}
 		<div
-			class="absolute inset-0 flex items-center justify-center bg-muted/10 z-10"
+			class="absolute inset-0 z-10 flex items-center justify-center bg-muted/10"
 			out:fade={{ duration: 300 }}
 		>
 			<LoadingSpinner size="md" />
@@ -89,15 +87,15 @@
 		{alt}
 		loading="lazy"
 		class={cn(
-			'transition-opacity duration-500 will-change-opacity',
+			'will-change-opacity transition-opacity duration-500',
 			loaded ? 'opacity-100' : 'opacity-0',
-            fill ? 'h-full w-full' : '',
-            fit === 'cover' && 'object-cover',
-            fit === 'contain' && 'object-contain',
-            fit === 'fill' && 'object-fill',
-            fit === 'none' && 'object-none',
-            fit === 'scale-down' && 'object-scale-down',
-            imgClass
+			fill ? 'h-full w-full' : '',
+			fit === 'cover' && 'object-cover',
+			fit === 'contain' && 'object-contain',
+			fit === 'fill' && 'object-fill',
+			fit === 'none' && 'object-none',
+			fit === 'scale-down' && 'object-scale-down',
+			imgClass
 		)}
 		onload={handleLoad}
 		onerror={handleError}

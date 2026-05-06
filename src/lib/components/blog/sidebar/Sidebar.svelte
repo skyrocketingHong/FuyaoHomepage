@@ -1,31 +1,34 @@
 <script lang="ts">
 	/**
 	 * 博客侧边栏归档列表组件
-	 * 
+	 *
 	 * 将文章列表按年份分组并以树形结构展示。
-	 * 
+	 *
 	 * @prop posts - 博客文章列表
 	 * @prop onSelect - 选中文章时的回调函数
 	 */
 	import Marquee from '$lib/components/ui/display/Marquee.svelte';
 	import SidebarTree from '$lib/components/layout/sidebar/SidebarTree.svelte';
 	import type { SidebarItemType } from '$lib/types/sidebar';
+	import type { BlogPost } from '$lib/utils/domain/blog';
 	import { t } from '$lib/i18n/store';
-    import { page } from '$app/state';
+	import { page } from '$app/state';
 	import { groupPostsByYear, getBlogListUrl } from '$lib/utils/domain/blog';
-    
-    // ... imports
 
+	// ... imports
 
-
-	let { posts = [], activeCategory = 'All', onSelect } = $props<{ 
-		posts: any[]; 
+	let {
+		posts = [],
+		activeCategory = 'All',
+		onSelect
+	} = $props<{
+		posts: BlogPost[];
 		activeCategory?: string;
-		onSelect: (post: any) => void 
+		onSelect: (post: BlogPost) => void;
 	}>();
 
 	import { Calendar, Tag } from 'lucide-svelte';
-	    import { sidebarState } from '$lib/stores/app.svelte';
+	import { sidebarState } from '$lib/stores/app.svelte';
 	import { onMount, untrack } from 'svelte';
 
 	// 定义模式常量
@@ -39,7 +42,7 @@
 		if (sidebarState.availableModes.length === 0) {
 			sidebarState.availableModes = BLOG_MODES;
 		}
-		
+
 		// 初始模式设置
 		const isTagPath = page.url.pathname.includes('/tag/');
 		if (isTagPath) {
@@ -68,7 +71,7 @@
 	// 提取所有唯一标签
 	let allTags = $derived.by(() => {
 		const tagSet = new Set<string>();
-		posts.forEach((post: any) => {
+		posts.forEach((post: BlogPost) => {
 			if (post.tags) {
 				post.tags.forEach((t: string) => tagSet.add(t));
 			}
@@ -91,22 +94,22 @@
 		const currentMode = sidebarState.viewMode || 'year';
 		if (currentMode !== 'year') return [];
 
-        const groupedPosts = groupPostsByYear(posts, activeTag);
+		const groupedPosts = groupPostsByYear(posts, activeTag);
 
 		return groupedPosts.map(([year, groupPosts]) => {
-			const items: SidebarItemType[] = groupPosts.map((post: any) => ({
-				label: post.title, 
+			const items: SidebarItemType[] = groupPosts.map((post) => ({
+				label: post.title,
 				onClick: () => onSelect(post),
 				isActive: page.url.pathname.includes(post.slug),
 				component: Marquee,
 				componentProps: { text: post.title }
 			}));
-            
+
 			return {
 				id: year,
 				label: year === 'unknown' ? $t('blog.unknown_year') : year,
 				items: items,
-                defaultExpanded: true
+				defaultExpanded: true
 			} as SidebarItemType & { id: string };
 		});
 	});
@@ -114,10 +117,10 @@
 	function handleTagSelect(tag: string) {
 		const isCurrentlySelected = activeTag === tag;
 		const newTag = isCurrentlySelected ? '' : tag;
-		
+
 		// 总是跳转到全局标签路径以确保内容丰富，取消选中时返回原分类
 		const targetUrl = newTag ? getBlogListUrl('All', newTag) : getBlogListUrl(activeCategory, '');
-		
+
 		import('$app/navigation').then(({ goto }) => {
 			goto(targetUrl, { keepFocus: true, noScroll: true });
 		});
@@ -131,11 +134,7 @@
 				<SidebarTree {item} />
 			{/each}
 		{:else if sidebarState.viewMode === 'tag'}
-			<TagCloud 
-				tags={allTags} 
-				{activeTag} 
-				onSelect={handleTagSelect} 
-			/>
+			<TagCloud tags={allTags} {activeTag} onSelect={handleTagSelect} />
 		{/if}
 	</Crossfade>
 </div>

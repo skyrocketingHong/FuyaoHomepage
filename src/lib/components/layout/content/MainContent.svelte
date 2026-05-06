@@ -13,27 +13,31 @@
 	import BlurEdge from '$lib/components/ui/effect/BlurEdge.svelte';
 	import { layoutState, headerState } from '$lib/stores/app.svelte';
 	import type { Snippet } from 'svelte';
-    import { cn } from '$lib/utils/index';
+	import { cn } from '$lib/utils/index';
 	import { beforeNavigate, afterNavigate } from '$app/navigation';
 	import { tick } from 'svelte';
 
+	let {
+		children,
+		pathname,
+		class: className = ''
+	} = $props<{
+		children: Snippet;
+		pathname: string;
+		class?: string;
+	}>();
 
-	let { children, pathname, class: className = '' } = $props<{ 
-        children: Snippet; 
-        pathname: string;
-        class?: string 
-    }>();
+	let isScrollable = $derived(layoutState.isContentScrollable);
+	// 自动检测 Header 是否处于扩展模式 (即存在中间组件 - CategoryNav)
+	let isHeaderExtended = $derived(!!headerState.middleComponent);
 
-    let isScrollable = $derived(layoutState.isContentScrollable);
-    // 自动检测 Header 是否处于扩展模式 (即存在中间组件 - CategoryNav)
-    let isHeaderExtended = $derived(!!headerState.middleComponent);
-    
-    let hasScrollTop = $state(false);
-    let hasScrollBottom = $state(false);
+	let hasScrollTop = $state(false);
+	let hasScrollBottom = $state(false);
 	let scrollRef = $state<HTMLElement>();
 
+	import { SvelteMap } from 'svelte/reactivity';
 	// 存储滚动位置的 Map: pathname -> scrollTop
-	let scrollPositions = new Map<string, number>();
+	let scrollPositions = new SvelteMap<string, number>();
 
 	beforeNavigate(() => {
 		if (scrollRef && isScrollable) {
@@ -58,35 +62,34 @@
 
 <ScrollContainer
 	class={cn(
-        // 两者的基础样式 (使用响应式前缀区分)
-        "w-full flex flex-col transition-all duration-300 ease-in-out",
-        // 移动端特定: 100dvh, padding. 针对扩展头部动态调整顶部 padding.
-        "h-[100dvh] pr-2 pl-2",
-        isHeaderExtended ? "pt-25" : "pt-13",
-        // 桌面端特定: h-full (嵌套在受限容器中), 不同的 padding
-        "lg:h-full lg:min-h-0 lg:pt-16 lg:pr-4 lg:pb-4 lg:pl-4",
-        // 滚动状态样式
-        isScrollable ? "overflow-y-auto" : "overflow-hidden",
-        layoutState.isContentTransparent ? "pointer-events-none" : "pointer-events-auto",
-        className
-    )}
+		// 两者的基础样式 (使用响应式前缀区分)
+		'flex w-full flex-col transition-all duration-300 ease-in-out',
+		// 移动端特定: 100dvh, padding. 针对扩展头部动态调整顶部 padding.
+		'h-[100dvh] pr-2 pl-2',
+		isHeaderExtended ? 'pt-25' : 'pt-13',
+		// 桌面端特定: h-full (嵌套在受限容器中), 不同的 padding
+		'lg:h-full lg:min-h-0 lg:pt-16 lg:pr-4 lg:pb-4 lg:pl-4',
+		// 滚动状态样式
+		isScrollable ? 'overflow-y-auto' : 'overflow-hidden',
+		layoutState.isContentTransparent ? 'pointer-events-none' : 'pointer-events-auto',
+		className
+	)}
 	enabled={isScrollable}
-    useMask={false}
-    bind:hasScrollTop={hasScrollTop}
-    bind:hasScrollBottom={hasScrollBottom}
+	useMask={false}
+	bind:hasScrollTop
+	bind:hasScrollBottom
 	bind:ref={scrollRef}
 >
-	<div class={cn(
-		"w-full transition-all duration-300 grid",
-		isScrollable ? "min-h-full" : "h-full min-h-0"
-	)}>
-		<Crossfade 
-			key={pathname} 
-			class="size-full"
-		>
-		{@render children()}
+	<div
+		class={cn(
+			'grid w-full transition-all duration-300',
+			isScrollable ? 'min-h-full' : 'h-full min-h-0'
+		)}
+	>
+		<Crossfade key={pathname} class="size-full">
+			{@render children()}
 		</Crossfade>
 	</div>
-    
-    <BlurEdge visible={isScrollable} showStart={hasScrollTop} showEnd={hasScrollBottom} />
+
+	<BlurEdge visible={isScrollable} showStart={hasScrollTop} showEnd={hasScrollBottom} />
 </ScrollContainer>

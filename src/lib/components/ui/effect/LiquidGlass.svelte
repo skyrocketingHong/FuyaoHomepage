@@ -3,7 +3,7 @@
 	 * 液态玻璃组件 (Optimized V5 - Lazy Blur)
 	 *
 	 * 实现类似苹果 visionOS 的玻璃拟态效果，带有鼠标光照跟随和可选的 3D 倾斜交互。
-	 * 
+	 *
 	 * 优化策略:
 	 * 1. IntersectionObserver: 离屏时停止交互监听。
 	 * 2. 动态图层提升 (Dynamic Layer Promotion): 仅在交互时提升为合成层 (will-change)。
@@ -23,7 +23,18 @@
 	import { cn } from '$lib/utils/index';
 	import { onMount } from 'svelte';
 
-	let { children, class: className, tag = 'div', tilt = false, lazyBlur = false, opaque = false, showLighting = true, showGloss = true, ...rest } = $props();
+	let {
+		children,
+		class: className,
+		tag = 'div',
+		tilt = false,
+		lazyBlur = false,
+		opaque = false,
+		showLighting = true,
+		showGloss = true,
+		flat = false,
+		...rest
+	} = $props();
 
 	let el: HTMLElement | undefined = $state();
 	let bounds: DOMRect | undefined = undefined;
@@ -46,7 +57,7 @@
 	// 初始化 IntersectionObserver
 	onMount(() => {
 		if (!el) return;
-		
+
 		const observer = new IntersectionObserver(
 			(entries) => {
 				isVisible = entries[0].isIntersecting;
@@ -85,7 +96,7 @@
 
 	function processInput(clientX: number, clientY: number) {
 		if (!el || !isVisible) return;
-		
+
 		const currentTime = performance.now();
 		if (currentTime - lastTime < FRAME_INTERVAL) return;
 		lastTime = currentTime;
@@ -150,18 +161,19 @@
 	function handleMouseLeave() {
 		isInteracting = false;
 		if (!el || !tilt) return;
-		
+
 		// 重置旋转
 		el.style.setProperty('--rotate-x', `0deg`);
 		el.style.setProperty('--rotate-y', `0deg`);
-		
+
 		bounds = undefined;
 	}
 
 	// 动态计算 transform 样式，防止多个 transform 属性覆盖
 	let transformStyle = $derived.by(() => {
 		const parts = [];
-		if (tilt) parts.push('perspective(1000px) rotateX(var(--rotate-x,0deg)) rotateY(var(--rotate-y,0deg))');
+		if (tilt)
+			parts.push('perspective(1000px) rotateX(var(--rotate-x,0deg)) rotateY(var(--rotate-y,0deg))');
 		// 当需要提升图层时，添加 translateZ(0) 触发合成层，
 		// 注意：它追加在 rotate 之后，确保在同一个 transform 属性中。
 		if (shouldPromoteLayer) parts.push('translateZ(0)');
@@ -188,12 +200,12 @@
 		// opaque -> 不透明背景 (Card color), 无开销
 		// lazyBlur && !interacting -> 不透明背景 (Card color), 无开销
 		// !lazyBlur || interacting -> 液体背景 (Transparent), 昂贵
-		(opaque || !shouldApplyBlur) ? 'bg-card' : 'bg-liquid',
+		opaque || !shouldApplyBlur ? 'bg-card' : 'bg-liquid',
 		'rounded-2xl p-4',
 		// 边框处理：使用真实的 border 代替 mask，减小边框宽度
 		'border-[0.1px] border-border',
 		// 阴影处理
-		'shadow-lg',
+		flat ? 'shadow-sm' : 'shadow-lg',
 		// 优化：使用 contain 属性隔离布局和绘制，减少页面重排重绘范围
 		'[contain:layout_paint_style]',
 		className
@@ -208,14 +220,13 @@
 	{...rest}
 	data-interacting={isInteracting}
 >
-
 	<!-- 光照层：仅在交互时显示，且跟随鼠标 -->
 	{#if showLighting}
 		<div
 			class={cn(
-				"pointer-events-none absolute z-0 h-[250px] w-[250px] transition-opacity duration-300",
+				'pointer-events-none absolute z-0 h-[250px] w-[250px] transition-opacity duration-300',
 				// 当未处在交互状态时，使用 invisible 确保它完全从渲染树中剔除
-				isInteracting ? "opacity-100 visible" : "opacity-0 invisible"
+				isInteracting ? 'visible opacity-100' : 'invisible opacity-0'
 			)}
 			style={`
 				top: 0; left: 0;
@@ -228,11 +239,13 @@
 	{/if}
 
 	<!-- 内发光/边框高光 -->
-	<div class="pointer-events-none absolute inset-0 z-10 rounded-[inherit] border border-white/20 shadow-[inset_0_0_15px_rgba(255,255,255,0.05)]"></div>
-	
+	<div
+		class="pointer-events-none absolute inset-0 z-10 rounded-[inherit] border border-white/20 shadow-[inset_0_0_15px_rgba(255,255,255,0.05)]"
+	></div>
+
 	<!-- 表面光泽 -->
 	{#if showGloss}
-		<div 
+		<div
 			class="pointer-events-none absolute inset-0 z-10 rounded-[inherit] opacity-50"
 			style="background: linear-gradient(120deg, rgba(255,255,255,0.1) 0%, transparent 40%);"
 		></div>

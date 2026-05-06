@@ -17,11 +17,7 @@
 
 <div class={cn('grid grid-cols-[minmax(0,1fr)]', className)}>
 	{#key key}
-		<div
-			class="col-start-1 row-start-1 size-full"
-			in:fade={{ duration }}
-			out:fade={{ duration }}
-		>
+		<div class="col-start-1 row-start-1 size-full" in:fade={{ duration }} out:fade={{ duration }}>
 			{@render children()}
 		</div>
 	{/key}

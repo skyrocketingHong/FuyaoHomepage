@@ -21,10 +21,7 @@
 </script>
 
 <div class="z-content flex h-full w-full flex-col items-center justify-center pb-30 md:pb-0">
-	<LiquidGlass
-		class="w-full max-w-lg"
-		tilt={false}
-	>
+	<LiquidGlass class="w-full max-w-lg" tilt={false}>
 		<div class="flex flex-col items-center justify-center gap-8 py-4 text-center">
 			<!-- 1. 图标层 -->
 			<Icon class="size-20 opacity-20" strokeWidth={1.5} />
@@ -41,33 +38,38 @@
 
 			<!-- 3. 错误描述层 -->
 			<p class="text-sm text-balance text-muted-foreground opacity-70">
-				{page.error?.message || (page.status === 404 ? $t('error.not_found_desc') : 'An error occurred')}
+				{page.error?.message ||
+					(page.status === 404 ? $t('error.not_found_desc') : 'An error occurred')}
 			</p>
 
 			<!-- 4. 详细信息：请求路径 (左右布局) -->
-			<div class="w-full rounded-2xl bg-black/5 p-4 dark:bg-white/5 transition-colors group-hover:bg-black/10 dark:group-hover:bg-white/10">
+			<div
+				class="w-full rounded-2xl bg-black/5 p-4 transition-colors group-hover:bg-black/10 dark:bg-white/5 dark:group-hover:bg-white/10"
+			>
 				<div class="flex items-center justify-between gap-4 text-sm">
 					<span class="shrink-0 font-medium opacity-50">{$t('error.request_path')}</span>
-					<code class="truncate font-mono text-xs opacity-70 bg-black/5 dark:bg-white/5 px-2 py-1 rounded-md">
+					<code
+						class="truncate rounded-md bg-black/5 px-2 py-1 font-mono text-xs opacity-70 dark:bg-white/5"
+					>
 						{page.url.pathname}
 					</code>
 				</div>
 			</div>
 
-		<!-- 5. 返回操作：使用独立 LiquidGlass 按钮 -->
-		<LiquidGlass 
-			tag="a" 
-			href="/"
-			class="!w-auto !p-0 inline-flex rounded-full text-foreground transition-all"
-			tilt={false}
-		>
-			<div class="flex items-center gap-2 px-4 py-2">
-				<Home class="size-4" />
-				<Crossfade key={'backhome-' + $locale} class="inline-grid">
-					<span class="font-medium">{$t('nav.home')}</span>
-				</Crossfade>
-			</div>
-		</LiquidGlass>
+			<!-- 5. 返回操作：使用独立 LiquidGlass 按钮 -->
+			<LiquidGlass
+				tag="a"
+				href="/"
+				class="inline-flex !w-auto rounded-full !p-0 text-foreground transition-all"
+				tilt={false}
+			>
+				<div class="flex items-center gap-2 px-4 py-2">
+					<Home class="size-4" />
+					<Crossfade key={'backhome-' + $locale} class="inline-grid">
+						<span class="font-medium">{$t('nav.home')}</span>
+					</Crossfade>
+				</div>
+			</LiquidGlass>
 		</div>
 	</LiquidGlass>
 </div>

@@ -10,36 +10,38 @@ const SCRIPT_PATH = join(__dirname, '../../../scripts/generate-blog-index.js');
 
 /**
  * 博客文件监听插件
- * 
+ *
  * 监听 `static/posts` 目录下的 Markdown 文件变化，
  * 自动运行 `scripts/generate-blog-index.js` 生成博客索引。
  */
 export default function blogWatcher(): Plugin {
-    return {
-        name: 'vite-plugin-blog-watcher',
-        configureServer(server) {
-            // 启动时运行
-            runGeneration();
-        },
-        handleHotUpdate({ file, server }) {
-            // 监听 static/posts 中的变化
-            if (file.includes('static/posts') && file.endsWith('.md')) {
-                runGeneration();
-            }
-        }
-    };
+	return {
+		name: 'vite-plugin-blog-watcher',
+		// eslint-disable-next-line @typescript-eslint/no-unused-vars
+		configureServer(server) {
+			// 启动时运行
+			runGeneration();
+		},
+		// eslint-disable-next-line @typescript-eslint/no-unused-vars
+		handleHotUpdate({ file, server }) {
+			// 监听 static/posts 中的变化
+			if (file.includes('static/posts') && file.endsWith('.md')) {
+				runGeneration();
+			}
+		}
+	};
 }
 
 function runGeneration() {
-    exec(`node "${SCRIPT_PATH}"`, (error, stdout, stderr) => {
-        if (error) {
-            console.error(`[BlogWatcher] 错误: ${error.message}`);
-            return;
-        }
-        if (stderr) {
-            console.error(`[BlogWatcher] 标准错误输出: ${stderr}`);
-            return;
-        }
-        console.log(`[BlogWatcher] 索引已重新生成。`);
-    });
+	exec(`node "${SCRIPT_PATH}"`, (error, stdout, stderr) => {
+		if (error) {
+			console.error(`[BlogWatcher] 错误: ${error.message}`);
+			return;
+		}
+		if (stderr) {
+			console.error(`[BlogWatcher] 标准错误输出: ${stderr}`);
+			return;
+		}
+		console.log(`[BlogWatcher] 索引已重新生成。`);
+	});
 }

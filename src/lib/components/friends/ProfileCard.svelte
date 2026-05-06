@@ -23,14 +23,11 @@
 		<div class="flex flex-col items-start gap-3 md:flex-row md:items-center md:justify-between">
 			<div class="flex w-full flex-row gap-3 md:w-auto md:flex-row md:items-center">
 				<div class="justify-center self-start md:self-auto">
-					<Avatar
-						src={avatarUrl}
-						alt={$t('friends.profile.avatar_alt')}
-						size="sm"
-						adaptiveStatus
-					/>
+					<Avatar src={avatarUrl} alt={$t('friends.profile.avatar_alt')} size="sm" adaptiveStatus />
 				</div>
-				<div class="flex min-w-0 flex-1 flex-col gap-1 text-xs text-muted-foreground lg:flex-row lg:gap-6">
+				<div
+					class="flex min-w-0 flex-1 flex-col gap-1 text-xs text-muted-foreground lg:flex-row lg:gap-6"
+				>
 					<div class="shrink-0 space-y-0.5">
 						<p>
 							<Crossfade key={$locale} class="inline-grid">
@@ -69,7 +66,7 @@
 					target="_blank"
 					class="flex w-full items-center justify-center gap-1.5 rounded-lg bg-secondary/50 px-3 py-1.5 text-xs font-medium text-foreground transition-colors hover:bg-secondary/70 md:w-auto"
 				>
-					<div class="w-4 h-4 [&>svg]:w-full [&>svg]:h-full">
+					<div class="h-4 w-4 [&>svg]:h-full [&>svg]:w-full">
 						<SiGithub />
 					</div>
 					<Crossfade key={$locale} class="inline-grid">

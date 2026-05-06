@@ -3,10 +3,18 @@
     <channel>
         <title>skyrocketingHong</title>
         <link>https://example.com</link>
-        <description>Fuyao Homepage 演示版本</description>
+        <description>Fuyao Homepage 演示</description>
         <language>zh-CN</language>
-        <lastBuildDate>Wed, 04 Feb 2026 14:34:01 GMT</lastBuildDate>
-        <atom:link href="https://example.com/rss.xml" rel="self" type="application/rss+xml"/>
+        <lastBuildDate>Wed, 11 Feb 2026 07:47:18 GMT</lastBuildDate>
+        <atom:link href="https://example.com/blog/rss.xml" rel="self" type="application/rss+xml"/>
+    <item>
+        <title>字体渲染全能测试 (Multi-language &amp; Symbols Test)</title>
+        <link>https://example.com/blog/example-category/font-test/</link>
+        <guid isPermaLink="true">https://example.com/blog/example-category/font-test/</guid>
+        <pubDate>Tue, 10 Feb 2026 11:30:00 GMT</pubDate>
+        <description>这是一篇包含多种语言、文字、生僻字、UTF 编码符号的测试文档，用于全面检测字体的展示效果。这是一篇包含多种语言、文字、生僻字、UTF 编码符号的测试文档，用于全面检测字体的展示效果。这是一篇包含多种语言、文字、生僻字、UTF 编码符号的测试文档，用于全面检测字体的展示效果。这是一篇包含多种语言、文字、生僻字、UTF 编码符号的测试文档，用于全面检测字体的展示效果。这是一篇包含多种语言、文字、生僻字、UTF 编码符号的测试文档，用于全面检测字体的展示效果。这是一篇包含多种语言、文字、生僻字、UTF 编码符号的测试文档，用于全面检测字体的展示效果。这是一篇包含多种语言、文字、生僻字、UTF 编码符号的测试文档，用于全面检测字体的展示效果。这是一篇包含多种语言、文字、生僻字、UTF 编码符号的测试文档，用于全面检测字体的展示效果。这是一篇包含多种语言、文字、生僻字、UTF 编码符号的测试文档，用于全面检测字体的展示效果。</description>
+        <category>example-category</category>
+    </item>
     <item>
         <title>代码高亮与媒体展示 (Code &amp; Media)</title>
         <link>https://example.com/blog/example-category/code-and-media-test/</link>

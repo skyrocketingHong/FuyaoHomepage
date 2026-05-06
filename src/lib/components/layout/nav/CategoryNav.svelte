@@ -10,7 +10,7 @@
 	 * @prop onSelect - 选择分类时的回调函数
 	 */
 	import SegmentedControl from '$lib/components/ui/display/SegmentedControl.svelte';
-	
+
 	interface Category {
 		slug: string;
 		title: string;
@@ -23,15 +23,12 @@
 	}>();
 
 	// 将 categories 转换为 SegmentedControl 所需的格式
-	let controlItems = $derived(categories.map((cat: Category) => ({
-		id: cat.slug,
-		label: cat.title
-	})));
+	let controlItems = $derived(
+		categories.map((cat: Category) => ({
+			id: cat.slug,
+			label: cat.title
+		}))
+	);
 </script>
 
-<SegmentedControl 
-	items={controlItems} 
-	activeId={activeCategory} 
-	onSelect={onSelect}
-	class="h-9"
-/>
+<SegmentedControl items={controlItems} activeId={activeCategory} {onSelect} class="h-9" />

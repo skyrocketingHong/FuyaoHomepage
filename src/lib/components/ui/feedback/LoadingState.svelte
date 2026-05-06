@@ -4,7 +4,7 @@
 	 *
 	 * 统一管理加载中、错误及正常内容三种状态的切换。
 	 * 支持内联 (inline) 和全屏 (fullscreen) 布局模式。
-	 * 
+	 *
 	 * @prop loading - 是否处于加载状态 (默认 false)
 	 * @prop error - 错误信息内容 (默认 '')
 	 * @prop variant - 布局模式：'inline' | 'fullscreen' (默认 'inline')
@@ -14,7 +14,7 @@
 	 * @prop children - Svelte Snippet 正常显示的内容
 	 */
 	import LoadingSpinner from '$lib/components/ui/feedback/LoadingSpinner.svelte';
-	import Copyright from '$lib/components/layout/sidebar/Copyright.svelte';
+	import BottomInfo from '$lib/components/layout/bottom-info/BottomInfo.svelte';
 	import Crossfade from '$lib/components/ui/effect/Crossfade.svelte';
 	import { fade } from 'svelte/transition';
 	import { t, locale } from '$lib/i18n/store';
@@ -31,6 +31,10 @@
 		text?: string;
 		/** 是否显示加载文字 */
 		showText?: boolean;
+		/** 是否显示版权信息 */
+		showCopyright?: boolean;
+		/** 是否添加侧边栏偏移 */
+		sidebarOffset?: boolean;
 		/** 额外的 CSS 类名 */
 		class?: string;
 		/** 子内容 */
@@ -43,6 +47,8 @@
 		variant = 'inline',
 		text = '',
 		showText = true,
+		showCopyright = true,
+		sidebarOffset = false,
 		class: className = '',
 		children
 	}: Props = $props();
@@ -54,19 +60,25 @@
 {#if loading}
 	{#if variant === 'fullscreen'}
 		<!-- 全屏模式 -->
-		<div class="relative flex h-full w-full flex-col items-center justify-center bg-background {className}">
+		<div
+			class="relative flex h-full w-full flex-col items-center justify-center bg-background {sidebarOffset
+				? 'md:pl-72'
+				: ''} {className}"
+		>
 			<div class="flex flex-row items-center justify-center gap-4">
 				<LoadingSpinner size="md" />
 				{#if showText}
 					<span class="text-xs font-medium tracking-widest text-muted-foreground">
-						{displayText}
+						<Crossfade key={$locale} class="inline-grid">
+							<span>{displayText}</span>
+						</Crossfade>
 					</span>
 				{/if}
 			</div>
 
-			{#if showText}
-				<div class="absolute bottom-2 md:bottom-4 flex w-full justify-center">
-					<Copyright direction="vertical" />
+			{#if showText && showCopyright}
+				<div class="absolute bottom-2 flex w-full justify-center md:bottom-4">
+					<BottomInfo direction="vertical" />
 				</div>
 			{/if}
 		</div>

@@ -1,0 +1,30 @@
+/* 组件层样式模块 */
+
+@layer components {
+	/* 侧边栏基础样式 */
+	.sidebar-item-base {
+		@apply flex w-full cursor-pointer items-center gap-3 rounded-lg px-3 py-2 text-left text-[15px] transition-all;
+	}
+
+	.sidebar-item-active {
+		@apply bg-primary/10 font-semibold text-[var(--theme-color)];
+	}
+
+	.sidebar-item-inactive {
+		@apply text-foreground hover:bg-accent/40 hover:text-accent-foreground;
+	}
+
+	.sidebar-icon {
+		@apply size-5 flex-none;
+	}
+
+	/* 地图相关样式 */
+	.amap-hide-ui {
+		/* 隐藏高德地图原生 Logo 与版权信息 (因为已提取到 UI 其它层级展示) */
+		:global(.amap-logo),
+		:global(.amap-copyright) {
+			opacity: 0 !important;
+			pointer-events: none !important;
+		}
+	}
+}

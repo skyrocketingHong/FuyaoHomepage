@@ -1,6 +1,6 @@
 /**
  * 日期处理工具
- * 
+ *
  * 基于 dayjs 提供日期格式化、相对时间计算及“最近”检查等功能。
  */
 import dayjs from 'dayjs';
@@ -17,24 +17,28 @@ dayjs.extend(relativeTime);
  * @param locale - 语言环境键 (zh-CN 或 en-US)
  * @param format - 可选的自定义格式字符串。如果未提供，则使用默认的本地化格式。
  */
-export function formatDate(date: string | Date, locale: LocaleKey = 'zh-CN', format?: string): string {
-    const d = dayjs(date);
-    if (!d.isValid()) return '';
+export function formatDate(
+	date: string | Date,
+	locale: LocaleKey = 'zh-CN',
+	format?: string
+): string {
+	const d = dayjs(date);
+	if (!d.isValid()) return '';
 
-    // 将我们的语言环境键映射到 dayjs 语言环境键
-    // dayjs 使用小写的 'zh-cn' 和 'en' (或 'en-us'，但 'en' 通常是默认值)
-    const dayjsLocale = locale.toLowerCase() === 'zh-cn' ? 'zh-cn' : 'en';
+	// 将我们的语言环境键映射到 dayjs 语言环境键
+	// dayjs 使用小写的 'zh-cn' 和 'en' (或 'en-us'，但 'en' 通常是默认值)
+	const dayjsLocale = locale.toLowerCase() === 'zh-cn' ? 'zh-cn' : 'en';
 
-    if (format) {
-        return d.locale(dayjsLocale).format(format);
-    }
+	if (format) {
+		return d.locale(dayjsLocale).format(format);
+	}
 
-    // 基于语言环境的默认格式
-    if (dayjsLocale === 'zh-cn') {
-        return d.locale('zh-cn').format('YYYY年M月D日');
-    } else {
-        return d.locale('en').format('MMMM D, YYYY');
-    }
+	// 基于语言环境的默认格式
+	if (dayjsLocale === 'zh-cn') {
+		return d.locale('zh-cn').format('YYYY年M月D日');
+	} else {
+		return d.locale('en').format('MMMM D, YYYY');
+	}
 }
 
 /**
@@ -43,23 +47,36 @@ export function formatDate(date: string | Date, locale: LocaleKey = 'zh-CN', for
  * @param days - 被视为"最近"的天数，默认为 7
  */
 export function isRecent(date: string | Date, days = 7): boolean {
-    const d = dayjs(date);
-    if (!d.isValid()) return false;
+	const d = dayjs(date);
+	if (!d.isValid()) return false;
 
-    const now = dayjs();
-    const diff = now.diff(d, 'day');
-    return diff >= 0 && diff < days;
+	const now = dayjs();
+	const diff = now.diff(d, 'day');
+	return diff >= 0 && diff < days;
 }
 
 /**
  * 获取相对时间字符串 (例如 "2 days ago" 或 "2天前")
  */
 export function fromNow(date: string | Date, locale: LocaleKey = 'zh-CN'): string {
-    const d = dayjs(date);
-    if (!d.isValid()) return '';
+	const d = dayjs(date);
+	if (!d.isValid()) return '';
 
-    const dayjsLocale = locale.toLowerCase() === 'zh-cn' ? 'zh-cn' : 'en';
-    return d.locale(dayjsLocale).fromNow();
+	const dayjsLocale = locale.toLowerCase() === 'zh-cn' ? 'zh-cn' : 'en';
+	return d.locale(dayjsLocale).fromNow();
+}
+
+/**
+ * 将秒数格式化为时长字符串 (例如 "5h 30m" 或 "5小时30分")
+ */
+export function formatDuration(seconds: number, locale: LocaleKey = 'zh-CN'): string {
+	const h = Math.floor(seconds / 3600);
+	const m = Math.floor((seconds % 3600) / 60);
+	const isZh = locale.toLowerCase() === 'zh-cn';
+
+	if (h > 0) return isZh ? `${h}小时${m}分` : `${h}h\u00A0${m}m`;
+	if (m > 0) return isZh ? `${m}分` : `${m}m`;
+	return isZh ? '< 1分' : '< 1m';
 }
 
 export { dayjs };

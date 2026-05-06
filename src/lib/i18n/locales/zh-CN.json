@@ -25,8 +25,12 @@
 	},
 	"layout": {
 		"sidebar": {
-			"navigation": "导航",
-			"background_source": "背景来源"
+			"navigation": "导航"
+		},
+		"bottom_info": {
+			"background_source": "背景来源",
+			"service_status": "服务状态",
+			"deployed_on": "部署于阿里云"
 		},
 		"header": {
 			"toggle_theme": "切换主题",
@@ -62,6 +66,25 @@
 			},
 			"social_links": {
 				"title": "社交链接"
+			},
+			"analytics": {
+				"title": "访问统计",
+				"page_views": "浏览量",
+				"unique_visitors": "独立访客",
+				"total_requests": "总请求",
+				"powered_by": "Powered by Cloudflare Analytics",
+				"past_days": "近 7 日"
+			},
+			"latest_posts": {
+				"title": "最新文章"
+			},
+			"tech_stack": {
+				"title": "技术栈"
+			},
+			"coding_activity": {
+				"title": "编程统计",
+				"past_week": "近 7 日",
+				"powered_by": "Powered by WakaTime"
 			}
 		}
 	},
@@ -82,7 +105,28 @@
 	},
 	"footprint": {
 		"title": "足迹",
-		"load_error": "加载足迹失败"
+		"load_error": "加载足迹失败",
+		"year": "年份",
+		"city": "城市",
+		"unknown": "未知",
+		"actions": {
+			"generate_data": "生成数据"
+		},
+		"list_title": "足迹列表",
+		"generator": {
+			"title": "生成足迹数据",
+			"type_city": "城市 (City)",
+			"type_spot": "景点 (Spot)",
+			"search_label": "搜索地点 (AMap)",
+			"search_placeholder": "输入地点名称搜索...",
+			"name_zh": "中文名称",
+			"name_en": "英文名称",
+			"name_en_placeholder": "例如：Beijing",
+			"date": "日期 (YYYYMMDD)",
+			"description": "描述 (选填)",
+			"locked_coordinates": "已锁定坐标",
+			"generate_btn": "生成 YAML"
+		}
 	},
 	"blog": {
 		"title": "博客",

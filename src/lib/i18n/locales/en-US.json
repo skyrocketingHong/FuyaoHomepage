@@ -25,8 +25,12 @@
 	},
 	"layout": {
 		"sidebar": {
-			"navigation": "Navigation",
-			"background_source": "Background Source"
+			"navigation": "Navigation"
+		},
+		"bottom_info": {
+			"background_source": "Background Source",
+			"service_status": "Service Status",
+			"deployed_on": "Deployed on Aliyun"
 		},
 		"header": {
 			"toggle_theme": "Toggle Theme",
@@ -62,6 +66,25 @@
 			},
 			"social_links": {
 				"title": "Social Links"
+			},
+			"analytics": {
+				"title": "Site Analytics",
+				"page_views": "Page Views",
+				"unique_visitors": "Unique Visitors",
+				"total_requests": "Total Requests",
+				"powered_by": "Powered by Cloudflare Analytics",
+				"past_days": "Last 7 Days"
+			},
+			"latest_posts": {
+				"title": "Latest Posts"
+			},
+			"tech_stack": {
+				"title": "Tech Stack"
+			},
+			"coding_activity": {
+				"title": "Coding Activity",
+				"past_week": "Last 7 Days",
+				"powered_by": "Powered by WakaTime"
 			}
 		}
 	},
@@ -82,7 +105,28 @@
 	},
 	"footprint": {
 		"title": "Footprint",
-		"load_error": "Failed to load footprints"
+		"load_error": "Failed to load footprints",
+		"year": "Year",
+		"city": "City",
+		"unknown": "Unknown",
+		"actions": {
+			"generate_data": "Generate Data"
+		},
+		"list_title": "Footprint List",
+		"generator": {
+			"title": "Generate Footprint Data",
+			"type_city": "City",
+			"type_spot": "Spot",
+			"search_label": "Search Location (AMap)",
+			"search_placeholder": "Enter location name...",
+			"name_zh": "Chinese Name",
+			"name_en": "English Name",
+			"name_en_placeholder": "e.g. Beijing",
+			"date": "Date (YYYYMMDD)",
+			"description": "Description (Optional)",
+			"locked_coordinates": "Locked Coordinates",
+			"generate_btn": "Generate YAML"
+		}
 	},
 	"blog": {
 		"title": "Blog",

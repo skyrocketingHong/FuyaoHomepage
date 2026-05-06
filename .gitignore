@@ -146,4 +146,5 @@ vite.config.ts.timestamp-*
 # static
 node_modules
 .agent
-react
+.agents
+cf-analytics-worker/.wrangler

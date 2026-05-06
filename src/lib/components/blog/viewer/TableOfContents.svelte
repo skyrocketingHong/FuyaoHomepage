@@ -1,9 +1,9 @@
 <script lang="ts">
 	/**
 	 * 博客文章目录 (TOC) 组件
-	 * 
+	 *
 	 * 渲染侧边栏中的文章目录列表，支持自动高亮当前阅读位置。
-	 * 
+	 *
 	 * @prop toc - 嵌套的目录项数组 (id, text, depth)
 	 * @prop onItemClick - 点击目录项时的回调
 	 * @prop variant - 视觉变体
@@ -23,7 +23,7 @@
 
 <div>
 	{#each toc as item}
-		<SidebarItem 
+		<SidebarItem
 			label={item.text}
 			onclick={() => onItemClick(item.id)}
 			isActive={item.id === activeId}

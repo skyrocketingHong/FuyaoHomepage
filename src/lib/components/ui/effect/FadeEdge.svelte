@@ -37,7 +37,7 @@
 		fadeSize?: string;
 		ref?: HTMLElement;
 		visible?: boolean;
-		[key: string]: any;
+		[key: string]: unknown;
 	}>();
 
 	// 使用 Spring 类来实现平滑的透明度过渡 (Svelte 5)
@@ -56,19 +56,18 @@
 
 	let maskImageResult = $derived.by(() => {
 		if (!visible) return 'none';
-		
+
 		const dir = orientation === 'horizontal' ? 'to right' : 'to bottom';
-		
+
 		// 定义 4 个点的颜色
 		// 使用 rgba(0,0,0, alpha) 来控制透明度
 		const c1 = `rgba(0,0,0, ${Math.max(0, Math.min(1, startAlpha.current))})`;
 		const c2 = 'black'; // 在开始渐变的内边缘始终为 black
 		const c3 = 'black'; // 在结束渐变的内边缘始终为 black
 		const c4 = `rgba(0,0,0, ${Math.max(0, Math.min(1, endAlpha.current))})`;
-		
+
 		return `linear-gradient(${dir}, ${c1} 0, ${c2} ${fadeSize}, ${c3} calc(100% - ${fadeSize}), ${c4} 100%)`;
 	});
-
 </script>
 
 <div

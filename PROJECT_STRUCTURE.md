@@ -17,6 +17,7 @@
 ├── .prettierignore       # Prettier 忽略文件配置
 ├── .prettierrc           # Prettier 配置文件
 ├── CHANGELOG.md          # 更新日志
+├── CONFIGURATION.md      # 配置说明文档
 ├── LICENSE               # 项目许可证
 ├── PROJECT_STRUCTURE.md  # 项目结构说明 (本文档)
 ├── README.md             # 项目自述文件
@@ -41,11 +42,13 @@
 │   │   ├── actions/          # Svelte Actions
 │   │   │   └── linkEnhancer.svelte.ts # 链接增强
 │   │   ├── config/           # 网站配置
-│   │   │   └── index.ts      # 配置入口
+│   │   │   ├── index.ts      # 配置入口
+│   │   │   └── mosaic.ts     # 马赛克背景配置
 │   │   ├── plugins/          # Vite 插件
 │   │   │   └── vite-plugin-blog-watcher.ts # 博客文件监听插件
 │   │   ├── stores/           # 全局状态管理
 │   │   │   ├── app.svelte.ts     # 应用级状态
+│   │   │   ├── mosaic.svelte.ts  # 马赛克背景状态
 │   │   │   └── search.svelte.ts  # 搜索状态
 │   │   ├── styles/           # 全局样式
 │   │   │   ├── app.css       # 全局样式
@@ -54,7 +57,23 @@
 │   │   │   └── sidebar.ts    # 侧边栏类型
 │   │   ├── components/       # Svelte 组件库
 │   │   │   ├── footprint/    # 足迹页面组件
-│   │   │   │   └── FootprintList.svelte     # 足迹列表展示
+│   │   │   │   ├── FootprintActions.svelte   # 足迹操作按钮
+│   │   │   │   ├── FootprintList.svelte      # 足迹列表展示
+│   │   │   │   ├── GeneratorModal.svelte     # YAML 数据生成器弹窗
+│   │   │   │   ├── PlaceSearchDropdown.svelte# 地点搜索下拉框
+│   │   │   │   └── map/                      # 地图子组件
+│   │   │   │       ├── AMap.svelte           # 高德地图主入口
+│   │   │   │       ├── MapCopyright.svelte   # 地图版权信息
+│   │   │   │       ├── MapInfoWindow.svelte  # 地图信息窗口
+│   │   │   │       ├── types.ts              # 地图类型定义
+│   │   │   │       └── core/                 # 地图核心逻辑
+│   │   │   │           ├── copyright.ts          # 版权工具
+│   │   │   │           ├── infoWindowController.svelte.ts # 信息窗口控制器
+│   │   │   │           ├── loader.ts             # 地图加载器
+│   │   │   │           ├── markers.ts            # 标记点管理
+│   │   │   │           ├── placeSearch.ts        # 地点搜索
+│   │   │   │           ├── view.ts               # 视图工具
+│   │   │   │           └── viewController.svelte.ts # 视图控制器
 │   │   │   ├── friends/      # 友链页面组件
 │   │   │   │   ├── FriendCard.svelte        # 友链卡片
 │   │   │   │   └── ProfileCard.svelte       # 个人信息卡片
@@ -107,10 +126,7 @@
 │   │   │   │       ├── Sidebar.svelte        # PC端侧边栏容器
 │   │   │   │       ├── SidebarTree.svelte    # 递归导航树
 │   │   │   │       ├── Item.svelte           # 导航项/菜单项
-│   │   │   │       ├── Copyright.svelte      # 底部版权信息
-│   │   │   │       └── types.ts              # 侧边栏类型定义
-│   │   │   ├── map/          # 地图组件
-│   │   │   │   └── AMap.svelte               # 高德地图集成
+│   │   │   │       └── Copyright.svelte      # 底部版权信息
 │   │   │   ├── pay/          # 支付/赞赏组件
 │   │   │   │   └── QRCodeCard.svelte         # 付款码展示卡片
 │   │   │   ├── seo/          # SEO 组件
@@ -122,6 +138,7 @@
 │   │   │       │   └── SolidBackground.svelte   # 纯色/基础背景
 │   │   │       ├── display/      # 内容展示
 │   │   │       │   ├── Avatar.svelte         # 头像
+│   │   │       │   ├── LazyImage.svelte      # 懒加载图片
 │   │   │       │   ├── Marquee.svelte        # 跑马灯
 │   │   │       │   ├── MosaicInfo.svelte     # 马赛克卡片信息
 │   │   │       │   └── SegmentedControl.svelte # 分段切换按钮
@@ -144,7 +161,13 @@
 │   │   │       └── zh-CN.json
 │   │   └── utils/            # 实用工具函数
 │   │       ├── datetime/     # 时间处理
-│   │       ├── domain/       # 业务逻辑 (博客、足迹等)
+│   │       ├── domain/       # 业务逻辑
+│   │       │   ├── blog.ts           # 博客数据处理
+│   │       │   ├── footprintYaml.ts  # 足迹 YAML 生成
+│   │       │   ├── footprints.ts     # 足迹数据处理
+│   │       │   ├── loader.ts         # 数据加载器
+│   │       │   ├── markdown.ts       # Markdown 解析
+│   │       │   └── nav.ts            # 导航工具
 │   │       ├── format/       # 内容格式化
 │   │       ├── network/      # 网络与加载
 │   │       └── index.ts      # 工具出口
@@ -199,15 +222,16 @@
 
 所有 z-index 均在 `src/lib/styles/app.css` 中以类名形式统一管理，**禁止**在组件样式中硬编码数值。
 
-| 层级 (Layer)   | 类名 (Class)    | Value | 说明                 |
-| :------------- | :-------------- | :---- | :------------------- |
-| **Loader**     | `.z-loader`     | 100   | 全局加载/遮罩 (最高) |
-| **Modal**      | `.z-modal`      | 60    | 抽屉、弹窗           |
-| **Controls**   | `.z-controls`   | 50    | 导航、侧边栏、Header |
-| **Mask**       | `.z-mask`       | 40    | 滚动淡出遮罩、背景覆盖 |
+| 层级 (Layer)   | 类名 (Class)    | Value | 说明                    |
+| :------------- | :-------------- | :---- | :---------------------- |
+| **Loader**     | `.z-loader`     | 100   | 全局加载/遮罩 (最高)    |
+| **Modal**      | `.z-modal`      | 60    | 抽屉、弹窗              |
+| **Controls**   | `.z-controls`   | 50    | 导航、侧边栏、Header    |
+| **Mask**       | `.z-mask`       | 40    | 滚动淡出遮罩、背景覆盖  |
 | **Content**    | `.z-content`    | 20    | 主页面主要文字/图片内容 |
-| **Deep**       | `.z-deep`       | -10   | 组件内底层装饰元素   |
-| **Background** | `.z-background` | -50   | 全局背景层 (最低)    |
+| **Deep**       | `.z-deep`       | -10   | 组件内底层装饰元素      |
+| **Background** | `.z-background` | -50   | 全局背景层 (最低)       |
 
 ---
+
 > **提示**：新增、修改代码文件或目录后，请务必更新此文档以保持同步。

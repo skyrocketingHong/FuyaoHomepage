@@ -1,28 +1,92 @@
 /**
  * 博客业务领域逻辑工具集
- * 
+ *
  * 提供分类视觉映射、路径生成、名称查找等核心业务逻辑。
- * 
+ *
  * 调用示例：
  * ```ts
  * import { getPostUrl } from '$lib/utils/domain/blog';
  * const url = getPostUrl(post, activeCategory);
  * ```
  */
-import { Code, Cpu, FileText, Coffee, Newspaper, BookOpen, Hash, Zap, Globe, Sparkles, PenTool } from 'lucide-svelte';
+import {
+	Code,
+	Cpu,
+	FileText,
+	Coffee,
+	Newspaper,
+	BookOpen,
+	Hash,
+	Zap,
+	Globe,
+	Sparkles,
+	PenTool
+} from 'lucide-svelte';
 import { t } from '$lib/i18n/store';
 import { get } from 'svelte/store';
+
+/**
+ * 博客文章接口
+ */
+export interface BlogPost {
+	/** 文章 slug 标识 */
+	slug: string;
+	/** 文章标题 */
+	title: string;
+	/** 发布日期 (YYYY-MM-DD) */
+	date?: string;
+	/** 最后修改日期 */
+	lastmod?: string;
+	/** 主分类 */
+	category?: string;
+	/** 分类列表 */
+	categories?: string[];
+	/** 标签列表 */
+	tags?: string[];
+	/** Markdown 文件名 */
+	file?: string;
+	/** 摘要 */
+	summary?: string;
+	/** 封面图 */
+	image?: string;
+	/** 扩展字段 */
+	[key: string]: unknown;
+}
 
 /**
  * 博客主题配置
  */
 export const BLOG_THEMES = [
-    { gradient: 'bg-gradient-to-br from-blue-500/10 to-cyan-500/10 dark:from-blue-400/20 dark:to-cyan-400/20', color: 'text-blue-600 dark:text-blue-400' },
-    { gradient: 'bg-gradient-to-br from-purple-500/10 to-pink-500/10 dark:from-purple-400/20 dark:to-pink-400/20', color: 'text-purple-600 dark:text-purple-400' },
-    { gradient: 'bg-gradient-to-br from-orange-500/10 to-amber-500/10 dark:from-orange-400/20 dark:to-amber-400/20', color: 'text-orange-600 dark:text-orange-400' },
-    { gradient: 'bg-gradient-to-br from-emerald-500/10 to-teal-500/10 dark:from-emerald-400/20 dark:to-teal-400/20', color: 'text-emerald-600 dark:text-emerald-400' },
-    { gradient: 'bg-gradient-to-br from-rose-500/10 to-red-500/10 dark:from-rose-400/20 dark:to-red-400/20', color: 'text-rose-600 dark:text-rose-400' },
-    { gradient: 'bg-gradient-to-br from-indigo-500/10 to-violet-500/10 dark:from-indigo-400/20 dark:to-violet-400/20', color: 'text-indigo-600 dark:text-indigo-400' },
+	{
+		gradient:
+			'bg-gradient-to-br from-blue-500/10 to-cyan-500/10 dark:from-blue-400/20 dark:to-cyan-400/20',
+		color: 'text-blue-600 dark:text-blue-400'
+	},
+	{
+		gradient:
+			'bg-gradient-to-br from-purple-500/10 to-pink-500/10 dark:from-purple-400/20 dark:to-pink-400/20',
+		color: 'text-purple-600 dark:text-purple-400'
+	},
+	{
+		gradient:
+			'bg-gradient-to-br from-orange-500/10 to-amber-500/10 dark:from-orange-400/20 dark:to-amber-400/20',
+		color: 'text-orange-600 dark:text-orange-400'
+	},
+	{
+		gradient:
+			'bg-gradient-to-br from-emerald-500/10 to-teal-500/10 dark:from-emerald-400/20 dark:to-teal-400/20',
+		color: 'text-emerald-600 dark:text-emerald-400'
+	},
+	{
+		gradient:
+			'bg-gradient-to-br from-rose-500/10 to-red-500/10 dark:from-rose-400/20 dark:to-red-400/20',
+		color: 'text-rose-600 dark:text-rose-400'
+	},
+	{
+		gradient:
+			'bg-gradient-to-br from-indigo-500/10 to-violet-500/10 dark:from-indigo-400/20 dark:to-violet-400/20',
+		color: 'text-indigo-600 dark:text-indigo-400'
+	}
 ];
 
 /**
@@ -30,40 +94,46 @@ export const BLOG_THEMES = [
  * @param category 分类名称
  */
 export function getCategoryVisuals(category: string) {
-    const cat = (category || 'uncategorized').toLowerCase();
-    
-    // 1. 图标选择
-    let icon = Hash;
-    if (cat.includes('code') || cat.includes('dev') || cat.includes('git')) icon = Code;
-    else if (cat.includes('beta') || cat.includes('tech') || cat.includes('ai') || cat.includes('mac')) icon = Cpu;
-    else if (cat.includes('resource') || cat.includes('file') || cat.includes('doc')) icon = FileText;
-    else if (cat.includes('learn') || cat.includes('read') || cat.includes('book')) icon = BookOpen;
-    else if (cat.includes('life') || cat.includes('think') || cat.includes('me')) icon = Coffee;
-    else if (cat.includes('web') || cat.includes('net')) icon = Globe;
-    else if (cat.includes('game') || cat.includes('play')) icon = Zap;
-    else if (cat.includes('design') || cat.includes('art') || cat.includes('ui')) icon = PenTool;
-    else if (cat.includes('news') || cat.includes('update')) icon = Newspaper;
-    else if (cat.includes('star') || cat.includes('best')) icon = Sparkles;
+	const cat = (category || 'uncategorized').toLowerCase();
 
-    // 2. 颜色选择 (确定性哈希)
-    let hash = 0;
-    for (let i = 0; i < cat.length; i++) {
-        hash += cat.charCodeAt(i);
-    }
-    const theme = BLOG_THEMES[hash % BLOG_THEMES.length];
+	// 1. 图标选择
+	let icon = Hash;
+	if (cat.includes('code') || cat.includes('dev') || cat.includes('git')) icon = Code;
+	else if (
+		cat.includes('beta') ||
+		cat.includes('tech') ||
+		cat.includes('ai') ||
+		cat.includes('mac')
+	)
+		icon = Cpu;
+	else if (cat.includes('resource') || cat.includes('file') || cat.includes('doc')) icon = FileText;
+	else if (cat.includes('learn') || cat.includes('read') || cat.includes('book')) icon = BookOpen;
+	else if (cat.includes('life') || cat.includes('think') || cat.includes('me')) icon = Coffee;
+	else if (cat.includes('web') || cat.includes('net')) icon = Globe;
+	else if (cat.includes('game') || cat.includes('play')) icon = Zap;
+	else if (cat.includes('design') || cat.includes('art') || cat.includes('ui')) icon = PenTool;
+	else if (cat.includes('news') || cat.includes('update')) icon = Newspaper;
+	else if (cat.includes('star') || cat.includes('best')) icon = Sparkles;
 
-    return {
-        gradient: theme.gradient,
-        color: theme.color,
-        icon: icon
-    };
+	// 2. 颜色选择 (确定性哈希)
+	let hash = 0;
+	for (let i = 0; i < cat.length; i++) {
+		hash += cat.charCodeAt(i);
+	}
+	const theme = BLOG_THEMES[hash % BLOG_THEMES.length];
+
+	return {
+		gradient: theme.gradient,
+		color: theme.color,
+		icon: icon
+	};
 }
 
 interface Post {
-    slug: string;
-    category: string;
-    categories?: string[];
-    [key: string]: unknown;
+	slug: string;
+	category: string;
+	categories?: string[];
+	[key: string]: unknown;
 }
 
 /**
@@ -72,16 +142,18 @@ interface Post {
  * @param activeCategory 当前激活的分类
  */
 export function getPostUrl(post: Post, activeCategory: string = 'All') {
-    const cats = post.categories || (post.category ? [post.category] : []);
-    const targetCategory = (activeCategory !== 'All' && cats.includes(activeCategory)) 
-        ? activeCategory 
-        : (cats[0] || 'Uncategorized');
-    
-    const postPath = !targetCategory || targetCategory === 'Uncategorized' 
-        ? post.slug 
-        : `${targetCategory}/${post.slug}`;
-        
-    return `/blog/${postPath}/`;
+	const cats = post.categories || (post.category ? [post.category] : []);
+	const targetCategory =
+		activeCategory !== 'All' && cats.includes(activeCategory)
+			? activeCategory
+			: cats[0] || 'Uncategorized';
+
+	const postPath =
+		!targetCategory || targetCategory === 'Uncategorized'
+			? post.slug
+			: `${targetCategory}/${post.slug}`;
+
+	return `/blog/${postPath}/`;
 }
 
 /**
@@ -90,9 +162,9 @@ export function getPostUrl(post: Post, activeCategory: string = 'All') {
  * @param categories 分类配置列表
  */
 export function getCategoryTitle(slug: string, categories: { slug: string; title: string }[] = []) {
-    if (slug === 'All') return get(t)('blog.all');
-    const cat = categories.find(c => c.slug === slug);
-    return cat ? cat.title : slug;
+	if (slug === 'All') return get(t)('blog.all');
+	const cat = categories.find((c) => c.slug === slug);
+	return cat ? cat.title : slug;
 }
 
 /**
@@ -101,18 +173,18 @@ export function getCategoryTitle(slug: string, categories: { slug: string; title
  * @param tag 标签 (可选)
  */
 export function getBlogListUrl(category: string = 'All', tag: string = '') {
-    let path = '/blog';
-    
-    if (category && category !== 'All') {
-        path += `/${category}`;
-    }
-    
-    if (tag) {
-        path += `/tag/${encodeURIComponent(tag)}`;
-    }
-    
+	let path = '/blog';
+
+	if (category && category !== 'All') {
+		path += `/${category}`;
+	}
+
+	if (tag) {
+		path += `/tag/${encodeURIComponent(tag)}`;
+	}
+
 	// 始终添加末尾斜杠以匹配 trailingSlash = 'always'
-    return `${path}/`;
+	return `${path}/`;
 }
 
 /**
@@ -121,20 +193,19 @@ export function getBlogListUrl(category: string = 'All', tag: string = '') {
  * @param activeTag 当前选中的标签 (可选)
  * @returns [year, posts[]] 格式的元组数组，按年份降序排列
  */
-export function groupPostsByYear(posts: any[], activeTag: string = '') {
-    const groups: Record<string, typeof posts> = {};
-    
-    const filteredPosts = activeTag 
-        ? posts.filter((p: any) => p.tags && p.tags.includes(activeTag))
-        : posts;
+export function groupPostsByYear(posts: BlogPost[], activeTag: string = '') {
+	const groups: Record<string, BlogPost[]> = {};
 
-    filteredPosts.forEach((post: any) => {
-        const year = post.date ? post.date.substring(0, 4) : 'unknown';
-        if (!groups[year]) groups[year] = [];
-        groups[year].push(post);
-    });
+	const filteredPosts = activeTag
+		? posts.filter((p) => p.tags && p.tags.includes(activeTag))
+		: posts;
 
-    // 按年份降序排序
-    return Object.entries(groups)
-        .sort(([yearA], [yearB]) => yearB.localeCompare(yearA));
+	filteredPosts.forEach((post) => {
+		const year = post.date ? post.date.substring(0, 4) : 'unknown';
+		if (!groups[year]) groups[year] = [];
+		groups[year].push(post);
+	});
+
+	// 按年份降序排序
+	return Object.entries(groups).sort(([yearA], [yearB]) => yearB.localeCompare(yearA));
 }

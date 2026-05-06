@@ -7,9 +7,9 @@ cities:
       lng: 116.407526
       lat: 39.904030
     type: "city"
-    purpose: "travel"
-    visitDate: "20240315"
     adcode: "110000"
+    visitDate: "20240315"
+    description: "中国的首都，历史与现代交融的城市。"
     places:
       - id: "110000-001"
         name:
@@ -18,6 +18,177 @@ cities:
         coordinates:
           lng: 116.397026
           lat: 39.918058
-        type: "place"
-        purpose: "travel"
+        type: "spot"
         visitDate: "20240315"
+        description: "明清两代的皇家宫殿，宏伟壮观。"
+      - id: "110000-002"
+        name:
+          zh: "天坛"
+          en: "Temple of Heaven"
+        coordinates:
+          lng: 116.410886
+          lat: 39.881949
+        type: "spot"
+        visitDate: "20240316"
+      - id: "110000-003"
+        name:
+          zh: "颐和园"
+          en: "Summer Palace"
+        coordinates:
+          lng: 116.276632
+          lat: 39.999496
+        type: "spot"
+        visitDate: "20240317"
+
+  - id: "310000"
+    name:
+      zh: "上海"
+      en: "Shanghai"
+    coordinates:
+      lng: 121.473701
+      lat: 31.230416
+    type: "city"
+    adcode: "310000"
+    visitDate: "20231001"
+    description: "魔都，外滩的夜景令人沉醉。"
+    places:
+      - id: "310000-001"
+        name:
+          zh: "外滩"
+          en: "The Bund"
+        coordinates:
+          lng: 121.490518
+          lat: 31.232470
+        type: "spot"
+        visitDate: "20231001"
+      - id: "310000-002"
+        name:
+          zh: "东方明珠"
+          en: "Oriental Pearl Tower"
+        coordinates:
+          lng: 121.499809
+          lat: 31.239666
+        type: "spot"
+        visitDate: "20231002"
+
+  - id: "440100"
+    name:
+      zh: "广州"
+      en: "Guangzhou"
+    coordinates:
+      lng: 113.264434
+      lat: 23.129162
+    type: "city"
+    adcode: "440100"
+    visitDate: "20240115"
+    description: "食在广州，早茶文化源远流长。"
+    places:
+      - id: "440100-001"
+        name:
+          zh: "广州塔"
+          en: "Canton Tower"
+        coordinates:
+          lng: 113.324520
+          lat: 23.106470
+        type: "spot"
+        visitDate: "20240115"
+      - id: "440100-002"
+        name:
+          zh: "沙面"
+          en: "Shamian Island"
+        coordinates:
+          lng: 113.243576
+          lat: 23.106969
+        type: "spot"
+        visitDate: "20240116"
+
+  - id: "510100"
+    name:
+      zh: "成都"
+      en: "Chengdu"
+    coordinates:
+      lng: 104.066541
+      lat: 30.572269
+    type: "city"
+    adcode: "510100"
+    visitDate: "20230520"
+    places:
+      - id: "510100-001"
+        name:
+          zh: "大熊猫繁育研究基地"
+          en: "Panda Base"
+        coordinates:
+          lng: 104.146524
+          lat: 30.732565
+        type: "spot"
+        visitDate: "20230520"
+      - id: "510100-002"
+        name:
+          zh: "宽窄巷子"
+          en: "Kuanzhai Alley"
+        coordinates:
+          lng: 104.053896
+          lat: 30.663175
+        type: "spot"
+        visitDate: "20230521"
+
+  - id: "330100"
+    name:
+      zh: "杭州"
+      en: "Hangzhou"
+    coordinates:
+      lng: 120.155070
+      lat: 30.274085
+    type: "city"
+    adcode: "330100"
+    visitDate: "20230405"
+    description: "上有天堂，下有苏杭。"
+    places:
+      - id: "330100-001"
+        name:
+          zh: "西湖"
+          en: "West Lake"
+        coordinates:
+          lng: 120.147366
+          lat: 30.247192
+        type: "spot"
+        visitDate: "20230405"
+      - id: "330100-002"
+        name:
+          zh: "灵隐寺"
+          en: "Lingyin Temple"
+        coordinates:
+          lng: 120.103730
+          lat: 30.239333
+        type: "spot"
+        visitDate: "20230406"
+
+  - id: "610100"
+    name:
+      zh: "西安"
+      en: "Xi'an"
+    coordinates:
+      lng: 108.939840
+      lat: 34.341270
+    type: "city"
+    adcode: "610100"
+    visitDate: "20230910"
+    places:
+      - id: "610100-001"
+        name:
+          zh: "秦始皇兵马俑"
+          en: "Terracotta Warriors"
+        coordinates:
+          lng: 109.278553
+          lat: 34.384784
+        type: "spot"
+        visitDate: "20230910"
+      - id: "610100-002"
+        name:
+          zh: "大雁塔"
+          en: "Giant Wild Goose Pagoda"
+        coordinates:
+          lng: 108.963486
+          lat: 34.220138
+        type: "spot"
+        visitDate: "20230911"

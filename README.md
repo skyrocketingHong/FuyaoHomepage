@@ -11,6 +11,7 @@
   - [开发指南](#开发指南)
     - [常用命令](#常用命令)
   - [配置说明](#配置说明)
+  - [Cloudflare Analytics Worker 部署](#cloudflare-analytics-worker-部署)
   - [博客自动化部署](#博客自动化部署)
     - [1. 自动化监听](#1-自动化监听)
     - [2. 精简部署](#2-精简部署)
@@ -23,7 +24,7 @@
 - **技术栈**: SvelteKit, Svelte 5 (Runes), TypeScript
 - **样式**: Tailwind CSS, PostCSS
 - **组件**: 自定义 UI 组件库
-- **功能**: 国际化支持 (i18n)、动态特效、响应式设计
+- **功能**: 国际化支持 (i18n)、动态特效、响应式设计、足迹地图
 - **自动部署**: 博文上传/删除自动索引，同步生成 RSS 与 Sitemap
 
 ## 项目结构
@@ -51,9 +52,33 @@ npm run gen-blog
 
 项目使用环境变量进行配置。请参考 [CONFIGURATION.md](./CONFIGURATION.md) 查看详细的变量列表与说明
 
+## Cloudflare Analytics Worker 部署
+
+首页访问统计模块依赖一个独立的 Cloudflare Worker 代理 Analytics API。代码位于 `cf-analytics-worker/` 目录。
+
+```bash
+# 安装 Wrangler CLI
+npm install -g wrangler
+
+# 登录 Cloudflare 账户
+wrangler login
+
+# 进入 Worker 目录
+cd cf-analytics-worker
+
+# 配置密钥（按提示输入）
+wrangler secret put CF_API_TOKEN
+wrangler secret put CF_ZONE_ID
+
+# 部署
+wrangler deploy
+```
+
+部署成功后将 Worker URL 填入 `.env` 的 `VITE_CF_ANALYTICS_WORKER_URL`。同时修改 `wrangler.toml` 中的 `ALLOWED_ORIGIN` 为实际域名并重新部署。
+
 ## 博客自动化部署
 
-支持在服务器上实现“上传即发布”：
+支持在服务器上实现"上传即发布"：
 
 ### 1. 自动化监听
 

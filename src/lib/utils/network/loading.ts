@@ -14,56 +14,59 @@ import yaml from 'js-yaml';
  * @returns 解析后的数据
  */
 export async function loadFile<T>(
-    path: string,
-    format: 'yaml' | 'json' | 'text' | 'blob' | 'arraybuffer' = 'text',
-    customFetch: typeof fetch = fetch
+	path: string,
+	format: 'yaml' | 'json' | 'text' | 'blob' | 'arraybuffer' = 'text',
+	customFetch: typeof fetch = fetch
 ): Promise<T> {
-    try {
-        // 添加时间戳防止缓存
-        const response = await customFetch(path);
-        if (!response.ok) {
-            throw new Error(`加载失败 ${path}: ${response.statusText}`);
-        }
+	try {
+		// 添加时间戳防止缓存
+		const timestampedPath = path.includes('?')
+			? `${path}&t=${Date.now()}`
+			: `${path}?t=${Date.now()}`;
+		const response = await customFetch(timestampedPath);
+		if (!response.ok) {
+			throw new Error(`加载失败 ${path}: ${response.statusText}`);
+		}
 
-        switch (format) {
-            case 'yaml':
-                const yamlText = await response.text();
-                return yaml.load(yamlText) as T;
-            case 'json':
-                return (await response.json()) as T;
-            case 'text':
-                return (await response.text()) as unknown as T;
-            case 'blob':
-                return (await response.blob()) as unknown as T;
-            case 'arraybuffer':
-                return (await response.arrayBuffer()) as unknown as T;
-            default:
-                throw new Error(`不支持的格式: ${format}`);
-        }
-    } catch (e) {
-        console.error(`加载文件失败 ${path} (${format}):`, e);
-        throw e;
-    }
+		switch (format) {
+			case 'yaml': {
+				const yamlText = await response.text();
+				return yaml.load(yamlText) as T;
+			}
+			case 'json':
+				return (await response.json()) as T;
+			case 'text':
+				return (await response.text()) as unknown as T;
+			case 'blob':
+				return (await response.blob()) as unknown as T;
+			case 'arraybuffer':
+				return (await response.arrayBuffer()) as unknown as T;
+			default:
+				throw new Error(`不支持的格式: ${format}`);
+		}
+	} catch (e) {
+		console.error(`加载文件失败 ${path} (${format}):`, e);
+		throw e;
+	}
 }
 
 /**
  * 加载 YAML 文件
  */
 export async function loadYaml<T>(path: string, customFetch: typeof fetch = fetch): Promise<T> {
-    return loadFile<T>(path, 'yaml', customFetch);
+	return loadFile<T>(path, 'yaml', customFetch);
 }
 
 /**
  * 加载 JSON 文件
  */
 export async function loadJson<T>(path: string, customFetch: typeof fetch = fetch): Promise<T> {
-    return loadFile<T>(path, 'json', customFetch);
+	return loadFile<T>(path, 'json', customFetch);
 }
 
 /**
  * 加载纯文本文件
  */
 export async function loadText(path: string, customFetch: typeof fetch = fetch): Promise<string> {
-    return loadFile<string>(path, 'text', customFetch);
+	return loadFile<string>(path, 'text', customFetch);
 }
-
