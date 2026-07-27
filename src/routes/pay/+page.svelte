@@ -41,7 +41,7 @@
 		<h1
 			class="bg-gradient-to-r from-blue-400 via-purple-500 to-pink-500 bg-clip-text text-3xl font-bold text-transparent md:text-4xl"
 		>
-			<Crossfade key={$locale} class="inline-grid">
+			<Crossfade key={$locale} inline class="inline-grid">
 				<span>{$t('pay.title')}</span>
 			</Crossfade>
 		</h1>

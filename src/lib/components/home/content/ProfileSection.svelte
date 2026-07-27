@@ -19,7 +19,7 @@
 </script>
 
 <!-- 个人信息与描述区域 -->
-<LiquidGlass opaque={true} class="p-3 hover:border-primary/20" tilt={true}>
+<LiquidGlass opaque={true} class="p-3" tilt={true}>
 	<div class="flex flex-col items-center gap-4 md:flex-row md:gap-8">
 		<Avatar
 			src={avatarUrl}
@@ -39,7 +39,7 @@
 					</h1>
 				</Crossfade>
 				<p class="mt-2 text-lg text-muted-foreground">
-					<Crossfade key={$locale} class="inline-grid"
+					<Crossfade key={$locale} inline class="inline-grid"
 						><span>{$t('home.hero.profile.age', { age: age.toString() })}</span><span
 							>{$t('common.comma')}</span
 						><span>{profileConfig.role[$locale === 'zh-CN' ? 'zh' : 'en']}</span></Crossfade
@@ -51,7 +51,7 @@
 					<Quote size={16} />
 				</span>
 				<p class="pl-6 text-muted-foreground italic">
-					<Crossfade key={$locale} class="inline-grid"
+					<Crossfade key={$locale} inline class="inline-grid"
 						><span>{profileConfig.quote[$locale === 'zh-CN' ? 'zh' : 'en']}</span></Crossfade
 					>
 				</p>

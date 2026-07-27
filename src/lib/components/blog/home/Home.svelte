@@ -10,6 +10,7 @@
 	 * @prop categories - 分类映射列表
 	 */
 	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import { t, locale } from '$lib/i18n/store';
 	import type { BlogPost } from '$lib/utils/domain/blog';
 	import Crossfade from '$lib/components/ui/effect/Crossfade.svelte';
@@ -64,7 +65,7 @@
 		// 转换类型以匹配 getPostUrl 的 Post 接口 (category 必填 vs 可选)
 		// 实际上 getPostUrl 会处理 undefined，这里强制转换或确保数据完整
 		const safePost = { ...post, category: post.category || '' };
-		goto(getPostUrl(safePost, activeCategory));
+		goto(resolve(getPostUrl(safePost, activeCategory)));
 	}
 
 	// 布局分段
@@ -73,8 +74,16 @@
 	let morePosts = $derived(paginatedPosts.slice(4));
 </script>
 
-<div class="mx-auto max-w-[980px] xl:max-w-[1100px]">
-	<h2 class="sr-only">{$t('blog.latest_news')}</h2>
+<div class="mx-auto max-w-[1100px] xl:max-w-[1180px]">
+	<div class="mb-6 flex items-end justify-between border-b border-border/60 pb-4 md:mb-8 md:pb-5">
+		<Crossfade key={'latest-' + $locale} class="inline-grid">
+			<h2
+				class="text-[36px] leading-none font-semibold tracking-[-0.03em] text-foreground md:text-[48px]"
+			>
+				{$t('blog.latest_news')}
+			</h2>
+		</Crossfade>
+	</div>
 
 	{#if activeTag}
 		<Crossfade key={activeTag} class="mb-6">
@@ -86,7 +95,7 @@
 				<button
 					class="rounded-full p-1 text-muted-foreground transition-colors hover:bg-black/5 dark:hover:bg-white/5"
 					onclick={() => {
-						goto(getBlogListUrl(activeCategory), { keepFocus: true, noScroll: true });
+						goto(resolve(getBlogListUrl(activeCategory)), { keepFocus: true, noScroll: true });
 					}}
 					title={$t('blog.clear_tag')}
 				>
@@ -97,44 +106,31 @@
 	{/if}
 
 	{#if featuredPost}
-		<PostCard
-			post={featuredPost}
-			variant="featured"
-			{activeCategory}
-			{categories}
-			onclick={handlePostClick}
-		/>
+		<PostCard post={featuredPost} variant="featured" {categories} onclick={handlePostClick} />
 	{/if}
 
 	{#if latestGrid.length > 0}
 		<div
-			class="mb-4 grid grid-cols-1 gap-x-4 gap-y-4 border-b border-border/40 md:grid-cols-2 lg:grid-cols-3"
+			class="mb-10 grid grid-cols-1 gap-5 border-b border-border/50 pb-10 md:grid-cols-2 lg:grid-cols-3"
 		>
 			{#each latestGrid as post, i (post.slug)}
-				<PostCard
-					{post}
-					variant="grid"
-					{activeCategory}
-					{categories}
-					index={i}
-					onclick={handlePostClick}
-				/>
+				<PostCard {post} variant="grid" {categories} index={i} onclick={handlePostClick} />
 			{/each}
 		</div>
 	{/if}
 
 	{#if morePosts.length > 0}
-		<div class="mb-4 flex items-center justify-between">
-			<h2 class="text-[28px] font-bold text-foreground md:text-[32px]">
-				<Crossfade key={'more-' + $locale} class="inline-grid">
+		<div class="mb-5 flex items-center justify-between">
+			<h2 class="text-[28px] font-semibold tracking-[-0.02em] text-foreground md:text-[34px]">
+				<Crossfade key={'more-' + $locale} inline class="inline-grid">
 					<span>{$t('blog.more_stories')}</span>
 				</Crossfade>
 			</h2>
 		</div>
 
-		<div class="grid grid-cols-1 gap-x-4 gap-y-4 md:grid-cols-2">
+		<div class="grid grid-cols-1 gap-5 md:grid-cols-2">
 			{#each morePosts as post (post.slug)}
-				<PostCard {post} variant="list" {activeCategory} {categories} onclick={handlePostClick} />
+				<PostCard {post} variant="list" {categories} onclick={handlePostClick} />
 			{/each}
 		</div>
 
@@ -145,7 +141,7 @@
 					class="inline-flex !w-auto rounded-full px-4 py-2 text-foreground transition-colors"
 					onclick={onLoadMore}
 				>
-					<Crossfade key={'loadmore-' + $locale} class="inline-grid">
+					<Crossfade key={'loadmore-' + $locale} inline class="inline-grid">
 						<span>{$t('blog.load_more')}</span>
 					</Crossfade>
 				</LiquidGlass>

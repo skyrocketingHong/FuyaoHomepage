@@ -75,7 +75,7 @@
 
 		// 清理 Header
 		return () => {
-			headerState.clearMiddle(headerId);
+			if (headerId) headerState.clearMiddle(headerId);
 		};
 	});
 

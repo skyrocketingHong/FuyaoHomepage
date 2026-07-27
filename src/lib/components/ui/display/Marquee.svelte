@@ -89,8 +89,9 @@
 >
 	<div
 		class={cn(
-			'flex will-change-transform',
+			'flex',
 			direction === 'horizontal' ? 'flex-row items-center gap-8' : 'flex-col gap-4',
+			isOverflowing && isActive && 'will-change-transform',
 			isOverflowing &&
 				isActive &&
 				(direction === 'horizontal'

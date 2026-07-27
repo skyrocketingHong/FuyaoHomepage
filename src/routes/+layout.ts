@@ -1,4 +1,5 @@
 import type { LayoutLoad } from './$types';
+import { publicConfig } from '$lib/config/public';
 
 /**
  * 根布局数据加载函数
@@ -8,7 +9,7 @@ import type { LayoutLoad } from './$types';
 export const load: LayoutLoad = async () => {
 	const appConfig = {
 		wallpaper: {
-			default: 'https://img.youpin.mi-img.com/ferriswheel/c5238eb3_63a6_4987_bc3d_4e1f252bb91f.jpeg'
+			default: publicConfig.services.wallpaper.defaultUrl
 		}
 	};
 

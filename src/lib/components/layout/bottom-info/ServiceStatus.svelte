@@ -6,13 +6,15 @@
 	 * 根据当前语言自动切换链接。
 	 *
 	 * @prop direction - 排列方向，影响文字大小
+	 * @prop alignment - 信息行对齐方式，默认左对齐
 	 */
 	import { SiBetterstack, SiAlibabacloud } from '@icons-pack/svelte-simple-icons';
 	import { t, locale } from '$lib/i18n/store';
 	import Crossfade from '$lib/components/ui/effect/Crossfade.svelte';
 
-	let { direction = 'vertical' } = $props<{
+	let { direction = 'vertical', alignment = 'start' } = $props<{
 		direction?: 'vertical' | 'horizontal' | 'auto';
+		alignment?: 'start' | 'center';
 	}>();
 
 	/* 根据语言生成状态页链接 */
@@ -27,10 +29,16 @@
 
 	/* 移动端使用更小的图标 */
 	let iconClass = $derived(direction === 'horizontal' ? 'h-2.5 w-2.5' : 'h-3 w-3');
+
+	let alignmentClass = $derived(
+		alignment === 'center' ? 'justify-center text-center' : 'justify-start text-left'
+	);
 </script>
 
 <!-- 服务状态与部署信息 -->
-<div class="flex items-center justify-center gap-1 whitespace-nowrap {textClass}">
+<div
+	class="flex w-full flex-wrap items-center gap-x-1 gap-y-1 whitespace-nowrap text-foreground/55 {alignmentClass} {textClass}"
+>
 	<!-- 服务状态链接 -->
 	<a
 		href={statusUrl}
@@ -41,7 +49,7 @@
 		<div class="{iconClass} [&>svg]:h-full [&>svg]:w-full">
 			<SiBetterstack />
 		</div>
-		<Crossfade key={$locale} class="inline-grid">
+		<Crossfade key={$locale} inline class="inline-grid">
 			<span>{$t('layout.bottom_info.service_status')}</span>
 		</Crossfade>
 	</a>
@@ -54,7 +62,7 @@
 		<div class="{iconClass} [&>svg]:h-full [&>svg]:w-full">
 			<SiAlibabacloud />
 		</div>
-		<Crossfade key={$locale} class="inline-grid">
+		<Crossfade key={$locale} inline class="inline-grid">
 			<span>{$t('layout.bottom_info.deployed_on')}</span>
 		</Crossfade>
 	</span>

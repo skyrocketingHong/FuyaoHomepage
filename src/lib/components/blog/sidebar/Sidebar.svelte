@@ -67,10 +67,11 @@
 
 	import TagCloud from './TagCloud.svelte';
 	import Crossfade from '$lib/components/ui/effect/Crossfade.svelte';
+	import { SvelteSet } from 'svelte/reactivity';
 
 	// 提取所有唯一标签
 	let allTags = $derived.by(() => {
-		const tagSet = new Set<string>();
+		const tagSet = new SvelteSet<string>();
 		posts.forEach((post: BlogPost) => {
 			if (post.tags) {
 				post.tags.forEach((t: string) => tagSet.add(t));

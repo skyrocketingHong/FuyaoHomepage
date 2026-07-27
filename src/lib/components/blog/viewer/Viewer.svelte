@@ -14,38 +14,49 @@
 	import { tick, untrack, onDestroy } from 'svelte';
 	import { page } from '$app/state';
 	import { replaceState } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import { sidebarState, headerState } from '$lib/stores/app.svelte';
 	import { loadPostContent } from '$lib/utils/domain/loader';
+	import type { BlogPost } from '$lib/utils/domain/blog';
 
 	import Crossfade from '$lib/components/ui/effect/Crossfade.svelte';
-	import LiquidGlass from '$lib/components/ui/effect/LiquidGlass.svelte';
 
 	import Header from './Header.svelte';
 	import TableOfContents from './TableOfContents.svelte';
 	import BackButton from './BackButton.svelte';
-
-	// 异步加载渲染器以优化首屏
-	const MarkdownRendererPromise = import('./MarkdownRenderer.svelte');
+	import MarkdownRenderer from './MarkdownRenderer.svelte';
 
 	let {
 		post,
 		onClose,
-		categories = []
+		categories = [],
+		initialArticle
 	} = $props<{
-		post: any;
+		post: BlogPost;
 		onClose: () => void;
 		categories: { slug: string; title: string }[];
+		initialArticle?: {
+			content: string;
+			html: string;
+			toc: { id: string; text: string; depth: number }[];
+			loadedFile: string;
+			displayPost: BlogPost & {
+				categoryTitles?: { slug: string; title: string }[];
+			};
+		};
 	}>();
 
-	let content = $state('');
-	let loading = $state(true);
-	let loadedFile = $state('');
-	let toc: { id: string; text: string; depth: number }[] = $state([]);
+	const initialArticleValue = untrack(() => initialArticle);
+	let content = $state(initialArticleValue?.content ?? '');
+	let loading = $state(!initialArticleValue);
+	let loadedFile = $state(initialArticleValue?.loadedFile ?? '');
+	let initialHtml = $state(initialArticleValue?.html ?? '');
+	let toc: { id: string; text: string; depth: number }[] = $state(initialArticleValue?.toc ?? []);
 	let tocListId = '';
 	let leftActionId = '';
 
 	// 文章数据状态
-	let displayPost = $state(untrack(() => post));
+	let displayPost = $state(untrack(() => initialArticleValue?.displayPost ?? post));
 
 	$effect(() => {
 		if (post) {
@@ -103,6 +114,7 @@
 		}
 
 		loading = true;
+		initialHtml = '';
 		if (typeof window !== 'undefined') window.scrollTo(0, 0);
 
 		toc = [];
@@ -111,7 +123,7 @@
 			content = result.content;
 			displayPost = result.displayPost;
 			loadedFile = result.loadedFile;
-		} catch (e) {
+		} catch {
 			content = `<p class="text-red-400">${$t('blog.loading_error')}</p>`;
 		} finally {
 			loading = false;
@@ -131,10 +143,13 @@
 			isManualNavigation = true;
 			el.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
-			const currentUrl = new URL(window.location.href);
-			if (currentUrl.hash !== `#${id}`) {
-				currentUrl.hash = `#${id}`;
-				replaceState(currentUrl, page.state);
+			if (window.location.hash !== `#${id}`) {
+				replaceState(
+					resolve(
+						`${window.location.pathname}${window.location.search}#${id}` as `/blog/${string}`
+					),
+					page.state
+				);
 			}
 
 			activeHeaderId = id;
@@ -201,48 +216,40 @@
 	});
 </script>
 
-<div class="relative mx-auto flex min-h-0 max-w-[980px] flex-1 flex-col xl:max-w-[1100px]">
-	<div class="relative w-full justify-center">
-		<LiquidGlass opaque={true} class="w-full" showLighting={false} showGloss={false}>
-			{#if loading}
-				<div class="flex h-[50vh] w-full items-center justify-center">
-					<LoadingState loading={true} />
-				</div>
-			{:else}
-				<Crossfade key={displayPost.file} class="w-full">
-					<Header
-						title={displayPost.title}
-						date={displayPost.date}
-						lastmod={displayPost.lastmod}
-						categories={displayPost.categoryTitles || []}
-						subtitle={displayPost.description}
-						tags={displayPost.tags}
-						cover={displayPost.cover}
-					/>
-					<div>
-						{#await MarkdownRendererPromise then module}
-							<module.default source={content} bind:toc />
-						{:catch error}
-							<Crossfade key={$locale} class="inline-grid"
-								><p class="text-red-400">{$t('blog.renderer_load_error')}</p></Crossfade
-							>
-						{/await}
-					</div>
-				</Crossfade>
-			{/if}
-		</LiquidGlass>
-		<div class="mx-auto w-full px-5 md:px-0">
+<div class="article-surface min-h-[calc(100dvh-52px)] w-full lg:min-h-[calc(100dvh-80px)]">
+	<article class="relative mx-auto w-full max-w-[980px] px-5 pt-6 md:px-8 xl:max-w-[1100px]">
+		{#if loading}
+			<div class="flex h-[50vh] w-full items-center justify-center">
+				<LoadingState loading={true} />
+			</div>
+		{:else}
+			<Crossfade key={displayPost.file} class="w-full">
+				<Header
+					title={displayPost.title}
+					date={displayPost.date}
+					lastmod={displayPost.lastmod}
+					categories={displayPost.categoryTitles || []}
+					subtitle={displayPost.description}
+					tags={displayPost.tags}
+					cover={displayPost.cover}
+				/>
+				<MarkdownRenderer source={content} {initialHtml} initialToc={toc} bind:toc />
+			</Crossfade>
+		{/if}
+	</article>
+	{#if !loading}
+		<div class="mx-auto w-full max-w-[980px] px-5 pt-2 pb-10 md:px-8 xl:max-w-[1100px]">
 			<div class="text-center">
-				<LiquidGlass
-					tag="button"
-					class="mt-2 inline-flex !w-auto rounded-full px-4 py-2 text-foreground transition-colors"
+				<button
+					type="button"
+					class="inline-flex cursor-pointer appearance-none items-center justify-center rounded-full border border-(--reader-border) bg-(--reader-interactive) px-4 py-2 text-sm text-(--reader-foreground) transition-colors hover:bg-(--reader-interactive-hover) focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--reader-secondary)"
 					onclick={onClose}
 				>
-					<Crossfade key={$locale} class="inline-grid"
+					<Crossfade key={$locale} inline class="inline-grid"
 						><span>{$t('blog.back_to_list')}</span></Crossfade
 					>
-				</LiquidGlass>
+				</button>
 			</div>
 		</div>
-	</div>
+	{/if}
 </div>

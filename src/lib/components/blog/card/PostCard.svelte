@@ -12,14 +12,12 @@
 	let {
 		post,
 		variant = 'grid',
-		activeCategory = 'All',
 		categories = [],
 		index = 0,
 		onclick
 	} = $props<{
 		post: BlogPost;
 		variant?: 'featured' | 'grid' | 'list';
-		activeCategory?: string;
 		categories?: { slug: string; title: string }[];
 		index?: number;
 		onclick: (post: BlogPost) => void;
@@ -27,7 +25,7 @@
 </script>
 
 {#if variant === 'featured'}
-	<FeaturedPostCard {post} {activeCategory} {categories} {onclick} />
+	<FeaturedPostCard {post} {categories} {onclick} />
 {:else if variant === 'grid'}
 	<GridPostCard {post} {categories} {index} {onclick} />
 {:else if variant === 'list'}

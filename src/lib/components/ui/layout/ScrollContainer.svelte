@@ -12,6 +12,9 @@
 	 * @prop useMask - 是否应用 CSS Mask 遮罩效果 (默认 true)
 	 * @prop hasScrollTop - (bindable) 是否有顶部滚动距离
 	 * @prop hasScrollBottom - (bindable) 是否有底部滚动余量
+	 * @prop fadeSize - 边缘渐隐区域的大小 (支持 css 单位与变量, 默认 'var(--edge-fade-size, 3rem)')
+	 * @prop fadeStartSize - 起始端 (左/上) 渐隐大小 (可选; 垂直方向默认 'var(--edge-fade-top-size, 20px)')
+	 * @prop fadeEndSize - 结束端 (右/下) 渐隐大小 (可选; 垂直方向默认 'var(--edge-fade-bottom-size, 28px)')
 	 */
 	import { cn } from '$lib/utils/index';
 	import FadeEdge from '$lib/components/ui/effect/FadeEdge.svelte';
@@ -26,6 +29,9 @@
 		hasScrollTop = $bindable(false),
 		hasScrollBottom = $bindable(false),
 		orientation = 'vertical',
+		fadeSize = 'var(--edge-fade-size, 3rem)',
+		fadeStartSize = undefined,
+		fadeEndSize = undefined,
 		...rest
 	} = $props<{
 		children: Snippet;
@@ -37,6 +43,9 @@
 		hasScrollTop?: boolean;
 		hasScrollBottom?: boolean;
 		orientation?: 'horizontal' | 'vertical';
+		fadeSize?: string;
+		fadeStartSize?: string;
+		fadeEndSize?: string;
 		[key: string]: unknown;
 	}>();
 
@@ -71,8 +80,14 @@
 
 		// 添加 ResizeObserver 以处理窗口大小调整或内容大小变化
 		if (container && enabled) {
+			// ResizeObserver 与 MutationObserver 共用单一挂起的 RAF，合并连续触发
+			let rafId = 0;
 			const update = () => {
-				requestAnimationFrame(updateScrollMask);
+				if (rafId) return;
+				rafId = requestAnimationFrame(() => {
+					rafId = 0;
+					updateScrollMask();
+				});
 			};
 
 			const ro = new ResizeObserver(update);
@@ -82,18 +97,18 @@
 				ro.observe(container.firstElementChild);
 			}
 
-			// 监听 DOM 变动，以捕捉可能不会立即触发 Resize 的内容变化（例如图片加载状态更改，尚未改变布局但稍后可能会改变）
+			// 仅监听子节点增删，以捕捉内容结构变化（例如图片加载完成）
+			// 不监听 style/class 属性，避免交互动画导致的无效回调
 			const mo = new MutationObserver(update);
 			mo.observe(container, {
 				childList: true,
-				subtree: true,
-				attributes: true,
-				attributeFilter: ['style', 'class']
+				subtree: true
 			});
 
 			return () => {
 				ro.disconnect();
 				mo.disconnect();
+				if (rafId) cancelAnimationFrame(rafId);
 			};
 		}
 	});
@@ -112,7 +127,11 @@
 	visible={enabled && useMask}
 	showStart={hasScrollTop}
 	showEnd={hasScrollBottom}
-	fadeSize="32px"
+	{fadeSize}
+	fadeStartSize={fadeStartSize ??
+		(orientation === 'vertical' ? 'var(--edge-fade-top-size, 20px)' : undefined)}
+	fadeEndSize={fadeEndSize ??
+		(orientation === 'vertical' ? 'var(--edge-fade-bottom-size, 28px)' : undefined)}
 	{...rest}
 >
 	{@render children()}

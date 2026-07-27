@@ -18,7 +18,7 @@
 	crossfadeKey="generate-data"
 >
 	{#snippet icon()}
-		<Plus size={20} />
+		<Plus size={22} strokeWidth={2.2} class="shrink-0" />
 	{/snippet}
 	{#snippet text()}
 		<span class="hidden lg:inline">{$t('footprint.actions.generate_data')}</span>

@@ -4,8 +4,10 @@
  * 提供统一的年龄计算逻辑，避免在多个组件中重复计算。
  */
 
+import { publicConfig } from '$lib/config/public';
+
 /** 个人出生日期常量 */
-export const BIRTH_DATE = import.meta.env.VITE_USER_BIRTH_DATE;
+export const BIRTH_DATE = publicConfig.profile.birthDate;
 
 /**
  * 计算从出生日期到当前的年龄

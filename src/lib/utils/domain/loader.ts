@@ -3,14 +3,14 @@
  *
  * 负责 fetching Markdown 文件、解析 Frontmatter 以及聚合文章元数据。
  */
-import { loadText } from '$lib/utils/network/loading';
+import { loadText, type LoadOptions } from '$lib/utils/network/loading';
 import yaml from 'js-yaml';
 import { getCategoryTitle } from '$lib/utils/domain/blog';
 import type { BlogPost } from '$lib/utils/domain/blog';
 
 /**
  * 博客文章内容接口
- * 
+ *
  * 包含解析后的正文内容、元数据及来源文件信息。
  */
 export interface PostContent {
@@ -28,13 +28,14 @@ export interface PostContent {
  */
 export async function loadPostContent(
 	post: BlogPost,
-	categories: { slug: string; title: string }[] = []
+	categories: { slug: string; title: string }[] = [],
+	options: LoadOptions = {}
 ) {
 	if (!post || !post.file) {
 		throw new Error('Invalid post data');
 	}
 
-	const text = await loadText(`/posts/${post.file}`);
+	const text = await loadText(`/posts/${post.file}`, options);
 	let cleanText = text;
 	let additionalMetadata: Record<string, unknown> = {};
 

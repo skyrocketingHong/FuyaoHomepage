@@ -6,44 +6,52 @@
 	 * 由于我们手动隐藏了地图容器内的默认版权信息 (以免遮挡地图内容或位于错误层级)，
 	 * 该组件用于在侧边栏或其他 UI 区域重新展示这些信息，以符合高德 API 使用规范。
 	 *
-	 * @prop logoHtml - 提取的高德地图 Logo HTML 字符串
-	 * @prop copyrightHtml - 提取的版权文本 HTML 字符串
+	 * @prop logoUrl - 提取的高德地图 Logo 地址
+	 * @prop copyrightText - 提取的版权文本
 	 */
-	let { logoHtml = '', copyrightHtml = '' } = $props<{
-		logoHtml?: string;
-		copyrightHtml?: string;
+	let {
+		logoUrl = '',
+		logoAlt = '',
+		copyrightText = ''
+	} = $props<{
+		logoUrl?: string;
+		logoAlt?: string;
+		copyrightText?: string;
 	}>();
 </script>
 
-<div class="flex origin-right items-center gap-1.5">
-	{#if logoHtml}
-		<!-- 
+<div class="flex w-full min-w-0 flex-wrap items-center justify-start gap-x-1.5 gap-y-1 text-left">
+	{#if logoUrl}
+		<!--
             渲染 Logo
             注意：此处样式在 style 块中通过 :global 修改，
             以强制覆盖 AMap 原生样式带来的绝对定位等干扰属性。
+            shrink-0 禁止 Flex 压缩 Logo，保持原始长宽比。
         -->
-		<div class="map-logo-container">
-			{@html logoHtml}
+		<div class="map-logo-container shrink-0">
+			<img src={logoUrl} alt={logoAlt} />
 		</div>
 	{/if}
-	{#if copyrightHtml}
-		<!-- 渲染版权文本 -->
-		<span class="pt-0.5 text-[12px] leading-none whitespace-nowrap text-muted-foreground">
-			{@html copyrightHtml}
+	{#if copyrightText}
+		<!-- 渲染版权文本：短内容单行，空间不足时整段换行，禁止截断或缩放 -->
+		<span class="text-[11px] leading-4 text-muted-foreground">
+			{copyrightText}
 		</span>
 	{/if}
 </div>
 
 <style>
-	/* 
+	/*
      * 强制覆盖高德 Logo 图片样式
-     * 使其在 Flex 布局中能够正常显示大小 
+     * 使其在 Flex 布局中保持原始长宽比正常显示
      */
 	:global(.map-logo-container img) {
-		height: 15px !important;
-		width: auto !important;
 		display: block;
-		margin-top: 7px; /* 微调垂直对齐 */
+		width: auto !important;
+		height: 15px !important;
+		max-width: none;
+		margin: 0;
+		object-fit: contain;
 	}
 
 	/* 

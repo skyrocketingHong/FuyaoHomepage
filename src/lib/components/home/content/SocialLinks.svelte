@@ -6,13 +6,14 @@
 	 * 数据来源于 /data/social-links.yaml。
 	 */
 	import { SiGithub, SiTelegram, SiQq, SiX } from '@icons-pack/svelte-simple-icons';
-	import { Mail, Share2 } from 'lucide-svelte';
+	import { Mail } from 'lucide-svelte';
 	import SectionHeader from '$lib/components/home/content/common/SectionHeader.svelte';
 	import LiquidGlass from '$lib/components/ui/effect/LiquidGlass.svelte';
 	import Skeleton from '$lib/components/ui/feedback/Skeleton.svelte';
 
 	import { loadYaml } from '$lib/utils/network/loading';
 	import { onMount } from 'svelte';
+	import type { ComponentType } from 'svelte';
 
 	interface SocialLinkData {
 		name: string;
@@ -20,7 +21,7 @@
 		icon: string;
 	}
 
-	type IconComponent = any;
+	type IconComponent = ComponentType;
 
 	interface SocialLink {
 		name: string;
@@ -58,17 +59,12 @@
 </script>
 
 <div class="flex h-full flex-col pt-4">
-	<SectionHeader
-		icon={Share2}
-		iconBgColor="bg-green-500/20"
-		iconColor="text-green-400"
-		titleKey="home.hero.social_links.title"
-	/>
+	<SectionHeader icon="social" titleKey="home.hero.social_links.title" />
 
 	<div class="h-[116px] w-full">
 		{#if loading}
 			<div class="grid h-full grid-cols-3 grid-rows-2 gap-2">
-				{#each Array(6) as _}
+				{#each Array(6).keys() as index (index)}
 					<Skeleton class="h-full w-full rounded-xl" />
 				{/each}
 			</div>
@@ -80,7 +76,7 @@
 			</div>
 		{:else}
 			<div class="grid h-full grid-cols-3 grid-rows-2 gap-2">
-				{#each socialLinks as link}
+				{#each socialLinks as link (link.href)}
 					<LiquidGlass
 						opaque={true}
 						tag="a"
@@ -90,9 +86,13 @@
 						class="rounded-xl p-3 text-sm font-medium text-foreground"
 						tilt={true}
 					>
-						<div class="flex h-full items-center justify-between gap-2">
-							<link.icon size={16} />
-							<span>{link.name}</span>
+						<div class="flex h-full items-center gap-2">
+							<span class="flex size-4 shrink-0 items-center justify-center" aria-hidden="true">
+								<link.icon size={16} />
+							</span>
+							<span class="ml-auto flex min-w-0 flex-1 justify-end text-right leading-tight">
+								<span class="max-w-full min-w-0 break-words">{link.name}</span>
+							</span>
 						</div>
 					</LiquidGlass>
 				{/each}

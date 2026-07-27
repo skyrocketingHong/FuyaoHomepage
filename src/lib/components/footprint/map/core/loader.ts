@@ -3,6 +3,7 @@
  *
  * 负责动态加载 AMap JS API 脚本并在 window 对象上初始化安全配置。
  */
+import { publicConfig } from '$lib/config/public';
 
 /**
  * 加载 AMap 脚本
@@ -16,7 +17,7 @@ export function loadAMapScript(apiKey: string, securityCode: string): Promise<vo
 
 	// 1. 注入安全配置
 	const securityConfig: Record<string, unknown> = {
-		serviceHost: import.meta.env.VITE_AMAP_SERVICE_HOST
+		serviceHost: publicConfig.services.amap.serviceHost
 	};
 
 	if (securityCode) {

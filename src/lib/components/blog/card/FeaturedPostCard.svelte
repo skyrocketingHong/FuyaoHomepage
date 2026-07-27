@@ -6,44 +6,37 @@
 	 */
 	import { t, locale } from '$lib/i18n/store';
 	import { formatDate, isRecent } from '$lib/utils/datetime/date';
-	import { getCategoryVisuals, getPostUrl } from '$lib/utils/domain/blog';
+	import { getPostVisuals } from '$lib/utils/domain/blog';
 	import Crossfade from '$lib/components/ui/effect/Crossfade.svelte';
-	import LiquidGlass from '$lib/components/ui/effect/LiquidGlass.svelte';
 	import CategoryBadge from '../common/CategoryBadge.svelte';
 	import LazyImage from '$lib/components/ui/display/LazyImage.svelte';
 	import type { BlogPost } from '$lib/utils/domain/blog';
 
 	let {
 		post,
-		activeCategory = 'All',
 		categories = [],
 		onclick
 	} = $props<{
 		post: BlogPost;
-		activeCategory?: string;
 		categories?: { slug: string; title: string }[];
 		onclick: (post: BlogPost) => void;
 	}>();
 
-	let visual = $derived(getCategoryVisuals(post.categories?.[0] || post.category || ''));
-	let postCategories = $derived(post.categories || [post.category]);
+	let { visual, postCategories } = $derived(getPostVisuals(post));
 
 	function handleClick() {
 		onclick(post);
 	}
 </script>
 
-<LiquidGlass
-	opaque={true}
-	class="mb-4 flex w-full cursor-pointer flex-col gap-0 !p-0"
+<button
+	type="button"
+	class="newsroom-card newsroom-card--featured group mb-6 flex w-full cursor-pointer flex-col overflow-hidden md:grid md:grid-cols-[minmax(0,1.85fr)_minmax(280px,1fr)]"
 	onclick={handleClick}
-	onkeydown={(e: KeyboardEvent) => e.key === 'Enter' && handleClick()}
-	role="button"
-	tabindex="0"
 >
 	<!-- 图片容器 -->
 	<div
-		class="relative aspect-[16/9] h-auto w-full overflow-hidden rounded-t-[inherit] rounded-b-none bg-card md:aspect-[2/1]"
+		class="relative aspect-[16/9] h-auto w-full overflow-hidden bg-card md:aspect-auto md:min-h-[360px]"
 	>
 		{#if post.cover}
 			<LazyImage
@@ -60,7 +53,7 @@
 	</div>
 
 	<!-- 内容区 -->
-	<div class="flex flex-1 flex-col items-start px-6 pt-4 pb-6">
+	<div class="flex min-w-0 flex-1 flex-col items-start px-6 pt-5 pb-7 md:px-8 md:py-8">
 		<div class="mb-3 flex items-center gap-3">
 			<CategoryBadge
 				{categories}
@@ -69,7 +62,7 @@
 			/>
 			{#if isRecent(post.date)}
 				<span class="text-[12px] font-bold tracking-widest text-[#ff8800] uppercase">
-					<Crossfade key={'new-' + $locale} class="inline-grid">
+					<Crossfade key={'new-' + $locale} inline class="inline-grid">
 						<span>{$t('blog.new')}</span>
 					</Crossfade>
 				</span>
@@ -77,15 +70,15 @@
 		</div>
 
 		<h3
-			class="mb-4 text-[28px] leading-[1.1] font-bold text-foreground sm:text-[32px] md:text-[40px] md:leading-[1.1]"
+			class="mb-5 max-w-[900px] text-[30px] leading-[1.08] font-semibold tracking-[-0.025em] text-foreground sm:text-[36px] md:text-[36px] md:leading-[1.08] xl:text-[40px]"
 		>
 			{post.title}
 		</h3>
 
-		<div class="mt-auto text-[15px] font-semibold text-muted-foreground sm:text-[17px]">
-			<Crossfade key={'featured-date-' + post.slug + '-' + $locale} class="inline-grid">
+		<div class="mt-auto text-[14px] font-medium text-muted-foreground sm:text-[16px]">
+			<Crossfade key={'featured-date-' + post.slug + '-' + $locale} inline class="inline-grid">
 				<span>{formatDate(post.date, $locale)}</span>
 			</Crossfade>
 		</div>
 	</div>
-</LiquidGlass>
+</button>

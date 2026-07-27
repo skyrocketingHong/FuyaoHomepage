@@ -7,3 +7,6 @@ bun.lockb
 
 # Miscellaneous
 /static/
+
+# 内容 fixture 保持迁移源格式，不由代码格式化工具改写
+/fixtures/content/

@@ -19,9 +19,8 @@ export interface AMapLngLat {
  */
 export interface AMapInstance {
 	destroy(): void;
-	clearMap(): void;
-	add(overlay: unknown): void;
 	on(event: string, handler: () => void): void;
+	plugin(plugins: string[], callback: () => void): void;
 	getCenter(): AMapLngLat | null;
 	setZoomAndCenter(
 		zoom: number,
@@ -48,6 +47,36 @@ export interface AMapInfoWindow {
  */
 export interface AMapMarker {
 	on(event: string, handler: () => void): void;
+	getPosition(): AMapLngLat | null;
+	setContent(content: string | HTMLElement): void;
+	setOffset(offset: AMapPixel): void;
+	setTitle(title: string): void;
+	setExtData(data: unknown): void;
+	getExtData(): unknown;
+}
+
+/** 高德官方 MarkerCluster 实例的项目内最小接口。 */
+export interface AMapMarkerCluster {
+	/** 替换当前聚合数据。 */
+	setData(data: AMapClusterPoint[]): void;
+	/** 将聚合图层挂载到地图，传入 `null` 时移除。 */
+	setMap(map: AMapInstance | null): void;
+}
+
+/** 高德点聚合所需的数据结构。 */
+export interface AMapClusterPoint {
+	/** 经纬度坐标。 */
+	lnglat: [number, number];
+	/** 聚合中心权重。 */
+	weight?: number;
+}
+
+/** MarkerCluster 自定义渲染回调参数。 */
+export interface AMapClusterRenderContext {
+	/** 当前聚合包含的点数，仅聚合点回调提供。 */
+	count?: number;
+	/** 由高德创建的标记实例。 */
+	marker: AMapMarker;
 }
 
 /**
@@ -61,6 +90,17 @@ export type AMapPixel = object;
 export interface AMapNamespace {
 	Map: new (container: HTMLElement, opts: Record<string, unknown>) => AMapInstance;
 	Marker: new (opts: Record<string, unknown>) => AMapMarker;
+	MarkerCluster: new (
+		map: AMapInstance,
+		data: AMapClusterPoint[],
+		opts: {
+			gridSize?: number;
+			maxZoom?: number;
+			averageCenter?: boolean;
+			renderClusterMarker?: (context: AMapClusterRenderContext) => void;
+			renderMarker?: (context: AMapClusterRenderContext) => void;
+		}
+	) => AMapMarkerCluster;
 	InfoWindow: new (opts: Record<string, unknown>) => AMapInfoWindow;
 	Pixel: new (x: number, y: number) => AMapPixel;
 	plugin: (plugins: string[], callback: () => void) => void;
@@ -70,8 +110,9 @@ export interface AMapNamespace {
  * 版权信息数据结构
  */
 export interface CopyrightData {
-	logoHtml: string;
-	copyrightHtml: string;
+	logoUrl: string;
+	logoAlt: string;
+	copyrightText: string;
 }
 
 /**
@@ -92,6 +133,9 @@ export interface MarkerClickEvent<T = unknown> {
 export interface MarkerConfig {
 	position: [number, number];
 	title?: string;
+	cover?: string;
+	visitDate?: string;
+	description?: string;
 	type?: 'city' | 'spot' | string;
 	[key: string]: unknown;
 }

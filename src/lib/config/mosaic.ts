@@ -58,7 +58,7 @@ export const MOSAIC_DEFAULT_CONFIG: MosaicConfig = {
 
 /**
  * 日间模式港铁车站预设
- * 
+ *
  * 适用于亮色背景，通常搭配黑色文字。
  */
 export const MTR_PRESETS_DAY: MtrStation[] = [
@@ -131,7 +131,7 @@ export const MTR_PRESETS_DAY: MtrStation[] = [
 
 /**
  * 夜间模式港铁车站预设
- * 
+ *
  * 适用于暗色背景，通常搭配白色文字。
  */
 export const MTR_PRESETS_NIGHT: MtrStation[] = [
@@ -198,7 +198,7 @@ export const MTR_PRESETS_NIGHT: MtrStation[] = [
 
 /**
  * 彩虹站专用颜色序列
- * 
+ *
  * 顺序：青绿 -> 红 -> 橙 -> 黄 -> 绿 -> 蓝 -> 紫 -> 青绿
  */
 export const RAINBOW_COLORS = [

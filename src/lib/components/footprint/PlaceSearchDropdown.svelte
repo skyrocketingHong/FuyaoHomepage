@@ -20,7 +20,7 @@
 	// 搜索状态
 	let isSearching = $state(false);
 	let searchResults = $state<PlaceSearchResult[]>([]);
-	let placeSearchInstance: any = null;
+	let placeSearchInstance: Awaited<ReturnType<typeof initPlaceSearch>>['placeSearch'] | null = null;
 
 	onMount(async () => {
 		try {
@@ -76,7 +76,7 @@
 		<div
 			class="absolute z-10 mt-1 max-h-60 w-full overflow-y-auto rounded-lg border border-zinc-200 bg-white shadow-lg dark:border-zinc-700 dark:bg-zinc-800"
 		>
-			{#each searchResults as result}
+			{#each searchResults as result (`${result.name}-${result.address}-${result.district}`)}
 				<button
 					class="w-full border-b border-zinc-100 px-4 py-2 text-left text-sm last:border-0 hover:bg-zinc-50 dark:border-zinc-700 dark:hover:bg-zinc-700"
 					onclick={() => handleSelect(result)}

@@ -45,10 +45,10 @@
 	});
 </script>
 
-<div class="inline-block">
-	<Crossfade key={currentEffectClass} duration={600} class="inline-grid">
+<span class="inline-block">
+	<Crossfade key={currentEffectClass} duration={600} inline>
 		<span class="{currentEffectClass} inline-block px-1 py-2">
 			{text}
 		</span>
 	</Crossfade>
-</div>
+</span>

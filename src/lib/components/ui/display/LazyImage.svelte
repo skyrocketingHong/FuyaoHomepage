@@ -18,6 +18,8 @@
 
 	interface Props {
 		src: string;
+		srcset?: string;
+		sizes?: string;
 		alt?: string;
 		class?: string;
 		/** 图片宽度 */
@@ -34,10 +36,13 @@
 		imgClass?: string;
 		/** 图片加载失败回调 */
 		onerror?: () => void;
+		fetchpriority?: 'high' | 'low' | 'auto';
 	}
 
 	let {
 		src,
+		srcset,
+		sizes,
 		alt = '',
 		class: className = '',
 		width,
@@ -46,7 +51,8 @@
 		fill = false,
 		onload,
 		onerror,
-		imgClass = ''
+		imgClass = '',
+		fetchpriority = 'auto'
 	}: Props = $props();
 
 	let loaded = $state(false);
@@ -84,8 +90,12 @@
 	<!-- 图片 -->
 	<img
 		{src}
+		{srcset}
+		{sizes}
 		{alt}
 		loading="lazy"
+		decoding="async"
+		{fetchpriority}
 		class={cn(
 			'will-change-opacity transition-opacity duration-500',
 			loaded ? 'opacity-100' : 'opacity-0',

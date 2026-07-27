@@ -12,8 +12,10 @@
 	 * @prop children - Svelte Snippet 内容 (若存在则覆盖 label)
 	 * @prop class - 额外的 CSS 类名
 	 */
-	import type { Component, Snippet } from 'svelte';
+	import type { ComponentType, Snippet } from 'svelte';
+	import type { Pathname } from '$app/types';
 	import Crossfade from '$lib/components/ui/effect/Crossfade.svelte';
+	import { resolve } from '$app/paths';
 
 	let {
 		label,
@@ -26,13 +28,13 @@
 		...rest
 	} = $props<{
 		label?: string;
-		icon?: Component<any>;
-		href?: string;
+		icon?: ComponentType;
+		href?: Pathname;
 		onclick?: () => void;
 		isActive?: boolean;
 		children?: Snippet;
 		class?: string;
-		[key: string]: any;
+		[key: string]: unknown;
 	}>();
 
 	// 使用来自 app.css 的全局类名以保持一致性
@@ -43,7 +45,7 @@
 
 {#if href}
 	<a
-		{href}
+		href={resolve(href)}
 		class="{baseClasses} {isActive ? activeClasses : inactiveClasses} {className}"
 		{onclick}
 		{...rest}
@@ -54,7 +56,7 @@
 		{#if children}
 			{@render children()}
 		{:else}
-			<Crossfade key={label!} class="inline-grid w-full"><span>{label}</span></Crossfade>
+			<Crossfade key={label!} inline class="inline-grid w-full"><span>{label}</span></Crossfade>
 		{/if}
 	</a>
 {:else}
@@ -69,7 +71,7 @@
 		{#if children}
 			{@render children()}
 		{:else}
-			<Crossfade key={label!} class="inline-grid w-full"><span>{label}</span></Crossfade>
+			<Crossfade key={label!} inline class="inline-grid w-full"><span>{label}</span></Crossfade>
 		{/if}
 	</button>
 {/if}

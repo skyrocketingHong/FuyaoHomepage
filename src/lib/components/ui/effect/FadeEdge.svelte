@@ -11,6 +11,8 @@
 	 * @prop showStart - 是否显示起始端（左/上）的遮罩 (默认 false)
 	 * @prop showEnd - 是否显示结束端（右/下）的遮罩 (默认 false)
 	 * @prop fadeSize - 渐变区域的大小 (支持 css 单位, 默认 '2rem')
+	 * @prop fadeStartSize - 起始端（左/上）渐变区域大小 (可选, 默认与 fadeSize 一致)
+	 * @prop fadeEndSize - 结束端（右/下）渐变区域大小 (可选, 默认与 fadeSize 一致)
 	 * @prop ref - (bindable) 绑定的 DOM 元素引用
 	 * @prop visible - 是否启用遮罩 (默认 true)
 	 */
@@ -25,6 +27,8 @@
 		showStart = false,
 		showEnd = false,
 		fadeSize = '2rem', // Can be px or %
+		fadeStartSize = undefined,
+		fadeEndSize = undefined,
 		ref = $bindable(),
 		visible = true,
 		...rest
@@ -35,6 +39,8 @@
 		showStart?: boolean;
 		showEnd?: boolean;
 		fadeSize?: string;
+		fadeStartSize?: string;
+		fadeEndSize?: string;
 		ref?: HTMLElement;
 		visible?: boolean;
 		[key: string]: unknown;
@@ -57,16 +63,27 @@
 	let maskImageResult = $derived.by(() => {
 		if (!visible) return 'none';
 
+		const start = Math.max(0, Math.min(1, startAlpha.current));
+		const end = Math.max(0, Math.min(1, endAlpha.current));
+
+		// 两端都无需渐隐时移除 mask：mask 会建立新的 backdrop root，
+		// 导致容器内玻璃组件的 backdrop-filter 无法采样容器外背景
+		if (start >= 0.999 && end >= 0.999) return 'none';
+
 		const dir = orientation === 'horizontal' ? 'to right' : 'to bottom';
+
+		// 起止两端可独立设置渐隐尺寸 (默认与 fadeSize 一致)
+		const startSize = fadeStartSize ?? fadeSize;
+		const endSize = fadeEndSize ?? fadeSize;
 
 		// 定义 4 个点的颜色
 		// 使用 rgba(0,0,0, alpha) 来控制透明度
-		const c1 = `rgba(0,0,0, ${Math.max(0, Math.min(1, startAlpha.current))})`;
+		const c1 = `rgba(0,0,0, ${start})`;
 		const c2 = 'black'; // 在开始渐变的内边缘始终为 black
 		const c3 = 'black'; // 在结束渐变的内边缘始终为 black
-		const c4 = `rgba(0,0,0, ${Math.max(0, Math.min(1, endAlpha.current))})`;
+		const c4 = `rgba(0,0,0, ${end})`;
 
-		return `linear-gradient(${dir}, ${c1} 0, ${c2} ${fadeSize}, ${c3} calc(100% - ${fadeSize}), ${c4} 100%)`;
+		return `linear-gradient(${dir}, ${c1} 0, ${c2} ${startSize}, ${c3} calc(100% - ${endSize}), ${c4} 100%)`;
 	});
 </script>
 

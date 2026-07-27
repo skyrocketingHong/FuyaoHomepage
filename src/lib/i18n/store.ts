@@ -99,7 +99,7 @@ function createI18nStore() {
 
 /**
  * 全局国际化存储实例
- * 
+ *
  * 包含当前语言状态及切换方法。
  */
 export const locale = createI18nStore();

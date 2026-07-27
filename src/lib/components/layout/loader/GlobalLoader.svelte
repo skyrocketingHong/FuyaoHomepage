@@ -9,9 +9,9 @@
 	import Crossfade from '$lib/components/ui/effect/Crossfade.svelte';
 	import LoadingState from '$lib/components/ui/feedback/LoadingState.svelte';
 	import { getTranslation } from '$lib/i18n/store';
+	import { publicConfig } from '$lib/config/public';
 
-	const VITE_SITE_NAME = import.meta.env.VITE_SITE_NAME;
-	const loadingText = `${getTranslation('common.travingto')}${getTranslation('common.colon')}${VITE_SITE_NAME}`;
+	const loadingText = `${getTranslation('common.travingto')}${getTranslation('common.colon')}${publicConfig.site.name}`;
 
 	let { showContent } = $props<{ showContent: boolean }>();
 </script>

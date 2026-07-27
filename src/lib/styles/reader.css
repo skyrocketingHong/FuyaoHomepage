@@ -11,13 +11,11 @@
 	line-height: 25px;
 	font-weight: 400;
 	letter-spacing: 0; /* 正常的字间距以提高中文易读性 */
-	color: var(--foreground); /* 使用全局前景色以支持暗黑模式 */
-	max-width: 653px;
+	color: var(--reader-foreground); /* 阅读语义 token，随日夜切换 */
+	max-width: 680px;
 	margin: 0 auto;
 	padding: 0;
-	transition:
-		color 0.3s,
-		background-color 0.3s;
+	/* 颜色切换由统一外观过渡入口 (View Transition / BackgroundLayer) 承担，不做局部过渡 */
 	overflow-wrap: break-word;
 	word-wrap: break-word;
 }
@@ -31,28 +29,28 @@
 .markdown-body h6 {
 	/* 使用全局字体栈 */
 	font-weight: 700;
-	letter-spacing: 0.2px; /* 标题采用正向字间距 */
-	color: var(--foreground);
+	letter-spacing: -0.018em;
+	color: var(--reader-foreground);
 }
 
 .markdown-body h1 {
-	font-size: 48px;
-	line-height: 52px;
+	font-size: 46px;
+	line-height: 1.06;
 	margin-top: 2.5em;
 	margin-bottom: 1em;
 }
 
 .markdown-body h2 {
-	font-size: 24px;
-	line-height: 28px;
+	font-size: 28px;
+	line-height: 1.14;
 	margin-top: 2.2em;
 	margin-bottom: 0.8em;
 	border-bottom: none;
 }
 
 .markdown-body h3 {
-	font-size: 20px;
-	line-height: 24px;
+	font-size: 22px;
+	line-height: 1.2;
 	margin-top: 1.8em;
 	margin-bottom: 0.6em;
 }
@@ -88,9 +86,32 @@
 }
 
 .markdown-body p {
-	margin-bottom: 1.2em; /* 统一文本流间距 */
-	color: var(--foreground);
+	margin-bottom: 1.35em;
+	color: var(--reader-foreground);
 	font-weight: 400;
+}
+
+.markdown-body dl {
+	margin: 1.35em 0;
+}
+
+.markdown-body dt {
+	font-weight: 600;
+}
+
+.markdown-body dd {
+	margin-left: 1.5rem;
+}
+
+.markdown-body dd + dt,
+.markdown-body dd + dd {
+	margin-top: 8px;
+}
+
+@media (max-width: 768px) {
+	.markdown-body dd {
+		margin-left: 1rem;
+	}
 }
 
 .markdown-body a {
@@ -108,7 +129,7 @@
 
 .markdown-body img {
 	display: block;
-	border-radius: 10px;
+	border-radius: 14px;
 	max-width: 100%;
 	height: auto;
 	box-shadow: none; /* 移除阴影以保持简洁外观 */
@@ -123,7 +144,7 @@
 	text-align: left !important;
 	font-size: 12px !important; /* 符合参考图的小字号 */
 	line-height: 1.6;
-	color: #86868b; /* Apple 风格说明文字颜色 */
+	color: var(--reader-caption); /* 阅读语义 token：辅助说明色 */
 	margin-top: 0 !important;
 	margin-bottom: 2.2em !important; /* 统一块级间距 */
 	padding-top: 12px;
@@ -131,19 +152,11 @@
 	font-weight: 400;
 }
 
-.dark .markdown-body .image-caption {
-	color: #a1a1a6;
-}
-
-.dark .markdown-body img {
-	box-shadow: none;
-}
-
 .markdown-body blockquote {
 	margin: 2.2em 0;
 	padding-left: 1.5rem;
 	border-left: 4px solid var(--theme-color);
-	color: var(--muted-foreground);
+	color: var(--reader-secondary);
 	font-style: italic;
 	font-size: 1em;
 }
@@ -194,7 +207,7 @@
 	width: 5px;
 	height: 5px;
 	border-radius: 50%;
-	background-color: var(--foreground);
+	background-color: var(--reader-foreground);
 }
 
 /* 有序列表：数字样式 */
@@ -208,34 +221,79 @@
 
 .markdown-body hr {
 	height: 1px;
-	background-color: var(--border);
+	background-color: var(--reader-border);
 	border: none;
 	margin: 2.2em 0;
 }
 
-/* 表格样式 */
-.table-container {
-	width: 100%;
+/* 数学公式：由 KaTeX 官方 CSS控制视觉层，MathML 无障碍层保持在 DOM 中。 */
+.markdown-body .katex-display {
 	overflow-x: auto;
+	overflow-y: hidden;
+	text-align: center;
+	-webkit-overflow-scrolling: touch;
+}
+
+.markdown-body .katex-display > .katex {
+	min-width: max-content;
+}
+
+/* 表格样式 */
+.markdown-body .table-container {
+	width: 100%;
+	max-width: 100%;
+	overflow-x: auto;
+	overflow-y: hidden;
+	overscroll-behavior-inline: contain;
 	margin: 2.2em 0;
 	-webkit-overflow-scrolling: touch; /* iOS 平滑滚动支持 */
 }
 
+.markdown-body .table-container:focus-visible {
+	outline: 2px solid var(--theme-color);
+	outline-offset: 3px;
+}
+
 .markdown-body table {
 	display: table;
-	width: 100%;
+	width: max-content;
+	min-width: 100%;
 	margin: 0; /* 边距由外层容器处理 */
 	border-collapse: collapse;
 }
 .markdown-body table th,
 .markdown-body table td {
 	padding: 10px 16px;
-	border: 1px solid var(--border);
-	text-align: center;
+	border: 1px solid var(--reader-border);
+	text-align: left;
 }
 .markdown-body table th {
 	font-weight: 600;
-	background-color: var(--secondary);
+	background-color: var(--reader-card);
+	white-space: nowrap;
+}
+
+.markdown-body table td {
+	min-width: 8rem;
+	max-width: 28rem;
+	white-space: normal;
+	word-break: normal;
+	overflow-wrap: anywhere;
+}
+
+.markdown-body table th[align='left'],
+.markdown-body table td[align='left'] {
+	text-align: left;
+}
+
+.markdown-body table th[align='center'],
+.markdown-body table td[align='center'] {
+	text-align: center;
+}
+
+.markdown-body table th[align='right'],
+.markdown-body table td[align='right'] {
+	text-align: right;
 }
 
 /* ==========================================================================
@@ -247,11 +305,7 @@
 	border-top: 1px solid var(--border);
 	font-size: 12px; /* 辅助性小字体 */
 	line-height: 1.6;
-	color: #86868b; /* Apple 排版二级辅助色 */
-}
-
-.dark .markdown-body .footnotes {
-	color: #a1a1a6; /* 暗黑模式二级辅助色 */
+	color: var(--reader-caption); /* 阅读语义 token：辅助说明色 */
 }
 
 .markdown-body .footnotes ol {
@@ -290,7 +344,7 @@
 	box-sizing: border-box;
 	font-size: 14px;
 	overflow: hidden;
-	border: 1px solid var(--code-border);
+	border: 1px solid var(--reader-code-border);
 	box-shadow: 0 4px 6px rgba(0, 0, 0, 0.02);
 }
 
@@ -309,15 +363,19 @@
 	align-items: center;
 	justify-content: space-between;
 	padding: 8px 16px;
-	background-color: rgba(127, 127, 127, 0.05); /* 微妙的头部区分色 */
-	border-bottom: 1px solid var(--code-border-inner);
+	background-color: color-mix(
+		in srgb,
+		var(--reader-secondary) 8%,
+		transparent
+	); /* 微妙的头部区分色 */
+	border-bottom: 1px solid var(--reader-code-border-inner);
 	user-select: none;
 }
 
 .markdown-body .lang-label {
 	font-size: 0.75rem;
 	font-weight: 600;
-	color: var(--code-text-muted);
+	color: var(--reader-code-text-muted);
 	letter-spacing: 0.03em;
 	text-transform: uppercase;
 }
@@ -328,7 +386,7 @@
 	border: 1px solid transparent;
 	border-radius: 6px;
 	cursor: pointer;
-	color: var(--code-text-muted);
+	color: var(--reader-code-text-muted);
 	font-size: 0.75rem;
 	padding: 4px 10px;
 	transition: all 0.2s ease;
@@ -336,8 +394,8 @@
 }
 
 .markdown-body .copy-btn:hover {
-	background-color: var(--code-hover);
-	color: var(--code-text);
+	background-color: var(--reader-code-hover);
+	color: var(--reader-code-text);
 }
 
 .markdown-body .copy-btn.copied {
@@ -349,9 +407,18 @@
 	overflow-x: auto;
 	line-height: 1.6;
 	-webkit-font-smoothing: antialiased;
-	white-space: pre-wrap;
-	word-break: break-all;
-	overflow-wrap: break-word;
+	white-space: pre;
+	word-break: normal;
+	overflow-wrap: normal;
+	tab-size: 4;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.markdown-body,
+	.markdown-body a,
+	.markdown-body .copy-btn {
+		transition: none;
+	}
 }
 
 @import './reader-syntax.css';

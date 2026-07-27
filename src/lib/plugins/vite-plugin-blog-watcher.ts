@@ -1,31 +1,22 @@
-import { exec } from 'child_process';
+import { execFile } from 'node:child_process';
 import type { Plugin } from 'vite';
-import { fileURLToPath } from 'url';
-import { dirname, join } from 'path';
+import { fileURLToPath } from 'node:url';
+import { dirname, join } from 'node:path';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-// 寻找相对于此文件的 scripts/generate-blog-index.js
-// src/lib/plugins/vite-plugin-blog-watcher.ts -> ../../../scripts/generate-blog-index.js
-const SCRIPT_PATH = join(__dirname, '../../../scripts/generate-blog-index.js');
+const SCRIPT_PATH = join(__dirname, '../../../scripts/prepare-build-inputs.js');
 
 /**
  * 博客文件监听插件
  *
- * 监听 `static/posts` 目录下的 Markdown 文件变化，
- * 自动运行 `scripts/generate-blog-index.js` 生成博客索引。
+ * 监听匿名开发内容目录下的 Markdown 文件变化，
+ * 自动重新准备隔离构建快照，不回写源码 static 目录。
  */
 export default function blogWatcher(): Plugin {
 	return {
 		name: 'vite-plugin-blog-watcher',
-		// eslint-disable-next-line @typescript-eslint/no-unused-vars
-		configureServer(server) {
-			// 启动时运行
-			runGeneration();
-		},
-		// eslint-disable-next-line @typescript-eslint/no-unused-vars
-		handleHotUpdate({ file, server }) {
-			// 监听 static/posts 中的变化
-			if (file.includes('static/posts') && file.endsWith('.md')) {
+		handleHotUpdate({ file }) {
+			if (file.includes('fixtures/content/posts') && file.endsWith('.md')) {
 				runGeneration();
 			}
 		}
@@ -33,7 +24,7 @@ export default function blogWatcher(): Plugin {
 }
 
 function runGeneration() {
-	exec(`node "${SCRIPT_PATH}"`, (error, stdout, stderr) => {
+	execFile(process.execPath, [SCRIPT_PATH, '--mode=development'], (error, _stdout, stderr) => {
 		if (error) {
 			console.error(`[BlogWatcher] 错误: ${error.message}`);
 			return;

@@ -2,17 +2,16 @@
 	/**
 	 * 背景来源信息组件
 	 *
-	 * 展示当前背景图片/效果的来源信息。
-	 * 仅在传入 infoComponent 时渲染内容。
+	 * 渲染当前背景图片/效果的动态来源组件，提供 Crossfade 过渡。
+	 * 仅在传入 infoComponent 时渲染内容，不渲染任何类别标题。
 	 *
 	 * @prop infoComponent - 背景信息展示组件
 	 * @prop infoComponentProps - 传递给信息组件的属性
 	 * @prop infoKey - 信息组件的唯一键，用于动画过渡
 	 * @prop direction - 排列方向
 	 */
-	import { t } from '$lib/i18n/store';
 	import Crossfade from '$lib/components/ui/effect/Crossfade.svelte';
-	import type { Component } from 'svelte';
+	import type { DynamicComponent } from '$lib/types/component';
 
 	let {
 		infoComponent: InfoComponent = null,
@@ -20,7 +19,7 @@
 		infoKey = 'default',
 		direction = 'vertical'
 	} = $props<{
-		infoComponent?: Component | null;
+		infoComponent?: DynamicComponent | null;
 		infoComponentProps?: Record<string, unknown>;
 		infoKey?: string;
 		direction?: 'vertical' | 'horizontal' | 'auto';
@@ -29,25 +28,17 @@
 
 {#if InfoComponent}
 	{#if direction === 'horizontal'}
-		<!-- 移动端水平布局 -->
-		<div class="flex w-full items-center justify-between">
-			<div class="flex items-center gap-1">
-				<span class="text-[10px] whitespace-nowrap"
-					>{$t('layout.bottom_info.background_source')}</span
-				>
-				<div class="origin-left">
-					<Crossfade key={infoKey}>
-						<!-- 移动端传递 size='sm' 给信息组件 -->
-						<InfoComponent {...infoComponentProps} size="sm" />
-					</Crossfade>
-				</div>
-			</div>
+		<!-- 移动端水平布局：紧凑来源组件，左对齐 -->
+		<div class="flex w-full min-w-0 items-center justify-start">
+			<Crossfade key={infoKey} class="w-full">
+				<!-- 移动端传递 size='sm' 给信息组件 -->
+				<InfoComponent {...infoComponentProps} size="sm" />
+			</Crossfade>
 		</div>
 	{:else}
-		<!-- 桌面端/垂直布局 -->
-		<div class="flex w-full items-center justify-between pr-2 pl-2">
-			<span>{$t('layout.bottom_info.background_source')}</span>
-			<Crossfade key={infoKey}>
+		<!-- 桌面端/垂直布局：来源组件独占整行，左对齐 -->
+		<div class="flex w-full min-w-0 items-center justify-start text-foreground/65">
+			<Crossfade key={infoKey} class="w-full">
 				<InfoComponent {...infoComponentProps} />
 			</Crossfade>
 		</div>

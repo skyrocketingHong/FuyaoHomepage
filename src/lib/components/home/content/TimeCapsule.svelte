@@ -6,7 +6,6 @@
 	 * 支持中英文切换，并可通过点击在“大写文字”和“阿拉伯数字”格式间切换。
 	 */
 	import { onMount, onDestroy } from 'svelte';
-	import { Clock } from 'lucide-svelte';
 	import SectionHeader from '$lib/components/home/content/common/SectionHeader.svelte';
 	import ContentCard from '$lib/components/home/content/common/ContentCard.svelte';
 	import { t, locale } from '$lib/i18n/store';
@@ -46,7 +45,7 @@
 			if ($locale === 'zh-CN') {
 				timeRunning = `${d} 天\n${h} 小时 ${m} 分钟 ${s} 秒`;
 			} else {
-				timeRunning = `${d} Days\n${h} Hours ${m} Minutes ${s} Seconds`;
+				timeRunning = `${d} Day${days === 1 ? '' : 's'}\n${h} Hour${hours === 1 ? '' : 's'} ${m} Minute${minutes === 1 ? '' : 's'} ${s} Second${seconds === 1 ? '' : 's'}`;
 			}
 			return;
 		}
@@ -95,12 +94,7 @@
 </script>
 
 <div class="pt-4">
-	<SectionHeader
-		icon={Clock}
-		iconBgColor="bg-orange-500/20"
-		iconColor="text-orange-400"
-		titleKey="home.hero.time_capsule.title"
-	/>
+	<SectionHeader icon="time" titleKey="home.hero.time_capsule.title" />
 	<ContentCard
 		opaque={true}
 		class="h-[116px] cursor-pointer"
@@ -112,7 +106,7 @@
 	>
 		<div class="space-y-2">
 			<p class="in:fade text-sm text-muted-foreground">
-				<Crossfade key={$locale} class="inline-grid"
+				<Crossfade key={$locale} inline class="inline-grid"
 					><span>{$t('home.hero.time_capsule.subtitle')}</span></Crossfade
 				>
 			</p>
@@ -123,15 +117,16 @@
 				fadeSize="1rem"
 			>
 				<div>
-					{#each timeRunning.split('\n') as line, lineIdx}
+					{#each timeRunning.split('\n') as line, lineIdx (lineIdx)}
 						{#if lineIdx > 0}<br />{/if}
-						{#each line.split(' ') as word, wordIdx}
-							{#if wordIdx > 0}<span class="inline-block whitespace-pre">{'\u00A0'}</span>{/if}<span
+						{#each line.split(' ') as word, wordIdx (`${lineIdx}-${wordIdx}`)}
+							{#if wordIdx > 0}<span class="inline-block whitespace-pre">&nbsp;</span>{/if}<span
 								class="inline-block"
-								>{#each word.split('') as char, charIdx}
+								>{#each word.split('') as char, charIdx (`${lineIdx}-${wordIdx}-${charIdx}`)}
 									<Crossfade
 										key={`${lineIdx}-${wordIdx}-${charIdx}-${char}`}
 										duration={150}
+										inline
 										class="inline-grid"><span>{char}</span></Crossfade
 									>{/each}</span
 							>

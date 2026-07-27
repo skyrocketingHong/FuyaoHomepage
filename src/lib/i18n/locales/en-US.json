@@ -6,6 +6,7 @@
 		"copied": "Copied",
 		"copy": "Copy",
 		"copy_link": "Copy Link",
+		"close": "Close",
 		"site_name": "{{siteName}}",
 		"none": "None",
 		"status": {
@@ -21,6 +22,7 @@
 		"footprint": "Footprint",
 		"pay": "Donate",
 		"friends": "Friends",
+		"album": "Album",
 		"list": "List"
 	},
 	"layout": {
@@ -28,7 +30,6 @@
 			"navigation": "Navigation"
 		},
 		"bottom_info": {
-			"background_source": "Background Source",
 			"service_status": "Service Status",
 			"deployed_on": "Deployed on Aliyun"
 		},
@@ -43,6 +44,12 @@
 			"lang": {
 				"zh": "简体中文",
 				"en": "English"
+			},
+			"background": {
+				"label": "Background",
+				"mosaic": "Mosaic",
+				"image": "Wallpaper",
+				"flowing": "Flowing"
 			}
 		}
 	},
@@ -112,6 +119,10 @@
 		"actions": {
 			"generate_data": "Generate Data"
 		},
+		"map": {
+			"location_count": "{{count}} locations",
+			"reset_view": "Return to footprint overview"
+		},
 		"list_title": "Footprint List",
 		"generator": {
 			"title": "Generate Footprint Data",
@@ -134,6 +145,7 @@
 		"iframe_loading": "'s Blog",
 		"renderer_load_error": "Failed to load renderer",
 		"render_error": "Render error: {{message}}",
+		"scrollable_table": "Horizontally scrollable table",
 		"toc": "Table of Contents",
 		"contents": "Contents",
 		"loading_error": "Error loading post content.",
@@ -147,8 +159,11 @@
 		"more_stories": "More stories",
 		"load_more": "Load more stories",
 		"no_stories": "No stories found",
+		"article_index": "Article index",
+		"article_count": "{{count}} articles",
 		"category_description": "Posts in category {{category}}",
 		"no_posts_in_category": "There are no posts in this category yet.",
+		"no_tags": "No tags found",
 		"view_all": "View all stories",
 		"unknown_year": "Unknown",
 		"back_to_list": "Back",
@@ -164,6 +179,13 @@
 		"search": {
 			"placeholder": "Search articles...",
 			"no_results": "No results found for \"{{query}}\"",
+			"result_count": "{{count}} results",
+			"result_count_one": "1 result",
+			"load_error": "Failed to load the search index",
+			"load_error_hint": "Refresh the page and try again.",
+			"try_another_keyword": "Try another keyword.",
+			"query_label": "Search query",
+			"retry": "Retry",
 			"title": "Search",
 			"open": "Search",
 			"close": "Close"
@@ -180,10 +202,79 @@
 			"avatar_alt": "Author Avatar"
 		}
 	},
+	"album": {
+		"title": "Photo Album",
+		"no_photos": "No photos yet",
+		"upload_hint": "Import photos through the content publishing workflow and regenerate the album index",
+		"index_status": "Album index",
+		"no_filter_results": "No photos found",
+		"no_filter_results_hint": "No photos match the current filters. Adjust the filters and try again.",
+		"filter_status": "Filter results",
+		"photo_count": "{{count}} photos",
+		"photo_count_one": "1 photo",
+		"has_location": "Located",
+		"month_label": "{{month}} {{year}}",
+		"date": "Date",
+		"device": "Device",
+		"lens": "Lens",
+		"aperture": "Aperture",
+		"focal_length": "Focal Length",
+		"focal_length_35mm": "35mm Equiv.",
+		"exposure_time": "Shutter",
+		"exposure_comp": "Exposure Comp.",
+		"exposure_program": "Exposure Program",
+		"metering_mode": "Metering Mode",
+		"white_balance": "White Balance",
+		"flash": "Flash",
+		"color_space": "Color Space",
+		"color_profile": "Color Profile",
+		"gps_direction": "Direction",
+		"dimensions": "Dimensions",
+		"copy_link": "Link",
+		"copied": "Copied",
+		"colorSpace_values": {
+			"1": "sRGB",
+			"65535": "Uncalibrated"
+		},
+		"exposure_program_values": {
+			"0": "Undefined",
+			"1": "Manual",
+			"2": "Program AE",
+			"3": "Aperture Priority",
+			"4": "Shutter Priority",
+			"5": "Creative",
+			"6": "Action",
+			"7": "Portrait",
+			"8": "Landscape"
+		},
+		"metering_mode_values": {
+			"0": "Unknown",
+			"1": "Average",
+			"2": "Center-weighted",
+			"3": "Spot",
+			"4": "Multi-spot",
+			"5": "Multi-segment",
+			"6": "Partial"
+		},
+		"white_balance_values": {
+			"0": "Auto",
+			"1": "Manual"
+		},
+		"flash_values": {
+			"0": "No Flash",
+			"1": "Fired",
+			"5": "Fired (No Return)",
+			"7": "Fired (Return)",
+			"16": "No Flash (Forced)",
+			"24": "No Flash (Auto)",
+			"25": "Fired (Auto)"
+		}
+	},
 	"error": {
 		"not_found_title": "Page Not Found",
 		"something_wrong_title": "Something Went Wrong",
 		"not_found_desc": "Sorry, we couldn't find the resource you requested",
+		"something_wrong_desc": "The request could not be completed. Please try again later",
 		"request_path": "Request Path"
 	}
 }

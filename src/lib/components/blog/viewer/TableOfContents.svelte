@@ -14,7 +14,6 @@
 	interface Props {
 		toc: { id: string; text: string; depth: number }[];
 		onItemClick: (id: string) => void;
-		variant?: 'desktop' | 'mobile';
 		activeId?: string;
 	}
 
@@ -22,7 +21,7 @@
 </script>
 
 <div>
-	{#each toc as item}
+	{#each toc as item (item.id)}
 		<SidebarItem
 			label={item.text}
 			onclick={() => onItemClick(item.id)}

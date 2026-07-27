@@ -36,6 +36,123 @@
 	--sidebar-ring: oklch(0.704 0.04 256.788);
 	--theme-color: #ff8800;
 	--bg-overlay: oklch(1 0 0 / 0.2);
+	/* 侧栏布局变量：图标列起点 = 列表外层 gutter + 导航项内部 padding */
+	--sidebar-outer-padding: 12px;
+	--sidebar-list-gutter: 4px;
+	--sidebar-row-padding: 12px;
+	--sidebar-icon-start: 16px;
+	/* Header 布局 token：高度与 Header-Content 间距 (移动端单行 52px / 双行 96px，间距 12px) */
+	--header-height: 52px;
+	--header-height-extended: 96px;
+	--header-content-gap: 12px;
+	/* 移动端悬浮导航胶囊 token：尺寸与间距集中定义，页面禁止各自硬编码避让值 */
+	--mobile-nav-height: 64px;
+	--mobile-nav-inline-inset: 12px;
+	--mobile-nav-bottom-inset: max(10px, env(safe-area-inset-bottom));
+	--mobile-nav-content-gap: 16px;
+	--mobile-nav-overlay-gap: 10px;
+	/* 导航高度 + 底部安全距离 + 内容间距之和，作为可滚动内容的底部占位 */
+	--mobile-nav-clearance: calc(
+		var(--mobile-nav-height) + var(--mobile-nav-bottom-inset) + var(--mobile-nav-content-gap)
+	);
+	/* 胶囊表面/边界/投影：日间低饱和乳白 (~68%)，不使用纯白作为玻璃主体色 */
+	--mobile-nav-surface: oklch(0.96 0.006 255 / 0.68);
+	--mobile-nav-edge: oklch(1 0 0 / 0.4);
+	--mobile-nav-shadow: oklch(0 0 0 / 0.18);
+	/* 玻璃材质 token：低透明度蓝灰，不使用纯白作为玻璃主体色 */
+	/* 模糊半径与滤镜参数：由 LiquidGlass 按 variant 读取 */
+	--glass-panel-blur: 22px;
+	--glass-card-blur: 14px;
+	--glass-chrome-blur: 24px;
+	--glass-control-blur: 12px;
+	--glass-saturation: 1.08;
+	--glass-brightness: 0.98;
+	--glass-contrast: 0.96;
+	/* tint 不透明度：panel 保留背景色块，chrome 更实，control 更透明更轻 */
+	--glass-panel-tint-opacity: 0.18;
+	--glass-card-tint-opacity: 0.28;
+	--glass-chrome-tint-opacity: 0.26;
+	--glass-control-tint-opacity: 0.14;
+	/* 方向性边缘不透明度：顶边最明显，左侧稍亮，右边接近不可见，底边为轻微暗边 */
+	--glass-edge-top-opacity: 0.3;
+	--glass-edge-left-opacity: 0.14;
+	--glass-edge-bottom-opacity: 0.1;
+	--glass-edge-right-opacity: 0.06;
+	/* 边缘暗边基色与 chrome 底部分割线不透明度 */
+	--glass-edge-dark: rgb(15 23 42);
+	--glass-chrome-divider-opacity: 0.18;
+	/* 材质染色：普通透明度混合的低饱和蓝灰，由不透明度 token 驱动 */
+	--glass-panel-tint: oklch(0.72 0.02 255 / var(--glass-panel-tint-opacity));
+	--glass-card-tint: oklch(0.74 0.018 255 / var(--glass-card-tint-opacity));
+	--glass-chrome-tint: oklch(0.7 0.02 255 / var(--glass-chrome-tint-opacity));
+	--glass-control-tint: oklch(0.76 0.016 255 / var(--glass-control-tint-opacity));
+	/* 移动端底栏 tint：不透明度略高于顶栏 chrome，保证小字号元数据可读 */
+	--glass-bottom-tint: oklch(0.7 0.02 255 / min(calc(var(--glass-chrome-tint-opacity) + 0.08), 1));
+	--glass-highlight: oklch(1 0 0 / 0.14);
+	--glass-border: oklch(0.4 0.02 255 / 0.15);
+	--glass-shadow: oklch(0.35 0.03 265 / 0.14);
+	/* Header 工具栏控件 token (macOS 风格)：独立按钮 (ActionButton)、分段胶囊
+	 * (ActionGroup / SegmentedControl embedded) 共用同一组材质，外壳样式见
+	 * components.css 的 .header-control-shell。
+	 * 日间为半透明中性灰白材质，禁止不透明纯白 */
+	--header-control-blur: 20px;
+	--header-control-saturate: 1.12;
+	--header-control-surface: oklch(0.96 0.005 255 / 0.55);
+	--header-control-surface-hover: oklch(0.96 0.005 255 / 0.7);
+	--header-control-surface-pressed: oklch(0.92 0.007 255 / 0.72);
+	--header-control-selected: oklch(0.55 0.015 255 / 0.14);
+	--header-control-edge: oklch(0.4 0.02 255 / 0.16);
+	--header-control-highlight: oklch(1 0 0 / 0.45);
+	--header-control-shadow: oklch(0.4 0.02 265 / 0.14);
+	--header-control-divider: oklch(0.4 0.02 255 / 0.2);
+	/* 阅读语义 token (博客文章阅读面)：阅读背景由 BackgroundLayer (solid 模式) 统一绘制，
+	 * 正文/次级文字/卡片/边界/代码块由 reader.css 与文章组件引用，日夜随 .dark 切换 */
+	--reader-background: oklch(1 0 0);
+	--reader-foreground: oklch(0.232 0.004 286);
+	--reader-secondary: oklch(0.54 0.008 286);
+	--reader-caption: oklch(0.622 0.007 286);
+	--reader-card: oklch(0.971 0.003 286);
+	--reader-card-hover: oklch(0.932 0.007 286);
+	--reader-border: oklch(0.865 0.007 286);
+	--reader-interactive: oklch(0.232 0.004 286 / 0.04);
+	--reader-interactive-hover: oklch(0.232 0.004 286 / 0.08);
+	/* 代码块表面 (GitHub 浅色) */
+	--reader-code-background: oklch(1 0 0);
+	--reader-code-border: oklch(0.918 0.006 255.5);
+	--reader-code-border-inner: oklch(0.976 0.012 247.9);
+	--reader-code-text: oklch(0.278 0.012 248.2);
+	--reader-code-text-muted: oklch(0.551 0.019 251);
+	--reader-code-hover: oklch(0.963 0.005 247.9);
+	/* 代码语法调色板 (GitHub 浅色) */
+	--reader-syntax-keyword: oklch(0.588 0.193 20.5);
+	--reader-syntax-title: oklch(0.502 0.188 295);
+	--reader-syntax-attr: oklch(0.495 0.18 257.6);
+	--reader-syntax-string: oklch(0.311 0.101 255.9);
+	--reader-syntax-builtin: oklch(0.648 0.18 45.9);
+	--reader-syntax-comment: oklch(0.551 0.019 251);
+	--reader-syntax-name: oklch(0.546 0.144 147.3);
+	--reader-syntax-section: oklch(0.495 0.18 257.6);
+	--reader-syntax-bullet: oklch(0.485 0.093 90.5);
+	--reader-syntax-addition: oklch(0.546 0.144 147.3);
+	--reader-syntax-addition-bg: oklch(0.986 0.021 154.1);
+	--reader-syntax-deletion: oklch(0.496 0.183 24.2);
+	--reader-syntax-deletion-bg: oklch(0.963 0.019 9.3);
+	/* SectionHeader 图标底座 token：高浓度彩色材质 (surface) + 白色图形 (foreground)
+	 * + 图形内部切口色 (cutout，同色系深色，模拟负空间) + 有垂直位移的外投影 (shadow) */
+	--section-icon-foreground: oklch(0.985 0 0);
+	--section-icon-shadow: oklch(0.4 0.05 265 / 0.3);
+	--section-icon-surface-orange: oklch(0.7 0.2 48);
+	--section-icon-cutout-orange: oklch(0.62 0.21 42);
+	--section-icon-surface-green: oklch(0.7 0.2 150);
+	--section-icon-cutout-green: oklch(0.6 0.18 149);
+	--section-icon-surface-sky: oklch(0.68 0.16 237);
+	--section-icon-cutout-sky: oklch(0.58 0.15 242);
+	--section-icon-surface-teal: oklch(0.7 0.14 183);
+	--section-icon-cutout-teal: oklch(0.59 0.12 185);
+	--section-icon-surface-rose: oklch(0.64 0.24 16);
+	--section-icon-cutout-rose: oklch(0.56 0.24 18);
+	--section-icon-surface-purple: oklch(0.56 0.27 302);
+	--section-icon-cutout-purple: oklch(0.48 0.25 302);
 }
 
 .dark {
@@ -73,6 +190,126 @@
 	--sidebar-ring: oklch(0.551 0.027 264.364);
 	--theme-color: #ff8800;
 	--bg-overlay: oklch(0 0 0 / 0.4);
+	/* 玻璃材质 token：深灰/深蓝灰 tint，不复用日间白色；
+	 * 顶部高光透明度降低，底部暗边与投影稍强；tint 不透明度均低于 0.5，禁止不透明黑色覆盖整个材质 */
+	--glass-panel-tint-opacity: 0.4;
+	--glass-card-tint-opacity: 0.5;
+	--glass-chrome-tint-opacity: 0.46;
+	--glass-control-tint-opacity: 0.3;
+	--glass-edge-top-opacity: 0.16;
+	--glass-edge-left-opacity: 0.08;
+	--glass-edge-bottom-opacity: 0.24;
+	--glass-edge-right-opacity: 0.04;
+	--glass-edge-dark: rgb(0 0 0);
+	--glass-chrome-divider-opacity: 0.4;
+	--glass-panel-tint: oklch(0.24 0.02 265 / var(--glass-panel-tint-opacity));
+	--glass-card-tint: oklch(0.3 0.02 265 / var(--glass-card-tint-opacity));
+	--glass-chrome-tint: oklch(0.22 0.02 265 / var(--glass-chrome-tint-opacity));
+	--glass-control-tint: oklch(0.32 0.02 265 / var(--glass-control-tint-opacity));
+	--glass-bottom-tint: oklch(0.22 0.02 265 / min(calc(var(--glass-chrome-tint-opacity) + 0.08), 1));
+	--glass-highlight: oklch(1 0 0 / 0.08);
+	--glass-border: oklch(1 0 0 / 0.12);
+	--glass-shadow: oklch(0 0 0 / 0.35);
+	/* Header 工具栏控件 token (夜间)：半透明石墨材质，禁止不透明纯黑 */
+	--header-control-surface: oklch(0.3 0.02 265 / 0.5);
+	--header-control-surface-hover: oklch(0.36 0.02 265 / 0.55);
+	--header-control-surface-pressed: oklch(0.26 0.02 265 / 0.55);
+	--header-control-selected: oklch(1 0 0 / 0.14);
+	--header-control-edge: oklch(1 0 0 / 0.14);
+	--header-control-highlight: oklch(1 0 0 / 0.1);
+	--header-control-shadow: oklch(0 0 0 / 0.4);
+	--header-control-divider: oklch(1 0 0 / 0.16);
+	/* 移动端导航胶囊 (夜间)：中性深灰黑表面 (~72%)，边界与投影同步加深 */
+	--mobile-nav-surface: oklch(0.24 0.015 265 / 0.72);
+	--mobile-nav-edge: oklch(1 0 0 / 0.16);
+	--mobile-nav-shadow: oklch(0 0 0 / 0.4);
+	/* 阅读语义 token (夜间)：近黑阅读背景 + 浅色文字，语法调色板为 GitHub 深色 */
+	--reader-background: oklch(0.176 0.014 258.4);
+	--reader-foreground: oklch(0.857 0.014 248);
+	--reader-secondary: oklch(0.662 0.018 250.9);
+	--reader-caption: oklch(0.711 0.007 286);
+	--reader-card: oklch(0.267 0.015 256.8);
+	--reader-card-hover: oklch(0.33 0.015 252.3);
+	--reader-border: oklch(0.33 0.015 252.3);
+	--reader-interactive: oklch(1 0 0 / 0.06);
+	--reader-interactive-hover: oklch(1 0 0 / 0.12);
+	--reader-code-background: oklch(0.176 0.014 258.4);
+	--reader-code-border: oklch(0.33 0.015 252.3);
+	--reader-code-border-inner: oklch(0.267 0.015 256.8);
+	--reader-code-text: oklch(0.857 0.014 248);
+	--reader-code-text-muted: oklch(0.662 0.018 250.9);
+	--reader-code-hover: oklch(0.33 0.015 252.3);
+	--reader-syntax-keyword: oklch(0.734 0.163 25.8);
+	--reader-syntax-title: oklch(0.801 0.127 305.9);
+	--reader-syntax-attr: oklch(0.786 0.115 246.7);
+	--reader-syntax-string: oklch(0.856 0.077 244.1);
+	--reader-syntax-builtin: oklch(0.799 0.141 60.1);
+	--reader-syntax-comment: oklch(0.662 0.018 250.9);
+	--reader-syntax-name: oklch(0.842 0.164 145.8);
+	--reader-syntax-section: oklch(0.569 0.202 259.7);
+	--reader-syntax-bullet: oklch(0.857 0.133 90);
+	--reader-syntax-addition: oklch(0.907 0.112 146.3);
+	--reader-syntax-addition-bg: oklch(0.305 0.083 149.3);
+	--reader-syntax-deletion: oklch(0.922 0.04 27.5);
+	--reader-syntax-deletion-bg: oklch(0.328 0.127 25.9);
+	/* SectionHeader 图标底座 token (夜间)：surface 提高明度保证深色背景可辨，
+	 * cutout 同步加深保持与 surface 的从属关系，投影更重 */
+	--section-icon-foreground: oklch(0.985 0 0);
+	--section-icon-shadow: oklch(0 0 0 / 0.5);
+	--section-icon-surface-orange: oklch(0.74 0.18 56);
+	--section-icon-cutout-orange: oklch(0.68 0.19 50);
+	--section-icon-surface-green: oklch(0.77 0.19 152);
+	--section-icon-cutout-green: oklch(0.69 0.19 150);
+	--section-icon-surface-sky: oklch(0.74 0.15 233);
+	--section-icon-cutout-sky: oklch(0.66 0.15 237);
+	--section-icon-surface-teal: oklch(0.77 0.14 182);
+	--section-icon-cutout-teal: oklch(0.69 0.13 183);
+	--section-icon-surface-rose: oklch(0.7 0.19 13);
+	--section-icon-cutout-rose: oklch(0.62 0.21 15);
+	--section-icon-surface-purple: oklch(0.63 0.25 304);
+	--section-icon-cutout-purple: oklch(0.55 0.26 303);
+}
+
+/* 降低透明度偏好：提高 tint 不透明度，高成本模糊由组件侧关闭 */
+@media (prefers-reduced-transparency: reduce) {
+	:root {
+		--glass-panel-tint-opacity: 0.92;
+		--glass-card-tint-opacity: 0.94;
+		--glass-chrome-tint-opacity: 0.94;
+		--glass-control-tint-opacity: 0.9;
+		/* Header 控件模糊同步关闭 (见 components.css)，表面提升至接近不透明 */
+		--header-control-surface: oklch(0.95 0.005 255 / 0.94);
+		/* 导航胶囊关闭实时模糊 (组件侧)，表面提升至接近不透明并保留清晰边界 */
+		--mobile-nav-surface: oklch(0.96 0.006 255 / 0.94);
+		--mobile-nav-edge: oklch(0.4 0.02 255 / 0.4);
+	}
+	.dark {
+		--header-control-surface: oklch(0.28 0.02 265 / 0.94);
+		--mobile-nav-surface: oklch(0.24 0.015 265 / 0.94);
+		--mobile-nav-edge: oklch(1 0 0 / 0.3);
+	}
+}
+
+/* 滚动边缘渐隐尺寸：移动端 48~64px，桌面端 32~48px，替代原 96~128px 白色遮罩；
+ * --edge-fade-size 为兼容旧引用的统一尺寸，垂直方向拆分为上下独立尺寸 (CSS Mask，只改变内容透明度) */
+:root {
+	--edge-fade-size: 3.5rem;
+	--edge-fade-top-size: 20px;
+	--edge-fade-bottom-size: 28px;
+}
+
+@media (min-width: 768px) {
+	:root {
+		--edge-fade-size: 2.5rem;
+	}
+}
+
+/* 桌面端 Header：高度 64px，Header-Content 间距 16px (双行扩展仅存在于移动端) */
+@media (min-width: 1024px) {
+	:root {
+		--header-height: 64px;
+		--header-content-gap: 16px;
+	}
 }
 
 @theme inline {

@@ -66,7 +66,7 @@ web_modules/
 .yarn-integrity
 
 # dotenv environment variable files
-# .env
+.env
 .env.*
 !.env.example
 
@@ -142,9 +142,46 @@ vite.config.ts.timestamp-*
 .vscode
 
 # Static files
-# static (templates are kept in main, personal files in workspace)
-# static
 node_modules
 .agent
 .agents
 cf-analytics-worker/.wrangler
+AGENTS.md
+
+# 本地真实配置。仓库只允许提交显式 example/sample 文件。
+config/*
+!config/*.example.yaml
+!config/*.sample.yaml
+
+# 个人内容、构建输入快照与临时发布目录。
+.fuyao/
+private-content/
+content-private/
+build-inputs/
+release-staging/
+releases/
+static/data/**
+static/posts/**
+static/albums/**
+static/blog/rss.xml
+static/sitemap.xml
+static/wp-content/**
+
+# 仓库演示内容只允许位于 fixtures/content；static 只保留公开静态资产。
+
+# 私有附件、原图、缩略图与付款码，不论位于何处均不跟踪。
+**/photos/**
+**/thumbnails/**
+**/payments/**
+**/payment-codes/**
+**/private-attachments/**
+*.private.yaml
+*.private.yml
+
+# 保留匿名 fixture 的空媒体目录结构。
+!fixtures/content/albums/photos/
+!fixtures/content/albums/photos/.gitkeep
+!fixtures/content/albums/thumbnails/
+!fixtures/content/albums/thumbnails/.gitkeep
+
+# 匿名 fixture 必须位于 fixtures/，并通过隐私扫描后才可提交。
