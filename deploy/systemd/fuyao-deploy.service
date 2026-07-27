@@ -1,0 +1,28 @@
+[Unit]
+Description=Fuyao atomic static-site deployment
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=fuyao
+Group=fuyao
+WorkingDirectory=/srv/fuyao
+Environment=FUYAO_CONFIG_ROOT=/srv/fuyao/shared/config
+Environment=FUYAO_CONTENT_ROOT=/srv/fuyao/shared/content
+Environment=FUYAO_SHARED_ROOT=/srv/fuyao/shared
+Environment=FUYAO_RELEASE_ROOT=/srv/fuyao/releases
+Environment=FUYAO_CURRENT_LINK=/srv/fuyao/current
+Environment=FUYAO_DEPLOY_LOCK=/srv/fuyao/deploy.lock
+Environment=FUYAO_SECRETS_FILE=/srv/fuyao/shared/secrets/secrets.env
+EnvironmentFile=/srv/fuyao/shared/secrets/secrets.env
+ExecStart=/usr/bin/node /usr/local/lib/fuyao/deploy.js
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadOnlyPaths=/srv/fuyao/shared
+ReadWritePaths=/srv/fuyao/releases /srv/fuyao/current /srv/fuyao/deploy.lock
+
+[Install]
+WantedBy=multi-user.target

@@ -1,189 +1,93 @@
 /* Highlight.js 语法高亮主题样式 (基于 GitHub 主题) */
+/* 全部颜色引用 theme.css 的 --reader-code-* / --reader-syntax-* 阅读语义 token，
+ * 日夜随 .dark 自动切换，本文件不再保留固定色值 */
 
-/* --- 浅色模式 --- */
-:root .markdown-body .code-wrapper {
-	background-color: #ffffff;
-	color: #24292e;
-	--code-border: #e1e4e8;
-	--code-border-inner: #f1f8ff;
-	--code-text: #24292e;
-	--code-text-muted: #6a737d;
-	--code-hover: #f0f3f6;
-}
-
-:root .markdown-body .code-wrapper .hljs-doctag,
-:root .markdown-body .code-wrapper .hljs-keyword,
-:root .markdown-body .code-wrapper .hljs-meta .hljs-keyword,
-:root .markdown-body .code-wrapper .hljs-template-tag,
-:root .markdown-body .code-wrapper .hljs-template-variable,
-:root .markdown-body .code-wrapper .hljs-type,
-:root .markdown-body .code-wrapper .hljs-variable.language_ {
-	color: #d73a49;
-}
-
-:root .markdown-body .code-wrapper .hljs-title,
-:root .markdown-body .code-wrapper .hljs-title.class_,
-:root .markdown-body .code-wrapper .hljs-title.class_.inherited__,
-:root .markdown-body .code-wrapper .hljs-title.function_ {
-	color: #6f42c1;
-}
-
-:root .markdown-body .code-wrapper .hljs-attr,
-:root .markdown-body .code-wrapper .hljs-attribute,
-:root .markdown-body .code-wrapper .hljs-literal,
-:root .markdown-body .code-wrapper .hljs-meta,
-:root .markdown-body .code-wrapper .hljs-number,
-:root .markdown-body .code-wrapper .hljs-operator,
-:root .markdown-body .code-wrapper .hljs-variable,
-:root .markdown-body .code-wrapper .hljs-selector-attr,
-:root .markdown-body .code-wrapper .hljs-selector-class,
-:root .markdown-body .code-wrapper .hljs-selector-id {
-	color: #005cc5;
-}
-
-:root .markdown-body .code-wrapper .hljs-regexp,
-:root .markdown-body .code-wrapper .hljs-string,
-:root .markdown-body .code-wrapper .hljs-meta .hljs-string {
-	color: #032f62;
-}
-
-:root .markdown-body .code-wrapper .hljs-built_in,
-:root .markdown-body .code-wrapper .hljs-symbol {
-	color: #e36209;
-}
-
-:root .markdown-body .code-wrapper .hljs-comment,
-:root .markdown-body .code-wrapper .hljs-code,
-:root .markdown-body .code-wrapper .hljs-formula {
-	color: #6a737d;
-}
-
-:root .markdown-body .code-wrapper .hljs-name,
-:root .markdown-body .code-wrapper .hljs-quote,
-:root .markdown-body .code-wrapper .hljs-selector-tag,
-:root .markdown-body .code-wrapper .hljs-selector-pseudo {
-	color: #22863a;
-}
-
-:root .markdown-body .code-wrapper .hljs-subst {
-	color: #24292e;
-}
-:root .markdown-body .code-wrapper .hljs-section {
-	color: #005cc5;
-	font-weight: bold;
-}
-:root .markdown-body .code-wrapper .hljs-bullet {
-	color: #735c0f;
-}
-:root .markdown-body .code-wrapper .hljs-emphasis {
-	color: #24292e;
-	font-style: italic;
-}
-:root .markdown-body .code-wrapper .hljs-strong {
-	color: #24292e;
-	font-weight: bold;
-}
-:root .markdown-body .code-wrapper .hljs-addition {
-	color: #22863a;
-	background-color: #f0fff4;
-}
-:root .markdown-body .code-wrapper .hljs-deletion {
-	color: #b31d28;
-	background-color: #ffeef0;
-}
-
-/* --- 深色模式 --- */
-.dark .markdown-body .code-wrapper {
-	background-color: #0d1117;
-	color: #c9d1d9;
-	--code-border: #30363d;
-	--code-border-inner: #21262d;
-	--code-text: #c9d1d9;
-	--code-text-muted: #8b949e;
-	--code-hover: #30363d;
+.markdown-body .code-wrapper {
+	background-color: var(--reader-code-background);
+	color: var(--reader-code-text);
 }
 
 .dark .markdown-body .code-wrapper img {
 	box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5); /* 深色模式下增强阴影 */
 }
 
-.dark .markdown-body .code-wrapper .hljs-doctag,
-.dark .markdown-body .code-wrapper .hljs-keyword,
-.dark .markdown-body .code-wrapper .hljs-meta .hljs-keyword,
-.dark .markdown-body .code-wrapper .hljs-template-tag,
-.dark .markdown-body .code-wrapper .hljs-template-variable,
-.dark .markdown-body .code-wrapper .hljs-type,
-.dark .markdown-body .code-wrapper .hljs-variable.language_ {
-	color: #ff7b72;
+.markdown-body .code-wrapper .hljs-doctag,
+.markdown-body .code-wrapper .hljs-keyword,
+.markdown-body .code-wrapper .hljs-meta .hljs-keyword,
+.markdown-body .code-wrapper .hljs-template-tag,
+.markdown-body .code-wrapper .hljs-template-variable,
+.markdown-body .code-wrapper .hljs-type,
+.markdown-body .code-wrapper .hljs-variable.language_ {
+	color: var(--reader-syntax-keyword);
 }
 
-.dark .markdown-body .code-wrapper .hljs-title,
-.dark .markdown-body .code-wrapper .hljs-title.class_,
-.dark .markdown-body .code-wrapper .hljs-title.class_.inherited__,
-.dark .markdown-body .code-wrapper .hljs-title.function_ {
-	color: #d2a8ff;
+.markdown-body .code-wrapper .hljs-title,
+.markdown-body .code-wrapper .hljs-title.class_,
+.markdown-body .code-wrapper .hljs-title.class_.inherited__,
+.markdown-body .code-wrapper .hljs-title.function_ {
+	color: var(--reader-syntax-title);
 }
 
-.dark .markdown-body .code-wrapper .hljs-attr,
-.dark .markdown-body .code-wrapper .hljs-attribute,
-.dark .markdown-body .code-wrapper .hljs-literal,
-.dark .markdown-body .code-wrapper .hljs-meta,
-.dark .markdown-body .code-wrapper .hljs-number,
-.dark .markdown-body .code-wrapper .hljs-operator,
-.dark .markdown-body .code-wrapper .hljs-variable,
-.dark .markdown-body .code-wrapper .hljs-selector-attr,
-.dark .markdown-body .code-wrapper .hljs-selector-class,
-.dark .markdown-body .code-wrapper .hljs-selector-id {
-	color: #79c0ff;
+.markdown-body .code-wrapper .hljs-attr,
+.markdown-body .code-wrapper .hljs-attribute,
+.markdown-body .code-wrapper .hljs-literal,
+.markdown-body .code-wrapper .hljs-meta,
+.markdown-body .code-wrapper .hljs-number,
+.markdown-body .code-wrapper .hljs-operator,
+.markdown-body .code-wrapper .hljs-variable,
+.markdown-body .code-wrapper .hljs-selector-attr,
+.markdown-body .code-wrapper .hljs-selector-class,
+.markdown-body .code-wrapper .hljs-selector-id {
+	color: var(--reader-syntax-attr);
 }
 
-.dark .markdown-body .code-wrapper .hljs-regexp,
-.dark .markdown-body .code-wrapper .hljs-string,
-.dark .markdown-body .code-wrapper .hljs-meta .hljs-string {
-	color: #a5d6ff;
+.markdown-body .code-wrapper .hljs-regexp,
+.markdown-body .code-wrapper .hljs-string,
+.markdown-body .code-wrapper .hljs-meta .hljs-string {
+	color: var(--reader-syntax-string);
 }
 
-.dark .markdown-body .code-wrapper .hljs-built_in,
-.dark .markdown-body .code-wrapper .hljs-symbol {
-	color: #ffa657;
+.markdown-body .code-wrapper .hljs-built_in,
+.markdown-body .code-wrapper .hljs-symbol {
+	color: var(--reader-syntax-builtin);
 }
 
-.dark .markdown-body .code-wrapper .hljs-comment,
-.dark .markdown-body .code-wrapper .hljs-code,
-.dark .markdown-body .code-wrapper .hljs-formula {
-	color: #8b949e;
+.markdown-body .code-wrapper .hljs-comment,
+.markdown-body .code-wrapper .hljs-code,
+.markdown-body .code-wrapper .hljs-formula {
+	color: var(--reader-syntax-comment);
 }
 
-.dark .markdown-body .code-wrapper .hljs-name,
-.dark .markdown-body .code-wrapper .hljs-quote,
-.dark .markdown-body .code-wrapper .hljs-selector-tag,
-.dark .markdown-body .code-wrapper .hljs-selector-pseudo {
-	color: #7ee787;
+.markdown-body .code-wrapper .hljs-name,
+.markdown-body .code-wrapper .hljs-quote,
+.markdown-body .code-wrapper .hljs-selector-tag,
+.markdown-body .code-wrapper .hljs-selector-pseudo {
+	color: var(--reader-syntax-name);
 }
 
-.dark .markdown-body .code-wrapper .hljs-subst {
-	color: #c9d1d9;
+.markdown-body .code-wrapper .hljs-subst {
+	color: var(--reader-code-text);
 }
-.dark .markdown-body .code-wrapper .hljs-section {
-	color: #1f6feb;
+.markdown-body .code-wrapper .hljs-section {
+	color: var(--reader-syntax-section);
 	font-weight: bold;
 }
-.dark .markdown-body .code-wrapper .hljs-bullet {
-	color: #f2cc60;
+.markdown-body .code-wrapper .hljs-bullet {
+	color: var(--reader-syntax-bullet);
 }
-.dark .markdown-body .code-wrapper .hljs-emphasis {
-	color: #c9d1d9;
+.markdown-body .code-wrapper .hljs-emphasis {
+	color: var(--reader-code-text);
 	font-style: italic;
 }
-.dark .markdown-body .code-wrapper .hljs-strong {
-	color: #c9d1d9;
+.markdown-body .code-wrapper .hljs-strong {
+	color: var(--reader-code-text);
 	font-weight: bold;
 }
-.dark .markdown-body .code-wrapper .hljs-addition {
-	color: #aff5b4;
-	background-color: #033a16;
+.markdown-body .code-wrapper .hljs-addition {
+	color: var(--reader-syntax-addition);
+	background-color: var(--reader-syntax-addition-bg);
 }
-.dark .markdown-body .code-wrapper .hljs-deletion {
-	color: #ffdcd7;
-	background-color: #67060c;
+.markdown-body .code-wrapper .hljs-deletion {
+	color: var(--reader-syntax-deletion);
+	background-color: var(--reader-syntax-deletion-bg);
 }

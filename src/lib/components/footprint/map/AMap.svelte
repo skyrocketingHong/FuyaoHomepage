@@ -6,7 +6,7 @@
 	 *
 	 * 功能特性：
 	 * 1. 自动注入安全密钥 (SecurityJSCode) 并加载脚本。
-	 * 2. 响应式渲染标记点 (Markers)，支持城市和景点不同样式。
+	 * 2. 使用高德官方 MarkerCluster 响应式渲染足迹点并按距离聚合。
 	 * 3. 视图自适应：考虑侧边栏遮挡，自动计算可视中心。
 	 * 4. 平滑过渡：支持长距离跳转的两段式动画和短距离平滑移动。
 	 * 5. 版权提取：提取地图 Logo 和版权信息供外部展示。
@@ -15,9 +15,20 @@
 	import { browser } from '$app/environment';
 	import { themeState } from '$lib/stores/app.svelte';
 	import { loadAMapScript } from './core/loader';
-	import { createMarker } from './core/markers';
+	import {
+		createFootprintClusterContent,
+		createFootprintMarkerContent,
+		getPositionKey
+	} from './core/markers';
 	import { extractCopyright } from './core/copyright';
-	import type { CopyrightData, MarkerConfig, AMapInstance, AMapNamespace } from './types';
+	import type {
+		CopyrightData,
+		MarkerConfig,
+		AMapClusterPoint,
+		AMapInstance,
+		AMapMarkerCluster,
+		AMapNamespace
+	} from './types';
 	import { MapViewController } from './core/viewController.svelte';
 	import { MapInfoWindowController } from './core/infoWindowController.svelte';
 	import { getOffsetCenter } from './core/view';
@@ -59,6 +70,8 @@
 	let mapContainer: HTMLDivElement;
 	let mapInstance: AMapInstance | null = null; // 保持非响应式，避免 Proxy 问题
 	let mapReady = $state(false); // 引入明确的就绪状态用于 Effect 依赖
+	let markerCluster: AMapMarkerCluster | null = null;
+	let markerRenderVersion = 0;
 
 	// 控制器实例
 	let viewController = new MapViewController();
@@ -68,7 +81,7 @@
 	);
 
 	// 派生当前地图样式 (响应主题变化)
-	let mapStyle = $derived(themeState.isDark ? 'amap://styles/grey' : 'amap://styles/macaron');
+	let mapStyle = $derived(themeState.isDark ? 'amap://styles/grey' : 'amap://styles/whitesmoke');
 
 	// ==========================================
 	// 生命周期
@@ -83,10 +96,7 @@
 			// 2. 初始化地图实例
 			initMap();
 
-			// 3. 初始化标记点
-			updateMarkers(markers);
-
-			// 4. 提取版权信息
+			// 3. 提取版权信息
 			const copyrightData = await extractCopyright(mapContainer);
 			onCopyrightLoad(copyrightData);
 		} catch (e) {
@@ -98,6 +108,9 @@
 		// 销毁控制器
 		viewController.destroy();
 		infoWindowController.destroy();
+		markerRenderVersion += 1;
+		markerCluster?.setMap(null);
+		markerCluster = null;
 
 		if (mapInstance) {
 			mapInstance.destroy();
@@ -114,8 +127,6 @@
 	$effect(() => {
 		if (mapReady && mapInstance && mapStyle) {
 			mapInstance.setMapStyle(mapStyle);
-			// 主题变化时重新渲染 Markers 以更新颜色
-			updateMarkers(markers);
 		}
 	});
 
@@ -123,8 +134,9 @@
 	$effect(() => {
 		// 注意：这里的 markers 依赖已经在 updateMarkers 内部使用
 		// 但为了确保响应式触发，我们需要明确调用
+		const isDark = themeState.isDark;
 		if (mapReady && mapInstance && markers) {
-			updateMarkers(markers);
+			updateMarkers(markers, isDark);
 		}
 	});
 
@@ -171,7 +183,10 @@
 			zoom: zoom,
 			center: initialCenter,
 			mapStyle: mapStyle,
-			zooms: zooms
+			zooms: zooms,
+			showLabel: true,
+			animateEnable: true,
+			resizeEnable: true
 		});
 
 		// 注入 mapInstance 到控制器
@@ -185,23 +200,51 @@
 	}
 
 	/**
-	 * 更新地图标记点
+	 * 使用高德官方 MarkerCluster 更新地图标记点。
+	 *
+	 * @param newMarkers - 足迹点数据
+	 * @param isDark - 是否使用深色标记样式
 	 */
-	function updateMarkers(newMarkers: MarkerConfig[]) {
+	function updateMarkers(newMarkers: MarkerConfig[], isDark: boolean) {
 		if (!mapInstance) return;
-		mapInstance.clearMap();
+		const currentMap = mapInstance;
+		const renderVersion = ++markerRenderVersion;
+		markerCluster?.setMap(null);
+		markerCluster = null;
 
-		newMarkers.forEach((markerData) => {
-			const marker = createMarker(markerData, themeState.isDark);
+		if (newMarkers.length === 0) return;
+		const markerLookup = new Map(
+			newMarkers.map((place) => [getPositionKey(place.position), place] as const)
+		);
+		const points: AMapClusterPoint[] = newMarkers.map((place) => ({
+			lnglat: place.position,
+			weight: place.type === 'city' ? 2 : 1
+		}));
 
-			// 绑定点击事件
-			marker.on('click', () => {
-				onMarkerClick(markerData);
+		currentMap.plugin(['AMap.MarkerCluster'], () => {
+			if (renderVersion !== markerRenderVersion || !mapInstance) return;
+			const AMap = (window as unknown as Window & { AMap: AMapNamespace }).AMap;
+			markerCluster = new AMap.MarkerCluster(currentMap, points, {
+				gridSize: 68,
+				maxZoom: 17,
+				averageCenter: true,
+				renderClusterMarker: ({ marker, count = 0 }) => {
+					marker.setContent(createFootprintClusterContent(count));
+					marker.setOffset(new AMap.Pixel(-23, -23));
+				},
+				renderMarker: ({ marker }) => {
+					const position = marker.getPosition();
+					if (!position) return;
+					const place = markerLookup.get(getPositionKey([position.getLng(), position.getLat()]));
+					if (!place) return;
+
+					marker.setContent(createFootprintMarkerContent(place, isDark));
+					marker.setOffset(new AMap.Pixel(-18, -18));
+					marker.setTitle(place.title ?? '');
+					marker.setExtData(place);
+					marker.on('click', () => onMarkerClick(place));
+				}
 			});
-
-			if (mapInstance) {
-				mapInstance.add(marker);
-			}
 		});
 	}
 </script>

@@ -6,6 +6,7 @@
 		"copied": "已复制",
 		"copy": "复制",
 		"copy_link": "复制链接",
+		"close": "关闭",
 		"site_name": "{{siteName}}",
 		"none": "无",
 		"status": {
@@ -21,6 +22,7 @@
 		"footprint": "足迹",
 		"pay": "打钱",
 		"friends": "友链",
+		"album": "相册",
 		"list": "列表"
 	},
 	"layout": {
@@ -28,7 +30,6 @@
 			"navigation": "导航"
 		},
 		"bottom_info": {
-			"background_source": "背景来源",
 			"service_status": "服务状态",
 			"deployed_on": "部署于阿里云"
 		},
@@ -43,6 +44,12 @@
 			"lang": {
 				"zh": "简体中文",
 				"en": "English"
+			},
+			"background": {
+				"label": "背景模式",
+				"mosaic": "马赛克",
+				"image": "壁纸",
+				"flowing": "流动"
 			}
 		}
 	},
@@ -112,6 +119,10 @@
 		"actions": {
 			"generate_data": "生成数据"
 		},
+		"map": {
+			"location_count": "{{count}} 个地点",
+			"reset_view": "返回足迹总览"
+		},
 		"list_title": "足迹列表",
 		"generator": {
 			"title": "生成足迹数据",
@@ -134,6 +145,7 @@
 		"iframe_loading": "的博客",
 		"renderer_load_error": "渲染器加载失败",
 		"render_error": "渲染内容出错: {{message}}",
+		"scrollable_table": "可横向滚动表格",
 		"toc": "目录",
 		"contents": "目录",
 		"loading_error": "加载文章失败。",
@@ -147,8 +159,11 @@
 		"more_stories": "更多文章",
 		"load_more": "加载更多",
 		"no_stories": "暂无文章",
+		"article_index": "文章索引",
+		"article_count": "{{count}} 篇文章",
 		"category_description": "分类 {{category}} 下的文章",
 		"no_posts_in_category": "该分类下暂无文章。",
+		"no_tags": "暂无标签",
 		"view_all": "查看所有文章",
 		"unknown_year": "年份未知",
 		"back_to_list": "返回",
@@ -164,6 +179,13 @@
 		"search": {
 			"placeholder": "搜索文章...",
 			"no_results": "未找到关于 \"{{query}}\" 的结果",
+			"result_count": "{{count}} 条结果",
+			"result_count_one": "1 条结果",
+			"load_error": "搜索索引加载失败",
+			"load_error_hint": "请刷新页面后重试。",
+			"try_another_keyword": "请尝试其他关键词。",
+			"query_label": "搜索关键词",
+			"retry": "重试",
 			"title": "搜索",
 			"open": "搜索",
 			"close": "关闭"
@@ -180,10 +202,79 @@
 			"avatar_alt": "站长头像"
 		}
 	},
+	"album": {
+		"title": "时光相册",
+		"no_photos": "暂无照片",
+		"upload_hint": "请通过内容发布流程导入照片并重新生成相册索引",
+		"index_status": "相册索引",
+		"no_filter_results": "未找到照片",
+		"no_filter_results_hint": "当前筛选条件下没有照片，请调整筛选条件。",
+		"filter_status": "筛选结果",
+		"photo_count": "{{count}} 张照片",
+		"photo_count_one": "1 张照片",
+		"has_location": "有定位",
+		"month_label": "{{year}}年{{month}}月",
+		"date": "日期",
+		"device": "设备",
+		"lens": "镜头",
+		"aperture": "光圈",
+		"focal_length": "焦距",
+		"focal_length_35mm": "等效焦距",
+		"exposure_time": "快门",
+		"exposure_comp": "曝光补偿",
+		"exposure_program": "曝光程序",
+		"metering_mode": "测光模式",
+		"white_balance": "白平衡",
+		"flash": "闪光灯",
+		"color_space": "色彩空间",
+		"color_profile": "色彩配置",
+		"gps_direction": "拍摄方向",
+		"dimensions": "尺寸",
+		"copy_link": "链接",
+		"copied": "已复制",
+		"colorSpace_values": {
+			"1": "sRGB",
+			"65535": "未校准"
+		},
+		"exposure_program_values": {
+			"0": "未定义",
+			"1": "手动",
+			"2": "程序自动",
+			"3": "光圈优先",
+			"4": "快门优先",
+			"5": "创意模式",
+			"6": "运动模式",
+			"7": "人像模式",
+			"8": "风景模式"
+		},
+		"metering_mode_values": {
+			"0": "未知",
+			"1": "平均测光",
+			"2": "中央重点测光",
+			"3": "点测光",
+			"4": "多点测光",
+			"5": "评价测光",
+			"6": "局部测光"
+		},
+		"white_balance_values": {
+			"0": "自动",
+			"1": "手动"
+		},
+		"flash_values": {
+			"0": "未闪光",
+			"1": "闪光",
+			"5": "闪光（无回光）",
+			"7": "闪光（有回光）",
+			"16": "未闪光（强制）",
+			"24": "未闪光（自动）",
+			"25": "闪光（自动）"
+		}
+	},
 	"error": {
 		"not_found_title": "页面未找到",
 		"something_wrong_title": "出现了一些问题",
 		"not_found_desc": "抱歉，我们无法找到您请求的资源",
+		"something_wrong_desc": "请求处理失败，请稍后重试",
 		"request_path": "请求路径"
 	}
 }

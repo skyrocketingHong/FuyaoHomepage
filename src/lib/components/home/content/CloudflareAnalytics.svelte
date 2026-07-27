@@ -6,7 +6,7 @@
 	 * 左侧展示数字概览，右侧展示迷你折线图。
 	 */
 	import { onMount } from 'svelte';
-	import { BarChart3, Eye, Users, Globe } from 'lucide-svelte';
+	import { Eye, Users, Globe } from 'lucide-svelte';
 	import SectionHeader from '$lib/components/home/content/common/SectionHeader.svelte';
 	import ContentCard from '$lib/components/home/content/common/ContentCard.svelte';
 	import { t, locale } from '$lib/i18n/store';
@@ -14,6 +14,7 @@
 	import Skeleton from '$lib/components/ui/feedback/Skeleton.svelte';
 
 	import { formatDate } from '$lib/utils/datetime/date';
+	import { publicConfig } from '$lib/config/public';
 
 	/** 单日数据 */
 	interface DayData {
@@ -33,8 +34,8 @@
 		};
 	}
 
-	/** CF Worker 端点 URL */
-	const WORKER_URL = import.meta.env.VITE_CF_ANALYTICS_WORKER_URL;
+	/** CF Worker 端点 URL；Worker 的 Token 与 Zone ID 仅保存在 Worker Secret。 */
+	const WORKER_URL = publicConfig.services.analyticsProxyUrl;
 
 	let data = $state<AnalyticsData | null>(null);
 	let loading = $state(true);
@@ -42,7 +43,7 @@
 
 	async function fetchAnalytics() {
 		if (!WORKER_URL) {
-			error = '未配置 VITE_CF_ANALYTICS_WORKER_URL';
+			error = '未配置统计代理端点';
 			loading = false;
 			return;
 		}
@@ -122,9 +123,7 @@
 
 <div class="flex h-full flex-col pt-4">
 	<SectionHeader
-		icon={BarChart3}
-		iconBgColor="bg-sky-500/20"
-		iconColor="text-sky-400"
+		icon="analytics"
 		titleKey="home.hero.analytics.title"
 		subtitleKey="home.hero.analytics.powered_by"
 		rightKey="home.hero.analytics.past_days"
@@ -245,7 +244,7 @@
 						<div
 							class="pointer-events-none absolute right-0 bottom-0.5 left-0 flex w-full justify-between px-0.5"
 						>
-							{#each data.days as day, i}
+							{#each data.days as day (day.date)}
 								<span class="text-[9px] leading-none text-muted-foreground/60">
 									{formatDate(day.date, $locale, 'MM-DD')}
 								</span>

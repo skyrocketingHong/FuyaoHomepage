@@ -3,6 +3,8 @@
 	 * 博客文章头部组件
 	 *
 	 * 展示文章标题、发布/更新时间、分类标签、摘要及标签贴纸。
+	 * 渲染于透明阅读容器 (.article-surface) 内，文字颜色使用 --reader-* 阅读语义
+	 * token，随日夜模式切换；阅读背景由 BackgroundLayer 统一绘制。
 	 *
 	 * @prop title - 文章标题
 	 * @prop date - 发布日期
@@ -19,6 +21,7 @@
 	import { getBlogListUrl } from '$lib/utils/domain/blog';
 	import TagBadge from '../common/TagBadge.svelte';
 	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import LazyImage from '$lib/components/ui/display/LazyImage.svelte';
 
 	let {
@@ -67,9 +70,9 @@
 			<CategoryBadge
 				{categories}
 				postCategories={categories.map((c) => c.slug)}
-				class="text-[12px] font-bold tracking-wider text-[#6e6e73] uppercase dark:text-neutral-400"
+				class="text-[12px] font-bold tracking-wider text-(--reader-secondary) uppercase"
 			/>
-			<div class="text-[14px] font-semibold text-[#6e6e73] dark:text-neutral-400">
+			<div class="text-[14px] font-semibold text-(--reader-secondary)">
 				<Crossfade key={'header-date-' + $locale} class="flex flex-col items-start gap-1">
 					<span class="flex items-center gap-1.5">
 						<span class="opacity-80">{$t('blog.published_at')}</span>
@@ -77,7 +80,7 @@
 						<span class="font-normal opacity-40">({relativeDate})</span>
 					</span>
 					{#if hasUpdated}
-						<span class="flex items-center gap-1.5 text-orange-500/80 dark:text-orange-400/70">
+						<span class="flex items-center gap-1.5 text-orange-500/80">
 							<span class="opacity-80">{$t('blog.updated_at')}</span>
 							<span>{formattedLastmod}</span>
 							<span class="font-normal opacity-60">({relativeLastmod})</span>
@@ -88,25 +91,26 @@
 		</div>
 
 		<h1
-			class="mb-0 text-[32px] leading-[36px] font-bold tracking-tight text-balance text-[#1d1d1f] md:text-[40px] md:leading-[44px] lg:text-[48px] lg:leading-[52px] dark:text-[#f5f5f7]"
+			class="mb-0 text-[32px] leading-[36px] font-bold tracking-tight text-balance text-(--reader-foreground) md:text-[40px] md:leading-[44px] lg:text-[48px] lg:leading-[52px]"
 		>
 			{title}
 		</h1>
 
 		{#if subtitle}
 			<p
-				class="mt-5 text-[21px] leading-[25px] font-medium text-[#1d1d1f] lg:text-[24px] lg:leading-[28px] dark:text-[#f5f5f7]"
+				class="mt-5 text-[21px] leading-[25px] font-medium text-(--reader-foreground) lg:text-[24px] lg:leading-[28px]"
 			>
 				{subtitle}
 			</p>
 		{/if}
 
 		{#if tags && tags.length > 0}
-			<div
-				class="mt-4 flex flex-wrap gap-2 text-[12px] font-medium text-[#6e6e73] dark:text-neutral-400"
-			>
-				{#each tags as tag}
-					<TagBadge {tag} onclick={(t) => goto(getBlogListUrl('All', t))} />
+			<div class="mt-4 flex flex-wrap gap-2 text-[12px] font-medium text-(--reader-secondary)">
+				{#each tags as tag (tag)}
+					<TagBadge
+						{tag}
+						onclick={(selectedTag) => goto(resolve(getBlogListUrl('All', selectedTag)))}
+					/>
 				{/each}
 			</div>
 		{/if}
@@ -114,7 +118,7 @@
 		<div class="mt-4 flex items-center gap-3">
 			<div class="relative">
 				<button
-					class="p-1 text-[#6e6e73] transition-colors hover:text-[#1d1d1f] dark:text-neutral-400 dark:hover:text-[#f5f5f7]"
+					class="p-1 text-(--reader-secondary) transition-colors hover:text-(--reader-foreground)"
 					aria-label={$t('common.copy_link')}
 					onclick={copyLink}
 				>
@@ -124,7 +128,7 @@
 					<span
 						class="absolute -top-8 left-1/2 -translate-x-1/2 animate-in rounded bg-foreground px-2 py-1 text-xs whitespace-nowrap text-background shadow-sm fade-in zoom-in"
 					>
-						<Crossfade key={$locale} class="inline-grid"
+						<Crossfade key={$locale} inline class="inline-grid"
 							><span>{$t('common.copied')}</span></Crossfade
 						>
 					</span>

@@ -37,5 +37,30 @@ export default defineConfig(
 				svelteConfig
 			}
 		}
+	},
+	{
+		files: [
+			'src/lib/components/albums/PhotoLightbox.svelte',
+			'src/lib/components/blog/viewer/LinkPreview.svelte',
+			'src/lib/components/friends/FriendCard.svelte',
+			'src/lib/components/friends/ProfileCard.svelte',
+			'src/lib/components/layout/bottom-info/CopyrightText.svelte',
+			'src/lib/components/layout/bottom-info/ServiceStatus.svelte',
+			'src/lib/components/pay/QRCodeCard.svelte'
+		],
+		rules: {
+			// These components intentionally render validated external URLs.
+			'svelte/no-navigation-without-resolve': 'off'
+		}
+	},
+	{
+		files: [
+			'src/lib/components/blog/viewer/MarkdownRenderer.svelte',
+			'src/lib/components/seo/SeoHead.svelte'
+		],
+		rules: {
+			// HTML is produced by the allowlisted Markdown pipeline or escaped JSON-LD serializer.
+			'svelte/no-at-html-tags': 'off'
+		}
 	}
 );

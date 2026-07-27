@@ -1,0 +1,37 @@
+schemaVersion: 1
+site:
+  name: Fuyao Homepage 演示版本
+  url: https://example.com
+  startDate: '0001-01-01'
+  startYear: 2024
+  defaultLocale: zh-CN
+profile:
+  name: skyrocketingHong
+  birthDate: '0001-01-01'
+  avatarUrl: https://github.com/skyrocketingHong.png
+  roles:
+    zh-CN: 软件工程师
+    en-US: Software Engineer
+  quotes:
+    zh-CN: 保持饥饿，保持愚蠢。
+    en-US: Stay hungry, stay foolish.
+repository:
+  name: FuyaoHomepage
+  url: https://github.com/skyrocketingHong/FuyaoHomepage
+  owner: skyrocketingHong
+seo:
+  author: skyrocketingHong
+  description: Fuyao Homepage 演示版本
+  keywords:
+    - SvelteKit
+    - TailwindCSS
+    - TypeScript
+    - 个人主页
+  twitterId: example_twitter
+services:
+  wallpaper:
+    defaultUrl: https://picsum.photos/seed/fuyao-homepage/1920/1080
+    apiUrl: https://api.example.com/wallpaper
+  amap:
+    browserKey: your_amap_key_here
+    securityCode: your_amap_security_code_here

@@ -47,13 +47,17 @@
 			data-id={item.dataId || item.id}
 		>
 			<span class="flex items-center justify-center">
-				{#if isOpen}
+				{#if item.icon}
+					<item.icon class={item.iconClass || 'sidebar-icon'} />
+				{:else if isOpen}
 					<FolderOpen class="sidebar-icon" />
 				{:else}
 					<Folder class="sidebar-icon" />
 				{/if}
 			</span>
-			<Crossfade key={item.label} class="inline-grid truncate"><span>{item.label}</span></Crossfade>
+			<Crossfade key={item.label} inline class="inline-grid truncate"
+				><span>{item.label}</span></Crossfade
+			>
 		</button>
 
 		{#if isOpen}
@@ -61,10 +65,8 @@
 				transition:slide|local={{ duration: 200 }}
 				class="ml-[15px] flex flex-col gap-0.5 border-l border-border/40"
 			>
-				{#each item.items as child}
-					{#key child}
-						<SidebarTree item={child} depth={depth + 1} />
-					{/key}
+				{#each item.items as child (child.id ?? child.label)}
+					<SidebarTree item={child} depth={depth + 1} />
 				{/each}
 			</div>
 		{/if}

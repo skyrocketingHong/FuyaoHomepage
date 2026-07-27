@@ -6,7 +6,7 @@
 	 * 支持自动加载状态、骨架屏占位及响应式网格布局。
 	 */
 	import { onMount } from 'svelte';
-	import { Github, Star, GitFork, ArrowRight } from 'lucide-svelte';
+	import { Star, GitFork, ArrowRight } from 'lucide-svelte';
 	import SectionHeader from '$lib/components/home/content/common/SectionHeader.svelte';
 	import ContentCard from '$lib/components/home/content/common/ContentCard.svelte';
 
@@ -16,6 +16,7 @@
 	import { cn } from '$lib/utils/index';
 
 	import Marquee from '$lib/components/ui/display/Marquee.svelte';
+	import { publicConfig } from '$lib/config/public';
 
 	interface GithubRepo {
 		name: string;
@@ -28,8 +29,28 @@
 		updatedAt: string;
 	}
 
-	/** GitHub 用户名，从环境变量读取 */
-	const GITHUB_USERNAME = import.meta.env.VITE_GITHUB_USERNAME;
+	interface PinnedRepo {
+		repo: string;
+		description?: string;
+		stars?: number | string;
+		forks?: number | string;
+		language?: string;
+		link: string;
+	}
+
+	interface GithubApiRepo {
+		name: string;
+		description?: string;
+		stargazers_count: number;
+		forks_count: number;
+		watchers_count: number;
+		language?: string;
+		html_url: string;
+		updated_at: string;
+	}
+
+	/** GitHub 用户名来自经过白名单筛选的公开站点配置。 */
+	const GITHUB_USERNAME = publicConfig.repository.owner;
 
 	let githubData = $state<GithubRepo[]>([]);
 	let loadingGithub = $state(true);
@@ -42,18 +63,18 @@
 		try {
 			// 1. 尝试获取 Pinned 项目 (通过第三方 API)
 			// 注意：官方 API 获取 Pinned 需要 GraphQL 和 Token，这里使用第三方开源服务无需 Token
-			const data = await loadJson<any[]>(
+			const data = await loadJson<PinnedRepo[]>(
 				`https://gh-pinned-repos-tsj7ta5xfhep.deno.dev/?username=${GITHUB_USERNAME}`
 			);
 
 			if (Array.isArray(data) && data.length > 0) {
-				githubData = data.map((repo: any) => ({
+				githubData = data.map((repo) => ({
 					name: repo.repo,
-					description: repo.description,
+					description: repo.description ?? '',
 					stars: Number(repo.stars) || 0,
 					forks: Number(repo.forks) || 0,
 					watchers: 0, // 置顶 API 不返回关注者数量
-					language: repo.language,
+					language: repo.language ?? '',
 					url: repo.link,
 					updatedAt: '' // 置顶 API 不返回更新时间
 				}));
@@ -61,16 +82,16 @@
 			}
 
 			// 2. 如果 Pinned 获取失败或为空，回退到原来的逻辑 (最近更新)
-			const fallbackData = await loadJson<any[]>(
+			const fallbackData = await loadJson<GithubApiRepo[]>(
 				`https://api.github.com/users/${GITHUB_USERNAME}/repos?sort=updated&per_page=6`
 			);
-			githubData = fallbackData.map((repo: any) => ({
+			githubData = fallbackData.map((repo) => ({
 				name: repo.name,
-				description: repo.description,
+				description: repo.description ?? '',
 				stars: repo.stargazers_count,
 				forks: repo.forks_count,
 				watchers: repo.watchers_count,
-				language: repo.language,
+				language: repo.language ?? '',
 				url: repo.html_url,
 				updatedAt: repo.updated_at
 			}));
@@ -182,15 +203,10 @@
 {/snippet}
 
 <div class="pt-4">
-	<SectionHeader
-		icon={Github}
-		iconBgColor="bg-purple-500/20"
-		iconColor="text-purple-400"
-		titleKey="home.hero.github.title"
-	/>
+	<SectionHeader icon="github" titleKey="home.hero.github.title" />
 
 	<div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-		{#each loadingGithub ? Array(6).fill(null) : githubData as repo}
+		{#each loadingGithub ? Array(6).fill(null) : githubData as repo, index (repo?.url ?? index)}
 			{@render projectCard(repo, loadingGithub)}
 		{/each}
 	</div>

@@ -130,7 +130,7 @@
 					<!-- 名称 -->
 					<div class="flex-1">
 						<h3 class="text-lg font-bold text-foreground">
-							<Crossfade key={$locale} class="inline-grid">
+							<Crossfade key={$locale} inline class="inline-grid">
 								<span>{getPaymentName(payment.icon)}</span>
 							</Crossfade>
 						</h3>
@@ -188,7 +188,7 @@
 								target="_blank"
 								class="flex items-center gap-2 rounded-full bg-secondary/50 px-5 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-secondary/70"
 							>
-								<Crossfade key={$locale} class="inline-grid">
+								<Crossfade key={$locale} inline class="inline-grid">
 									<span>{$t('pay.modal.open_link')}</span>
 								</Crossfade>
 								<svg

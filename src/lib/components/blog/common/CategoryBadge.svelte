@@ -26,7 +26,7 @@
 </script>
 
 <div class="flex items-center gap-1.5 {className}">
-	{#each validCats as cat, i}
+	{#each validCats as cat, i (cat)}
 		<span class="inline-flex items-center">
 			{getCategoryTitle(cat, categories)}
 			{#if i < validCats.length - 1}

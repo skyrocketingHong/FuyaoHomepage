@@ -6,7 +6,7 @@
 	 * 点击可跳转到文章详情页。
 	 */
 	import { onMount } from 'svelte';
-	import { BookOpen, ArrowRight } from 'lucide-svelte';
+	import { ArrowRight } from 'lucide-svelte';
 	import SectionHeader from '$lib/components/home/content/common/SectionHeader.svelte';
 	import ContentCard from '$lib/components/home/content/common/ContentCard.svelte';
 	import Skeleton from '$lib/components/ui/feedback/Skeleton.svelte';
@@ -52,16 +52,11 @@
 </script>
 
 <div class="pt-4">
-	<SectionHeader
-		icon={BookOpen}
-		iconBgColor="bg-rose-500/20"
-		iconColor="text-rose-400"
-		titleKey="home.hero.latest_posts.title"
-	/>
+	<SectionHeader icon="posts" titleKey="home.hero.latest_posts.title" />
 
 	<div class="space-y-3">
 		{#if loading}
-			{#each Array(MAX_POSTS) as _}
+			{#each Array(MAX_POSTS).keys() as index (index)}
 				<ContentCard opaque={true}>
 					<div class="flex h-full items-center gap-4">
 						<div class="flex h-full min-w-0 flex-1 flex-col justify-between">
@@ -81,11 +76,11 @@
 				</ContentCard>
 			{/each}
 		{:else}
-			{#each posts as post}
+			{#each posts as post (post.slug)}
 				<ContentCard
 					tag="a"
 					href="/blog/{post.categories[0]}/{post.slug}"
-					class="group block transition-all duration-300 hover:border-rose-500/30"
+					class="group block transition-all duration-300"
 					tilt={true}
 					opaque={true}
 				>
@@ -117,7 +112,7 @@
 							<div class="mt-auto flex items-end justify-between pt-1">
 								<div class="flex flex-wrap gap-1.5 pr-2">
 									{#if post.categories.length > 0}
-										{#each post.categories as cat}
+										{#each post.categories as cat (cat)}
 											<span
 												class="rounded-full border border-border bg-secondary/20 px-2 py-0.5 text-[10px] whitespace-nowrap text-muted-foreground"
 												>{cat}</span

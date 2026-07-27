@@ -6,6 +6,7 @@
 	 */
 	import { page } from '$app/state';
 	import { t, locale } from '$lib/i18n/store';
+	import StatusState from '$lib/components/ui/feedback/StatusState.svelte';
 	import LiquidGlass from '$lib/components/ui/effect/LiquidGlass.svelte';
 	import Crossfade from '$lib/components/ui/effect/Crossfade.svelte';
 	import { FileQuestion, AlertCircle, ServerCrash, Home } from 'lucide-svelte';
@@ -20,56 +21,29 @@
 	let Icon = $derived(getIcon(page.status));
 </script>
 
-<div class="z-content flex h-full w-full flex-col items-center justify-center pb-30 md:pb-0">
-	<LiquidGlass class="w-full max-w-lg" tilt={false}>
-		<div class="flex flex-col items-center justify-center gap-8 py-4 text-center">
-			<!-- 1. 图标层 -->
-			<Icon class="size-20 opacity-20" strokeWidth={1.5} />
-
-			<!-- 2. 状态码与标题层 -->
-			<div class="flex flex-col items-center gap-2">
-				<span class="text-6xl font-black tracking-tighter opacity-90">
-					{page.status}
-				</span>
-				<h1 class="text-2xl font-bold tracking-tight">
-					{page.status === 404 ? $t('error.not_found_title') : $t('error.something_wrong_title')}
-				</h1>
-			</div>
-
-			<!-- 3. 错误描述层 -->
-			<p class="text-sm text-balance text-muted-foreground opacity-70">
-				{page.error?.message ||
-					(page.status === 404 ? $t('error.not_found_desc') : 'An error occurred')}
-			</p>
-
-			<!-- 4. 详细信息：请求路径 (左右布局) -->
-			<div
-				class="w-full rounded-2xl bg-black/5 p-4 transition-colors group-hover:bg-black/10 dark:bg-white/5 dark:group-hover:bg-white/10"
-			>
-				<div class="flex items-center justify-between gap-4 text-sm">
-					<span class="shrink-0 font-medium opacity-50">{$t('error.request_path')}</span>
-					<code
-						class="truncate rounded-md bg-black/5 px-2 py-1 font-mono text-xs opacity-70 dark:bg-white/5"
-					>
-						{page.url.pathname}
-					</code>
-				</div>
-			</div>
-
-			<!-- 5. 返回操作：使用独立 LiquidGlass 按钮 -->
-			<LiquidGlass
-				tag="a"
-				href="/"
-				class="inline-flex !w-auto rounded-full !p-0 text-foreground transition-all"
-				tilt={false}
-			>
-				<div class="flex items-center gap-2 px-4 py-2">
-					<Home class="size-4" />
-					<Crossfade key={'backhome-' + $locale} class="inline-grid">
-						<span class="font-medium">{$t('nav.home')}</span>
-					</Crossfade>
-				</div>
-			</LiquidGlass>
-		</div>
+{#snippet action()}
+	<LiquidGlass
+		tag="a"
+		href="/"
+		class="inline-flex !w-auto rounded-full !p-0 text-foreground transition-all"
+		tilt={false}
+	>
+		<span class="flex items-center gap-2 px-4 py-2">
+			<Home class="size-4" />
+			<Crossfade key={'backhome-' + $locale} inline class="inline-grid">
+				<span class="font-medium">{$t('nav.home')}</span>
+			</Crossfade>
+		</span>
 	</LiquidGlass>
-</div>
+{/snippet}
+
+<StatusState
+	icon={Icon}
+	code={page.status}
+	title={page.status === 404 ? $t('error.not_found_title') : $t('error.something_wrong_title')}
+	description={page.status === 404 ? $t('error.not_found_desc') : $t('error.something_wrong_desc')}
+	transitionKey={$locale}
+	detailLabel={$t('error.request_path')}
+	detailValue={page.url.pathname}
+	{action}
+/>

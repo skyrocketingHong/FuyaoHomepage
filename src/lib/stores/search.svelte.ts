@@ -25,10 +25,6 @@ export class BlogSearch {
 	/** 原始搜索索引数据 */
 	searchIndex = $state<BlogPost[]>([]);
 
-	constructor() {
-		this.init();
-	}
-
 	/**
 	 * 初始化搜索引擎
 	 *

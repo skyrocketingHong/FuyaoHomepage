@@ -69,7 +69,7 @@
 				<LoadingSpinner size="md" />
 				{#if showText}
 					<span class="text-xs font-medium tracking-widest text-muted-foreground">
-						<Crossfade key={$locale} class="inline-grid">
+						<Crossfade key={$locale} inline class="inline-grid">
 							<span>{displayText}</span>
 						</Crossfade>
 					</span>
@@ -77,8 +77,11 @@
 			</div>
 
 			{#if showText && showCopyright}
-				<div class="absolute bottom-2 flex w-full justify-center md:bottom-4">
-					<BottomInfo direction="vertical" />
+				<div
+					class="absolute flex w-full justify-center"
+					style="bottom: max(16px, env(safe-area-inset-bottom));"
+				>
+					<BottomInfo direction="vertical" alignment="center" />
 				</div>
 			{/if}
 		</div>

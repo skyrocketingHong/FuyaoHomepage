@@ -16,7 +16,7 @@
 	import { page } from '$app/state';
 	import { t } from '$lib/i18n/store';
 
-	const siteName = $derived(import.meta.env.VITE_SITE_NAME ?? $t('common.site_name'));
+	const siteName = $derived(seoConfig.siteName ?? $t('common.site_name'));
 
 	let {
 		title,
@@ -36,7 +36,7 @@
 		image?: string;
 		type?: 'website' | 'article' | 'profile';
 		/** 结构化数据 (JSON-LD) */
-		jsonLd?: Record<string, any>;
+		jsonLd?: Record<string, unknown>;
 	}
 
 	// 生成最终标题（非首页添加站点名后缀）
@@ -55,6 +55,11 @@
 				? image
 				: `${seoConfig.baseURL}${image}`
 			: `${seoConfig.baseURL}/favicon/android-chrome-512x512.png`
+	);
+	let jsonLdScript = $derived(
+		jsonLd
+			? `<script type="application/ld+json">${JSON.stringify(jsonLd).replace(/</g, '\\u003c')}${'<' + '/script>'}`
+			: ''
 	);
 </script>
 
@@ -85,6 +90,6 @@
 	{/if}
 
 	{#if jsonLd}
-		{@html `<script type="application/ld+json">${JSON.stringify(jsonLd)}</` + `script>`}
+		{@html jsonLdScript}
 	{/if}
 </svelte:head>

@@ -1,15 +1,23 @@
 import tailwindcss from '@tailwindcss/vite';
 import { sveltekit } from '@sveltejs/kit/vite';
+import fs from 'node:fs';
+import path from 'node:path';
 import { defineConfig } from 'vite';
 import blogWatcher from './src/lib/plugins/vite-plugin-blog-watcher';
+import { formatVersionDisplay, readVersionManifest } from './scripts/update-version.js';
 
-import { readFileSync } from 'fs';
-import { fileURLToPath } from 'url';
-import { dirname, join } from 'path';
+const versionManifest = readVersionManifest();
+const buildContextPath = path.resolve('.fuyao/build-context.json');
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const pkg = JSON.parse(readFileSync(join(__dirname, 'package.json'), 'utf-8'));
-const versionJson = JSON.parse(readFileSync(join(__dirname, 'version.json'), 'utf-8'));
+if (!fs.existsSync(buildContextPath)) {
+	throw new Error('缺少 .fuyao/build-context.json，请先运行 npm run inputs:prepare');
+}
+
+const buildContext = JSON.parse(fs.readFileSync(buildContextPath, 'utf8')) as {
+	publicConfigFile: string;
+	albumPublicBase: string;
+};
+const publicConfig = JSON.parse(fs.readFileSync(buildContext.publicConfigFile, 'utf8'));
 
 export default defineConfig({
 	plugins: [blogWatcher(), tailwindcss(), sveltekit()],
@@ -17,8 +25,17 @@ export default defineConfig({
 		noExternal: ['@icons-pack/svelte-simple-icons']
 	},
 	define: {
-		__APP_VERSION__: JSON.stringify(pkg.version),
+		__FUYAO_PUBLIC_CONFIG__: JSON.stringify(publicConfig),
+		__FUYAO_ALBUM_PUBLIC_BASE__: JSON.stringify(buildContext.albumPublicBase),
+		__APP_VERSION__: JSON.stringify(versionManifest.version),
 		__BUILD_TIME__: JSON.stringify(new Date().toISOString()),
-		__BUILD_NUMBER__: JSON.stringify(versionJson.build)
+		__BUILD_NUMBER__: JSON.stringify(versionManifest.build),
+		__APP_VERSION_DISPLAY__: JSON.stringify(
+			formatVersionDisplay(
+				versionManifest.version,
+				versionManifest.buildTrain,
+				versionManifest.build
+			)
+		)
 	}
 });

@@ -7,20 +7,26 @@
 	 */
 	import { formatDate } from '$lib/utils/datetime/date';
 	import LiquidGlass from '$lib/components/ui/effect/LiquidGlass.svelte';
+	import Crossfade from '$lib/components/ui/effect/Crossfade.svelte';
 	import { X } from 'lucide-svelte';
+	import type { MarkerConfig } from './types';
+	import { locale, t } from '$lib/i18n/store';
 
 	let { place, onClose } = $props<{
-		place: any;
+		place: MarkerConfig;
 		onClose: () => void;
 	}>();
 
 	// 格式化日期
-	let dateStr = $derived(place.visitDate ? formatDate(place.visitDate, 'zh-CN') : '');
+	let dateStr = $derived(place.visitDate ? formatDate(place.visitDate, $locale) : '');
 </script>
 
 <div class="relative w-[280px] origin-bottom animate-in duration-300 zoom-in-95">
 	<LiquidGlass
 		opaque={false}
+		refractive
+		blur={8}
+		refractionStrength={4}
 		class="flex w-full flex-col gap-0 !p-0 shadow-xl"
 		showLighting={true}
 		showGloss={true}
@@ -29,7 +35,7 @@
 		<button
 			class="absolute top-2 right-2 z-50 rounded-full p-1.5 text-muted-foreground transition-all hover:bg-black/5 hover:text-foreground"
 			onclick={onClose}
-			aria-label="关闭"
+			aria-label={$t('common.close')}
 		>
 			<X size={14} strokeWidth={2.5} />
 		</button>
@@ -39,9 +45,11 @@
 			<div class="flex flex-1 flex-col bg-card/10 p-5 pt-7">
 				<!-- 标题 -->
 				<div class="mb-1 flex items-start justify-between gap-2">
-					<h3 class="text-base leading-tight font-bold text-foreground">
-						{place.title}
-					</h3>
+					<Crossfade key={`${$locale}-${place.title}`}>
+						<h3 class="text-base leading-tight font-bold text-foreground">
+							{place.title}
+						</h3>
+					</Crossfade>
 				</div>
 
 				<div class="mb-3 flex items-center justify-between">

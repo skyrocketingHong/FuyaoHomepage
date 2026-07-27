@@ -6,10 +6,13 @@
 	 * 负责处理搜索逻辑并注入 Header 返回按钮。
 	 */
 	import { onMount, onDestroy } from 'svelte';
-	import { Search as SearchIcon, Loader2, FileText, Calendar } from 'lucide-svelte';
-	import { t } from '$lib/i18n/store';
+	import { Search as SearchIcon, SearchX, Loader2, FileText, Calendar } from 'lucide-svelte';
+	import { t, locale } from '$lib/i18n/store';
 	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import LiquidGlass from '$lib/components/ui/effect/LiquidGlass.svelte';
+	import Crossfade from '$lib/components/ui/effect/Crossfade.svelte';
+	import StatusState from '$lib/components/ui/feedback/StatusState.svelte';
 	import { getPostUrl } from '$lib/utils/domain/blog';
 	import type { BlogPost } from '$lib/utils/domain/blog';
 	import { headerState } from '$lib/stores/app.svelte';
@@ -24,6 +27,8 @@
 	let backBtnId = '';
 
 	onMount(() => {
+		void search.init();
+
 		// 注入返回按钮到 Header Left
 		backBtnId = headerState.setLeft(
 			BackButton,
@@ -59,12 +64,27 @@
 			...post,
 			category: post.categories?.[0] || 'Uncategorized'
 		};
-		goto(getPostUrl(postObj, postObj.category));
+		goto(resolve(getPostUrl(postObj, postObj.category)));
 	}
 </script>
 
+{#snippet retryAction()}
+	<LiquidGlass
+		tag="button"
+		variant="control"
+		gpuBlur={false}
+		contentLayout="center"
+		class="inline-flex !w-auto rounded-full px-4 py-2 text-sm font-medium text-foreground"
+		onclick={() => window.location.reload()}
+	>
+		<Crossfade key={'search-retry-' + $locale} inline class="inline-grid">
+			<span>{$t('blog.search.retry')}</span>
+		</Crossfade>
+	</LiquidGlass>
+{/snippet}
+
 <div class="mx-auto flex min-h-[60vh] max-w-[980px] flex-col xl:max-w-[1100px]">
-	<LiquidGlass class="flex w-full flex-col !p-0" showLighting={false}>
+	<LiquidGlass class="flex w-full flex-col !p-0" variant="control" showLighting={false}>
 		<!-- 搜索头部 -->
 		<div
 			class="flex items-center gap-3 border-b border-white/10 bg-white/50 px-6 py-6 backdrop-blur-md dark:bg-black/50"
@@ -86,27 +106,35 @@
 		<!-- 结果列表 -->
 		<div class="flex-1 p-4">
 			{#if search.error}
-				<div class="flex flex-col items-center justify-center py-12 text-destructive">
-					<FileText size={48} class="mb-4 opacity-50" />
-					<p class="text-lg font-medium">Data Load Error</p>
-					<p class="text-sm opacity-80">{search.error}</p>
-					<button
-						class="mt-4 rounded-full bg-primary/10 px-4 py-2 text-sm font-medium transition-colors hover:bg-primary/20"
-						onclick={() => window.location.reload()}
-					>
-						Retry
-					</button>
-				</div>
+				<StatusState
+					icon={FileText}
+					code="!"
+					title={$t('blog.search.load_error')}
+					description={$t('blog.search.load_error_hint')}
+					transitionKey={$locale}
+					surface="embedded"
+					action={retryAction}
+					class="min-h-[24rem] py-8"
+				/>
 			{:else if search.loading}
 				<div class="flex items-center justify-center py-12 text-muted-foreground">
 					<Loader2 class="mr-2 animate-spin" size={16} />
-					{$t('common.loading')}
+					<Crossfade key={'search-loading-' + $locale} inline class="inline-grid">
+						<span>{$t('common.loading')}</span>
+					</Crossfade>
 				</div>
 			{:else if search.query && search.results.length === 0}
-				<div class="flex flex-col items-center justify-center py-20 text-muted-foreground">
-					<SearchIcon size={64} class="mb-4 opacity-20" />
-					<p class="text-lg">{$t('blog.search.no_results', { query: search.query })}</p>
-				</div>
+				<StatusState
+					icon={SearchX}
+					code={0}
+					title={$t('blog.search.no_results', { query: search.query })}
+					description={$t('blog.search.try_another_keyword')}
+					transitionKey={$locale}
+					detailLabel={$t('blog.search.query_label')}
+					detailValue={search.query}
+					surface="embedded"
+					class="min-h-[24rem] py-8"
+				/>
 			{:else if search.results.length > 0}
 				<div class="space-y-2">
 					{#each search.results as post (post.slug)}
@@ -152,7 +180,11 @@
 				<!-- 默认空状态 / 初始状态 -->
 				<div class="flex flex-col items-center justify-center py-20 text-muted-foreground/50">
 					<FileText size={64} class="mb-6 opacity-10" />
-					<p class="text-lg">{$t('blog.search.placeholder')}</p>
+					<p class="text-lg">
+						<Crossfade key={'search-placeholder-' + $locale} inline class="inline-grid">
+							<span>{$t('blog.search.placeholder')}</span>
+						</Crossfade>
+					</p>
 				</div>
 			{/if}
 		</div>
@@ -162,7 +194,17 @@
 			<div
 				class="flex justify-between border-t border-white/10 bg-white/30 px-6 py-3 text-sm text-muted-foreground backdrop-blur-md dark:bg-black/30"
 			>
-				<span>{search.results.length} results</span>
+				<Crossfade
+					key={`search-count-${search.results.length}-${$locale}`}
+					inline
+					class="inline-grid"
+				>
+					<span>
+						{search.results.length === 1
+							? $t('blog.search.result_count_one')
+							: $t('blog.search.result_count', { count: String(search.results.length) })}
+					</span>
+				</Crossfade>
 			</div>
 		{/if}
 	</LiquidGlass>

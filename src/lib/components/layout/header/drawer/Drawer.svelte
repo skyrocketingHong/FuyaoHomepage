@@ -38,6 +38,7 @@
 			<div class="relative h-full max-h-[80vh] w-full overflow-hidden rounded-b-2xl">
 				<!-- 背景 LiquidGlass -->
 				<LiquidGlass
+					variant="panel"
 					class="absolute inset-0 h-full w-full rounded-b-2xl border-b border-border bg-background/80"
 				>
 					<!-- 空子元素仅用于视觉效果 -->
@@ -52,6 +53,7 @@
 							<h2 class="text-lg font-bold text-foreground">
 								<Crossfade
 									key={(sidebarState.listTitle || 'nav.list') + $locale}
+									inline
 									class="inline-grid"
 								>
 									<span>{sidebarState.listTitle ? $t(sidebarState.listTitle) : $t('nav.list')}</span

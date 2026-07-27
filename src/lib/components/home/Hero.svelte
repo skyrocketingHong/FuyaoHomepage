@@ -1,4 +1,9 @@
 <script lang="ts">
+	/**
+	 * 首页内容总览组件。
+	 *
+	 * 组合个人资料、运行时间、社交链接、访问统计、编程统计、最新文章和 GitHub 项目。
+	 */
 	import ProfileSection from './content/ProfileSection.svelte';
 	import TimeCapsule from './content/TimeCapsule.svelte';
 	import GithubProjects from './content/GithubProjects.svelte';

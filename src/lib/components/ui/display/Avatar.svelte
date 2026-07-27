@@ -14,7 +14,6 @@
 	 * @prop class - 额外的 CSS 类名
 	 */
 	import { cn } from '$lib/utils/index';
-	import { fade } from 'svelte/transition';
 	import LazyImage from './LazyImage.svelte';
 
 	interface Props {

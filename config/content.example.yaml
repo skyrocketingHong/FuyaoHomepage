@@ -1,0 +1,10 @@
+schemaVersion: 1
+paths:
+  posts: posts
+  data: data
+  albumPhotos: albums/photos
+  albumThumbnails: albums/thumbnails
+  albumMetadata: albums/metadata
+media:
+  albumPublicBase: /media/albums
+  mode: external

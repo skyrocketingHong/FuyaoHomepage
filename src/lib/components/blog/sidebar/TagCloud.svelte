@@ -9,6 +9,8 @@
 	 * @prop onSelect - 选中回调
 	 */
 	import TagBadge from '../common/TagBadge.svelte';
+	import Crossfade from '$lib/components/ui/effect/Crossfade.svelte';
+	import { locale, t } from '$lib/i18n/store';
 
 	let {
 		tags = [],
@@ -22,10 +24,14 @@
 </script>
 
 <div class="flex flex-wrap gap-2 p-2">
-	{#each tags as tag}
+	{#each tags as tag (tag)}
 		<TagBadge {tag} active={activeTag === tag} onclick={onSelect} />
 	{/each}
 	{#if tags.length === 0}
-		<span class="px-2 text-xs text-muted-foreground italic">No tags found</span>
+		<span class="px-2 text-xs text-muted-foreground italic">
+			<Crossfade key={'no-tags-' + $locale} inline class="inline-grid">
+				<span>{$t('blog.no_tags')}</span>
+			</Crossfade>
+		</span>
 	{/if}
 </div>

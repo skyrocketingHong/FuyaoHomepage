@@ -7,6 +7,7 @@
 	 * - 桌面端：显示为绝对定位，字体更宽大，布局扁平化。
 	 *
 	 * @prop pageLabel - 当前页面标题 (显示在站点名称后)
+	 * @prop backgroundSwitchable - 是否渲染背景切换器 (锁定背景页面为 false，从 DOM 卸载)
 	 * @prop class - 额外的 CSS 类名
 	 */
 	import HeaderActions from '$lib/components/layout/header/Actions.svelte';
@@ -20,8 +21,13 @@
 
 	import { cn } from '$lib/utils/index';
 	// Props 定义
-	let { pageLabel, class: className = '' } = $props<{
+	let {
+		pageLabel,
+		backgroundSwitchable = true,
+		class: className = ''
+	} = $props<{
 		pageLabel: string;
+		backgroundSwitchable?: boolean;
 		class?: string;
 	}>();
 </script>
@@ -39,7 +45,7 @@
 			<Marquee class="flex w-full items-center" fadeSize="1.5rem" autoPlay={true}>
 				<div class="flex items-center gap-1">
 					{seoConfig.siteName}
-					<Crossfade key={pageLabel} class="inline-grid">
+					<Crossfade key={pageLabel} inline class="inline-grid">
 						<span>· {pageLabel}</span>
 					</Crossfade>
 				</div>
@@ -47,12 +53,13 @@
 		</h1>
 
 		<!-- 4. 右侧操作按钮（移动端：顺序 2；桌面端：顺序 4） -->
+		<!-- 组内间距 8px (gap-2)；页面上下文操作与全局操作之间 12px (gap-2 + ml-1) -->
 		<div class="pointer-events-auto flex shrink-0 items-center gap-2 pr-0 lg:order-4">
 			<!-- 动态右侧组件 -->
-			<Crossfade key={headerState.rightComponent ? 'right-content' : 'right-empty'} class="flex">
-				{#if headerState.rightComponent}
-					{@const RightComponent = headerState.rightComponent}
-					<RightComponent {...headerState.rightProps} />
+			<Crossfade key={headerState.right.component ? 'right-content' : 'right-empty'} class="flex">
+				{#if headerState.right.component}
+					{@const RightComponent = headerState.right.component}
+					<RightComponent {...headerState.right.props} />
 				{/if}
 			</Crossfade>
 
@@ -62,7 +69,6 @@
 				<Crossfade key={sidebarState.listComponent ? 'drawer-button' : 'drawer-empty'}>
 					{#if sidebarState.listComponent}
 						<HeaderActionButton
-							class="box-border h-9 w-auto rounded-full p-2"
 							onclick={() => sidebarState.toggleMobileDrawer()}
 							title={sidebarState.listTitle ? $t(sidebarState.listTitle) : $t('nav.list')}
 							crossfadeKey={sidebarState.listTitle || 'default-list'}
@@ -78,7 +84,10 @@
 				</Crossfade>
 			</div>
 
-			<HeaderActions />
+			<!-- 全局操作区 (背景/主题/语言)，与页面上下文操作保持 12px 间距 -->
+			<div class="ml-1 flex items-center">
+				<HeaderActions {backgroundSwitchable} />
+			</div>
 		</div>
 	</div>
 
@@ -88,35 +97,32 @@
 	<div
 		class={cn(
 			'pointer-events-auto order-3 flex w-full items-center gap-2 lg:contents',
-			!headerState.leftComponent && 'gap-0'
+			!headerState.left.component && 'gap-0'
 		)}
 	>
 		<!-- 2. 左侧操作按钮（移动端：在包装器内；桌面端：顺序 2） -->
 		<div class="flex shrink-0 items-center gap-2 lg:order-2">
 			<!-- 动态左侧组件 (如返回按钮) -->
-			<Crossfade key={headerState.leftComponent ? 'left-content' : 'left-empty'} class="flex">
-				{#if headerState.leftComponent}
-					{@const LeftComponent = headerState.leftComponent}
-					<LeftComponent {...headerState.leftProps} />
+			<Crossfade key={headerState.left.component ? 'left-content' : 'left-empty'} class="flex">
+				{#if headerState.left.component}
+					{@const LeftComponent = headerState.left.component}
+					<LeftComponent {...headerState.left.props} />
 				{/if}
 			</Crossfade>
 		</div>
 
 		<!-- 3. 中间导航部分（移动端：在包装器内；桌面端：顺序 3） -->
-		<Crossfade
-			key={headerState.middleKey || 'empty'}
-			class={cn(
-				'flex max-w-full min-w-0 justify-start transition-all duration-300',
-				'flex-1 lg:order-3 lg:justify-center',
-				!headerState.middleComponent && 'hidden lg:flex'
-			)}
-		>
-			{#if headerState.middleComponent}
-				{@const MiddleComponent = headerState.middleComponent}
-				<MiddleComponent {...headerState.middleProps} />
-			{:else}
-				<div class="w-full"></div>
-			{/if}
-		</Crossfade>
+		{#if headerState.middle.component}
+			{@const MiddleComponent = headerState.middle.component}
+			<Crossfade
+				key={headerState.middle.key}
+				class={cn(
+					'flex max-w-full min-w-0 flex-1 justify-start transition-all duration-300',
+					'lg:order-3 lg:justify-center'
+				)}
+			>
+				<MiddleComponent {...headerState.middle.props} />
+			</Crossfade>
+		{/if}
 	</div>
 </header>

@@ -1,0 +1,47 @@
+[Unit]
+Description=Fuyao posts and album content watcher
+After=network-online.target caddy.service
+Wants=network-online.target
+ConditionPathIsDirectory=/srv/fuyao/shared/content/posts
+ConditionPathIsDirectory=/srv/fuyao/shared/content/albums/photos
+
+[Service]
+Type=simple
+User=root
+Group=root
+WorkingDirectory=/srv/fuyao/tooling/current
+Environment=PATH=/opt/fuyao/node/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+Environment=FUYAO_WATCH_MODE=prepare
+Environment=FUYAO_POSTS_WATCH_DIR=/srv/fuyao/shared/content/posts
+Environment=FUYAO_ALBUM_PHOTOS_DIR=/srv/fuyao/shared/content/albums/photos
+Environment=FUYAO_ALBUM_THUMBNAILS_DIR=/srv/fuyao/shared/content/albums/thumbnails
+Environment=FUYAO_ALBUM_METADATA_DIR=/srv/fuyao/shared/content/albums/metadata
+Environment=FUYAO_CONTENT_PENDING_FILE=/srv/fuyao/shared/content/state/pending-deploy.json
+Environment=FUYAO_WATCH_DEBOUNCE_MS=5000
+EnvironmentFile=/srv/fuyao/shared/config/deployment.env
+ExecStart=/opt/fuyao/node/bin/node scripts/watch-content.js
+ExecReload=/bin/kill -USR1 $MAINPID
+Restart=on-failure
+RestartSec=5
+TimeoutStopSec=30
+KillMode=control-group
+UMask=0022
+Nice=10
+IOSchedulingClass=idle
+NoNewPrivileges=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectSystem=strict
+ProtectHome=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+InaccessiblePaths=/srv/fuyao/shared/secrets
+ReadWritePaths=/srv/fuyao/shared/content/albums /srv/fuyao/shared/content/state
+ReadOnlyPaths=/opt/fuyao/node /srv/fuyao/tooling /srv/fuyao/shared/config /srv/fuyao/shared/content/posts /srv/fuyao/shared/content/data
+MemoryHigh=640M
+MemoryMax=768M
+
+[Install]
+WantedBy=multi-user.target

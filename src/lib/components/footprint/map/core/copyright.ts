@@ -35,14 +35,17 @@ export function extractCopyright(
 			const copyright = container.querySelector('.amap-copyright');
 
 			if (logo && copyright) {
-				const logoHtml = logo.outerHTML;
-				const copyrightHtml = copyright.innerHTML;
+				const logoImage = logo.querySelector('img');
+				const logoUrl = logoImage?.src ?? '';
+				const logoAlt = logoImage?.alt ?? '高德地图';
+				const copyrightText = copyright.textContent?.trim() ?? '';
 
-				if (logoHtml || copyrightHtml) {
+				if (logoUrl || copyrightText) {
 					clearInterval(checkInterval);
 					resolve({
-						logoHtml,
-						copyrightHtml
+						logoUrl,
+						logoAlt,
+						copyrightText
 					});
 				}
 			}
@@ -50,7 +53,7 @@ export function extractCopyright(
 			if (attempts >= maxAttempts) {
 				clearInterval(checkInterval);
 				// 超时返回空
-				resolve({ logoHtml: '', copyrightHtml: '' });
+				resolve({ logoUrl: '', logoAlt: '', copyrightText: '' });
 			}
 		}, intervalMs);
 	});

@@ -1,79 +1,77 @@
 <script lang="ts">
 	/**
-	 * 移动端底部导航栏组件
+	 * 移动端悬浮导航胶囊组件
 	 *
-	 * 在移动设备上显示的底部导航条。
-	 * 使用 LiquidGlass 组件实现玻璃态效果，外形为胶囊形状。
+	 * 仅包含导航项目的独立悬浮圆角玻璃胶囊，与 BottomInfo 完全分离：
+	 * BottomInfo (背景信息、服务状态、版权) 已移至根布局可滚动内容末尾的普通文档流页脚。
 	 *
-	 * @prop infoComponent - 可选的背景信息显示组件
+	 * - 定位：左右各距视口 12px，底部 max(10px, env(safe-area-inset-bottom))，
+	 *   尺寸与间距全部来自 theme.css 的 --mobile-nav-* token
+	 * - 材质：整个胶囊仅一层 LiquidGlass variant="chrome" + 一次 liveBackdrop 实时模糊
+	 *   (blur 24px, saturate 1.2)，不注册 WebGL 合成器，导航项目不再单独模糊；
+	 *   表面/边界/投影颜色由 --mobile-nav-surface/edge/shadow token 驱动 (见 utilities.css
+	 *   的 .mobile-nav-capsule)
+	 * - 边界：只保留一层 1px 半透明高光边，顶部高光合并在同一边界层；
+	 *   投影为向下扩散的柔和阴影 (0 10px 30px, 黑色约 18%)
+	 * - 导航项：最小点击区域 44x44，图标 24px，文字 11px/13px，内容严格水平垂直居中；
+	 *   激活项使用 52px 高、20px 圆角的半透明主题色底板 (无独立模糊/边框/阴影)，
+	 *   未激活项约 62% 前景色；hover 仅调整亮度，按下缩放至 0.97 (无位移/发光)
 	 */
 	import LiquidGlass from '$lib/components/ui/effect/LiquidGlass.svelte';
+	import Crossfade from '$lib/components/ui/effect/Crossfade.svelte';
 	import { navItems } from '$lib/config/index';
 	import { page } from '$app/state';
-	import { sidebarState } from '$lib/stores/app.svelte';
+	import { resolve } from '$app/paths';
 	import { isActiveRoute } from '$lib/utils/domain/nav';
 	import { t, locale } from '$lib/i18n/store';
 	import { fade } from 'svelte/transition';
-	import BottomInfo from '../bottom-info/BottomInfo.svelte';
-	import Crossfade from '$lib/components/ui/effect/Crossfade.svelte';
 </script>
 
-<nav class="z-controls fixed right-2 bottom-1 left-2 flex flex-col items-center gap-0 md:hidden">
-	<!-- 
-		导航项容器（玻璃胶囊）
+<nav
+	class="z-controls fixed right-[var(--mobile-nav-inline-inset)] bottom-[var(--mobile-nav-bottom-inset)] left-[var(--mobile-nav-inline-inset)] md:hidden"
+>
+	<!--
+		统一 chrome 胶囊：liveBackdrop 禁用共享 WebGL 合成器，在最外层直接应用原生 backdrop-filter，
+		实时模糊胶囊后方的 DOM 内容；整个导航仅此一次模糊
 	-->
 	<LiquidGlass
-		class="pointer-events-auto flex w-full flex-col rounded-full p-1 shadow-xl backdrop-blur-md transition-all duration-300"
+		variant="chrome"
+		chromeEdge="bottom"
+		liveBackdrop
+		showGloss={false}
+		class="mobile-nav-capsule pointer-events-auto h-[var(--mobile-nav-height)] w-full rounded-[28px] p-0 shadow-none"
 	>
+		<!-- 导航项网格：六项等宽排列 -->
 		<div
-			class="grid w-full items-center gap-1"
+			class="grid h-full w-full items-center"
 			style="grid-template-columns: repeat({navItems.length}, minmax(0, 1fr))"
 		>
 			{#each navItems as item (item.href)}
+				{@const active = isActiveRoute(page.url.pathname, item.href)}
 				<a
-					href={item.href}
-					class="group relative flex flex-1 flex-col items-center justify-center rounded-full py-1.5 transition-all duration-300 {isActiveRoute(
-						page.url.pathname,
-						item.href
-					)
+					href={resolve(item.href as '/')}
+					aria-current={active ? 'page' : undefined}
+					class="group relative flex h-full min-h-11 min-w-11 flex-col items-center justify-center gap-[3px] rounded-[20px] transition-[color,transform,filter] duration-200 hover:brightness-110 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primary/60 active:scale-[0.97] {active
 						? 'font-semibold text-[var(--theme-color)]'
-						: 'text-muted-foreground hover:bg-accent/40 hover:text-accent-foreground'}"
+						: 'text-[color-mix(in_oklab,var(--foreground)_62%,transparent)]'}"
 				>
-					<!-- 活动指示器胶囊 -->
-					{#if isActiveRoute(page.url.pathname, item.href)}
+					<!-- 激活底板：52px 高、20px 圆角的半透明主题色层，无独立模糊/边框/阴影 -->
+					{#if active}
 						<div
-							class="z-deep absolute inset-0 rounded-full bg-primary/10 transition-all duration-300"
+							class="z-deep absolute inset-x-1 inset-y-1.5 rounded-[20px] bg-[color-mix(in_srgb,var(--theme-color)_15%,transparent)]"
 							transition:fade={{ duration: 200 }}
 						></div>
 					{/if}
 
-					<item.icon class="size-6 transition-transform duration-300" />
+					<item.icon class="size-6 shrink-0" />
 
-					<span class="mt-0.5 text-[11px] leading-none"
-						><Crossfade key={$locale} class="inline-grid"><span>{$t(item.i18nKey)}</span></Crossfade
+					<span class="text-[11px] leading-[13px]"
+						><Crossfade key={$locale} inline class="inline-grid"
+							><span>{$t(item.i18nKey)}</span></Crossfade
 						>
 					</span>
 				</a>
 			{/each}
 		</div>
 	</LiquidGlass>
-
-	<!-- 底部信息（玻璃外部） -->
-	<!-- 移除了内边距，通过变换缩小比例以适应狭小空间 -->
-	<div class="pointer-events-auto w-full text-muted-foreground">
-		<BottomInfo
-			direction="horizontal"
-			infoComponent={sidebarState.extraInfoComponent}
-			infoComponentProps={{ ...sidebarState.extraInfoProps }}
-			infoKey={sidebarState.extraInfoKey || 'default'}
-		/>
-	</div>
 </nav>
-
-<style>
-	/* 覆盖 BottomInfo 组件默认的顶部边框和内边距以节省空间 */
-	:global(.bottom-info-container .border-t) {
-		border-top: none !important;
-		padding-top: 0 !important;
-	}
-</style>

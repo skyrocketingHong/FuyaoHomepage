@@ -1,0 +1,15 @@
+example.com {
+	root * /srv/fuyao/current
+
+	handle_path /media/albums/photos/* {
+		root * /srv/fuyao/shared/content/albums/photos
+		file_server
+	}
+
+	handle_path /media/albums/thumbnails/* {
+		root * /srv/fuyao/shared/content/albums/thumbnails
+		file_server
+	}
+
+	file_server
+}

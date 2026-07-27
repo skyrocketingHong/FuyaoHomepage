@@ -18,11 +18,11 @@ export function getOffsetCenter(target: [number, number], targetZoom: number): [
 	if (typeof window === 'undefined') return target;
 
 	// 检查是否是大屏设备 (lg: 1024px)
-	// 侧边栏宽度通常为 w-72 (18rem = 288px)
+	// 侧边栏宽度通常为 lg:w-64 (256px)
 	const isDesktop = window.matchMedia('(min-width: 1024px)').matches;
 	if (!isDesktop) return target;
 
-	const sidebarWidth = 288;
+	const sidebarWidth = 256;
 	const offsetPx = sidebarWidth / 2; // 我们希望目标点向右偏移侧边栏的一半
 
 	// 计算经度偏移量

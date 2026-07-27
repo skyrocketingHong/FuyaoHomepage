@@ -1,82 +1,73 @@
 /**
  * 标记点工具
  *
- * 负责生成各类标记点的 HTML 内容和 AMap.Marker 实例。
+ * 负责生成高德官方 MarkerCluster 所需的单点和聚合点 DOM 内容。
  */
-import type { MarkerConfig, AMapMarker, AMapNamespace } from '../types';
+import type { MarkerConfig } from '../types';
 
 /**
- * 获取城市标记点的 HTML 内容
+ * 创建单个足迹点的 DOM 内容。
  *
- * @param isDark - 是否为暗色模式
- */
-function getCityMarkerContent(isDark: boolean): string {
-	const color = isDark ? '#ecc94b' : '#d69e2e';
-	return `
-        <div style="
-            width: 12px; 
-            height: 12px; 
-            background-color: ${color}; 
-            border: 2px solid white; 
-            border-radius: 50%;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-        "></div>
-    `;
-}
-
-/**
- * 获取景点标记点的 HTML 内容
- *
- * @param isDark - 是否为暗色模式
- */
-function getSpotMarkerContent(isDark: boolean): string {
-	const color = isDark ? '#4fd1c5' : '#319795';
-	return `
-        <div style="
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 24px; 
-            height: 24px; 
-            background-color: ${color}; 
-            border: 2px solid white; 
-            border-radius: 50% 50% 50% 0;
-            transform: rotate(-45deg);
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-        ">
-            <div style="width: 6px; height: 6px; background: white; border-radius: 50%; transform: rotate(45deg);"></div>
-        </div>
-    `;
-}
-
-/**
- * 创建 AMap 标记点实例
+ * 有封面图时显示照片缩略图；没有封面图时使用克制的系统色圆点，避免伪造照片内容。
  *
  * @param place - 地点数据
  * @param isDark - 是否为暗色模式
- * @returns AMap.Marker 实例
+ * @returns 可交给 `AMap.Marker#setContent` 的 DOM 元素
  */
-export function createMarker(place: MarkerConfig, isDark: boolean): AMapMarker {
-	if (typeof window === 'undefined' || !(window as Window & { AMap?: AMapNamespace }).AMap) {
-		throw new Error('AMap not loaded');
+export function createFootprintMarkerContent(
+	place: MarkerConfig,
+	isDark: boolean
+): HTMLButtonElement {
+	const marker = document.createElement('button');
+	marker.type = 'button';
+	marker.className = `footprint-marker footprint-marker--${place.type === 'city' ? 'city' : 'spot'}`;
+	marker.dataset.theme = isDark ? 'dark' : 'light';
+	marker.title = place.title ?? '';
+	marker.setAttribute('aria-label', place.title ?? '');
+
+	if (typeof place.cover === 'string' && place.cover.length > 0) {
+		const image = document.createElement('img');
+		image.src = place.cover;
+		image.alt = '';
+		image.loading = 'lazy';
+		image.decoding = 'async';
+		marker.classList.add('footprint-marker--photo');
+		marker.append(image);
+	} else {
+		const dot = document.createElement('span');
+		dot.className = 'footprint-marker__dot';
+		dot.setAttribute('aria-hidden', 'true');
+		marker.append(dot);
 	}
 
-	const AMap = (window as unknown as Window & { AMap: AMapNamespace }).AMap;
-	const isCity = place.type === 'city';
-	const content = isCity ? getCityMarkerContent(isDark) : getSpotMarkerContent(isDark);
-
-	// 城市 Offset: (-6, -6) (中心对齐 12x12)
-	// 景点 Offset: (-12, -24) (底尖对齐，假设宽高 24x24，实际视觉中心可能需要微调，保持原有逻辑)
-	const offset = isCity ? new AMap.Pixel(-6, -6) : new AMap.Pixel(-12, -24);
-
-	const marker = new AMap.Marker({
-		position: place.position,
-		title: place.title,
-		content: content,
-		offset: offset,
-		zIndex: isCity ? 10 : 20, // 景点在上层
-		extData: place // 存储原始数据
-	});
-
 	return marker;
+}
+
+/**
+ * 创建照片地图风格的聚合点内容。
+ *
+ * @param count - 聚合点包含的地点数量
+ * @returns 可交给 `AMap.Marker#setContent` 的 DOM 元素
+ */
+export function createFootprintClusterContent(count: number): HTMLDivElement {
+	const cluster = document.createElement('div');
+	cluster.className = 'footprint-cluster';
+	cluster.style.setProperty('--cluster-scale', String(Math.min(1.22, 1 + Math.log10(count) * 0.1)));
+	cluster.setAttribute('aria-label', String(count));
+
+	const countLabel = document.createElement('span');
+	countLabel.className = 'footprint-cluster__count';
+	countLabel.textContent = String(count);
+	cluster.append(countLabel);
+	return cluster;
+}
+
+/**
+ * 将高德坐标格式化为稳定的查找键。
+ *
+ * @param position - 经纬度坐标
+ * @returns 六位小数的坐标键
+ */
+export function getPositionKey(position: [number, number]): string {
+	return `${position[0].toFixed(6)},${position[1].toFixed(6)}`;
 }

@@ -17,10 +17,13 @@
 	import { sidebarState, layoutState, headerState } from '$lib/stores/app.svelte';
 	import { loadFootprints, type FootprintData, type BasePlace } from '$lib/utils/domain/footprints';
 	import LoadingState from '$lib/components/ui/feedback/LoadingState.svelte';
-	import BlurEdge from '$lib/components/ui/effect/BlurEdge.svelte';
-	import { t } from '$lib/i18n/store';
+	import { t, locale } from '$lib/i18n/store';
 	import type { CopyrightData } from '$lib/components/footprint/map/types';
 	import { fade } from 'svelte/transition';
+	import { MapPinned, RotateCcw } from 'lucide-svelte';
+	import LiquidGlass from '$lib/components/ui/effect/LiquidGlass.svelte';
+	import Crossfade from '$lib/components/ui/effect/Crossfade.svelte';
+	import { publicConfig } from '$lib/config/public';
 
 	// ==========================================
 	// 状态定义
@@ -43,9 +46,9 @@
 	let selectedPlace = $state<BasePlace | null>(null);
 	let mapCopyrightData = $state<CopyrightData | null>(null);
 
-	// 环境变量
-	let amapKey = import.meta.env.VITE_AMAP_KEY;
-	let amapSecurityCode = import.meta.env.VITE_AMAP_SECURITY_CODE;
+	// 高德浏览器凭据属于公开配置，必须设置域名白名单和最小权限。
+	let amapKey = publicConfig.services.amap.browserKey ?? '';
+	let amapSecurityCode = publicConfig.services.amap.securityCode ?? '';
 
 	// 清理 ID
 	let sidebarListId = '';
@@ -86,7 +89,7 @@
 	onDestroy(() => {
 		// 清理 UI 状态
 		sidebarState.clearList(sidebarListId);
-		headerState.clearRight(headerActionId);
+		if (headerActionId) headerState.clearRight(headerActionId);
 		layoutState.setTransparent(false);
 	});
 
@@ -134,6 +137,13 @@
 		}
 	}
 
+	/** 关闭地点详情并恢复全国足迹概览。 */
+	function handleResetMap() {
+		selectedPlace = null;
+		mapCenter = [105, 35];
+		mapZoom = 4;
+	}
+
 	// 监听 selectedPlace 变化，更新 Sidebar 高亮状态
 	$effect(() => {
 		// 显式读取依赖，确保 Svelte 追踪 selectedPlace.id 的变化
@@ -165,6 +175,7 @@
             地图背景容器
             使用 fixed 定位覆盖全屏，z-index 较低以作为背景。
             pointer-events-auto 确保地图可交互。
+            地图完整铺满视口，不使用任何 mask、背景色或替代性渐变遮罩。
         -->
 		<div
 			class="pointer-events-auto fixed inset-0 z-0 bg-transparent transition-opacity duration-500"
@@ -195,8 +206,50 @@
 			/>
 		</div>
 
-		<BlurEdge orientation="vertical" />
-		<BlurEdge orientation="horizontal" />
+		{#if mapLoaded && !loading}
+			<!-- 概览/重置按钮：移动端定位于导航胶囊上方 (底部安全距离 + 导航高度 + 10px 净空)，
+			     水平居中于整个视口；桌面端保持原位置与侧栏宽度补偿 -->
+			<div
+				class="z-controls pointer-events-auto fixed bottom-[calc(var(--mobile-nav-bottom-inset)+var(--mobile-nav-height)+var(--mobile-nav-overlay-gap))] left-1/2 max-w-[calc(100vw-24px)] -translate-x-1/2 md:bottom-6 md:left-[calc(50%+124px)] lg:left-[calc(50%+128px)]"
+			>
+				<LiquidGlass
+					tag="button"
+					variant="control"
+					refractive
+					blur={8}
+					refractionStrength={4}
+					contentLayout="center"
+					class="inline-flex !w-auto max-w-full items-center rounded-full !p-0 text-foreground shadow-xl"
+					onclick={handleResetMap}
+					title={$t('footprint.map.reset_view')}
+				>
+					<span class="flex h-11 max-w-full items-center gap-2 px-3.5">
+						<MapPinned size={17} class="shrink-0 text-[var(--theme-color)]" />
+						<Crossfade
+							key={`${$locale}-${selectedPlace?.id ?? 'overview'}`}
+							inline
+							class="inline-grid min-w-0"
+						>
+							<span class="block truncate text-sm font-semibold">
+								{selectedPlace?.title ??
+									$t('footprint.map.location_count', { count: String(places.length) })}
+							</span>
+						</Crossfade>
+						<RotateCcw size={14} class="shrink-0 text-muted-foreground" />
+					</span>
+				</LiquidGlass>
+			</div>
+		{/if}
+
+		<!-- 移动端高德地图 Logo 与版权信息：固定视口页面不渲染全局移动页脚，
+		     版权层改在按钮上方独立展示，避开导航胶囊与概览按钮；桌面端仍由侧栏 BottomInfo 承载 -->
+		{#if mapCopyrightData}
+			<div
+				class="z-controls pointer-events-auto fixed bottom-[calc(var(--mobile-nav-bottom-inset)+var(--mobile-nav-height)+var(--mobile-nav-overlay-gap)+44px+8px)] left-3 max-w-[70vw] md:hidden"
+			>
+				<MapCopyright {...mapCopyrightData} />
+			</div>
+		{/if}
 
 		{#if loading || !mapLoaded}
 			<div

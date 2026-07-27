@@ -6,13 +6,13 @@
 	 * 可选搭配 Languages 嵌入式 JSON 显示语言标签。
 	 */
 	import { onMount } from 'svelte';
-	import { Code } from 'lucide-svelte';
 	import SectionHeader from '$lib/components/home/content/common/SectionHeader.svelte';
 	import ContentCard from '$lib/components/home/content/common/ContentCard.svelte';
 	import Skeleton from '$lib/components/ui/feedback/Skeleton.svelte';
-	import { t, locale } from '$lib/i18n/store';
+	import { locale } from '$lib/i18n/store';
 	import { dayjs, formatDuration, formatDate } from '$lib/utils/datetime/date';
 	import type { LocaleKey } from '$lib/i18n';
+	import { publicConfig } from '$lib/config/public';
 
 	/** 单日数据（匹配 WakaTime Coding Activity 嵌入式 JSON） */
 	interface DayEntry {
@@ -32,9 +32,19 @@
 		color: string | null;
 	}
 
-	/** 环境变量 */
-	const WAKATIME_URL = import.meta.env.VITE_WAKATIME_EMBED_URL;
-	const LANGUAGES_URL = import.meta.env.VITE_WAKATIME_LANGUAGES_URL;
+	interface WakaResponse<T> {
+		data?: T[];
+	}
+
+	async function fetchJson<T>(url: string): Promise<T> {
+		const response = await fetch(url);
+		if (!response.ok) throw new Error(`WakaTime request failed: ${response.status}`);
+		return response.json() as Promise<T>;
+	}
+
+	/** 仅允许无秘密的公开代理端点。 */
+	const WAKATIME_URL = publicConfig.services.codingActivityProxyUrl;
+	const LANGUAGES_URL = publicConfig.services.codingLanguagesProxyUrl;
 
 	let days = $state<DayEntry[]>([]);
 	let languages = $state<LangEntry[]>([]);
@@ -77,31 +87,31 @@
 
 	async function fetchWakaTime() {
 		if (!WAKATIME_URL) {
-			error = '未配置 VITE_WAKATIME_EMBED_URL';
+			error = '未配置编程统计代理端点';
 			loading = false;
 			return;
 		}
 
 		try {
 			// 并行获取 Coding Activity 和 Languages（如有）
-			const promises: Promise<any>[] = [fetch(WAKATIME_URL).then((r) => r.json())];
-			if (LANGUAGES_URL) {
-				promises.push(fetch(LANGUAGES_URL).then((r) => r.json()));
-			}
-
-			const results = await Promise.all(promises);
+			const [activityResponse, languageResponse] = await Promise.all([
+				fetchJson<WakaResponse<DayEntry>>(WAKATIME_URL),
+				LANGUAGES_URL
+					? fetchJson<WakaResponse<LangEntry>>(LANGUAGES_URL)
+					: Promise.resolve<WakaResponse<LangEntry> | null>(null)
+			]);
 
 			// 解析每日编码时间
-			const entries: DayEntry[] = results[0].data || [];
+			const entries = activityResponse.data ?? [];
 			days = entries;
 			// totalText 现在是 derived 状态，无需手动计算
 
 			// 解析语言分布（如有）
-			if (results[1]?.data) {
-				languages = results[1].data.slice(0, 4).map((l: any) => ({
-					name: l.name,
-					percent: l.percent,
-					color: l.color || null
+			if (languageResponse?.data) {
+				languages = languageResponse.data.slice(0, 4).map((language) => ({
+					name: language.name,
+					percent: language.percent,
+					color: language.color || null
 				}));
 			}
 		} catch (e) {
@@ -124,9 +134,7 @@
 
 <div class="flex h-full flex-col pt-4">
 	<SectionHeader
-		icon={Code}
-		iconBgColor="bg-teal-500/20"
-		iconColor="text-teal-400"
+		icon="coding"
 		titleKey="home.hero.coding_activity.title"
 		subtitleKey="home.hero.coding_activity.powered_by"
 		rightKey="home.hero.coding_activity.past_week"
@@ -137,7 +145,7 @@
 			<div class="flex h-full flex-col justify-between">
 				<Skeleton class="h-4 w-24" />
 				<div class="flex h-10 items-end gap-1">
-					{#each Array(7) as _}
+					{#each Array(7).keys() as index (index)}
 						<Skeleton class="flex-1 rounded-t" style="height: {8 + Math.random() * 24}px" />
 					{/each}
 				</div>
@@ -152,7 +160,7 @@
 					<!-- 语言标签（如有） -->
 					{#if languages.length > 0}
 						<div class="mt-1 flex flex-wrap content-start justify-end gap-1">
-							{#each languages as lang}
+							{#each languages as lang (lang.name)}
 								<span
 									class="inline-flex items-center gap-0.5 rounded-full bg-secondary/30 px-1.5 py-px text-[10px] whitespace-nowrap text-muted-foreground"
 								>
@@ -169,7 +177,7 @@
 
 				<!-- 柱状图 -->
 				<div class="flex shrink-0 items-end gap-1" style="height: 60px;">
-					{#each days as day}
+					{#each days as day (day.range.date)}
 						{@const pct = (day.grand_total.total_seconds / maxSeconds()) * 100}
 						<div class="group/bar relative flex flex-1 flex-col items-center">
 							<div

@@ -66,3 +66,15 @@
 		background-color: rgba(255, 255, 255, 0.4);
 	}
 }
+
+/*
+ * 外观过渡 (View Transition)：普通背景 <-> 文章阅读背景切换与主题切换
+ * 共用同一入口 (见 $lib/utils/effect/appearanceTransition.svelte.ts)，
+ * 对整个应用视口执行一次交叉淡化；prefers-reduced-motion 下 JS 侧直接跳过，
+ * 不创建 View Transition。
+ */
+::view-transition-old(root),
+::view-transition-new(root) {
+	animation-duration: 350ms;
+	animation-timing-function: ease-in-out;
+}

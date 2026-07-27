@@ -9,10 +9,8 @@
 	import { SiGithub } from '@icons-pack/svelte-simple-icons';
 	import { t, locale } from '$lib/i18n/store';
 	import Crossfade from '$lib/components/ui/effect/Crossfade.svelte';
-	import { calculateAge } from '$lib/utils/datetime/age';
-	import { getAvatarUrl, seoConfig, repoConfig, profileConfig } from '$lib/config/index';
+	import { seoConfig, repoConfig, profileConfig } from '$lib/config/index';
 
-	const age = calculateAge();
 	const avatarUrl = profileConfig.avatar;
 	const siteUrl = seoConfig.baseURL;
 	const issueUrl = `${repoConfig.url}/issues/new?q=is%3Aissue+state%3Aopen`;
@@ -30,30 +28,30 @@
 				>
 					<div class="shrink-0 space-y-0.5">
 						<p>
-							<Crossfade key={$locale} class="inline-grid">
+							<Crossfade key={$locale} inline class="inline-grid">
 								<span>{$t('friends.profile.name_label')}</span>
 							</Crossfade>:
-							<Crossfade key={$locale} class="inline-grid">
+							<Crossfade key={$locale} inline class="inline-grid">
 								<span>{profileConfig.name}</span>
 							</Crossfade>
 						</p>
 						<p>
-							<Crossfade key={$locale} class="inline-grid">
+							<Crossfade key={$locale} inline class="inline-grid">
 								<span>{$t('friends.profile.desc_label')}</span>
 							</Crossfade>:
-							<Crossfade key={$locale} class="inline-grid">
+							<Crossfade key={$locale} inline class="inline-grid">
 								<span>{profileConfig.quote[$locale === 'zh-CN' ? 'zh' : 'en']}</span>
 							</Crossfade>
 						</p>
 					</div>
 					<div class="min-w-0 space-y-0.5 break-all">
 						<p>
-							<Crossfade key={$locale} class="inline-grid">
+							<Crossfade key={$locale} inline class="inline-grid">
 								<span>{$t('friends.profile.link_label')}</span>
 							</Crossfade>: {siteUrl}
 						</p>
 						<p>
-							<Crossfade key={$locale} class="inline-grid">
+							<Crossfade key={$locale} inline class="inline-grid">
 								<span>{$t('friends.profile.icon_label')}</span>
 							</Crossfade>: {avatarUrl}
 						</p>
@@ -69,7 +67,7 @@
 					<div class="h-4 w-4 [&>svg]:h-full [&>svg]:w-full">
 						<SiGithub />
 					</div>
-					<Crossfade key={$locale} class="inline-grid">
+					<Crossfade key={$locale} inline class="inline-grid">
 						<span>{$t('friends.exchange')}</span>
 					</Crossfade>
 				</a>

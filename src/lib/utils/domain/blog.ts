@@ -141,7 +141,7 @@ interface Post {
  * @param post 文章对象
  * @param activeCategory 当前激活的分类
  */
-export function getPostUrl(post: Post, activeCategory: string = 'All') {
+export function getPostUrl(post: Post, activeCategory: string = 'All'): `/blog/${string}/` {
 	const cats = post.categories || (post.category ? [post.category] : []);
 	const targetCategory =
 		activeCategory !== 'All' && cats.includes(activeCategory)
@@ -168,11 +168,22 @@ export function getCategoryTitle(slug: string, categories: { slug: string; title
 }
 
 /**
+ * 获取文章的视觉样式和分类列表 (用于卡片组件)
+ * @param post 博客文章
+ */
+export function getPostVisuals(post: BlogPost) {
+	return {
+		visual: getCategoryVisuals(post.categories?.[0] || post.category || ''),
+		postCategories: post.categories || (post.category ? [post.category] : [])
+	};
+}
+
+/**
  * 获取博客列表页面的规范 URL
  * @param category 分类 (可选)
  * @param tag 标签 (可选)
  */
-export function getBlogListUrl(category: string = 'All', tag: string = '') {
+export function getBlogListUrl(category: string = 'All', tag: string = ''): `/blog/${string}/` {
 	let path = '/blog';
 
 	if (category && category !== 'All') {
@@ -184,7 +195,7 @@ export function getBlogListUrl(category: string = 'All', tag: string = '') {
 	}
 
 	// 始终添加末尾斜杠以匹配 trailingSlash = 'always'
-	return `${path}/`;
+	return `${path}/` as `/blog/${string}/`;
 }
 
 /**

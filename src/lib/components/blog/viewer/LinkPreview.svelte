@@ -40,10 +40,10 @@
 		href={url}
 		target="_blank"
 		rel="noopener noreferrer"
-		class="group my-6 block overflow-hidden rounded-2xl border border-white/10 bg-white/5 no-underline transition-all hover:bg-white/10"
+		class="group my-6 block overflow-hidden rounded-2xl border border-(--reader-border) bg-(--reader-card) no-underline transition-all hover:bg-(--reader-card-hover)"
 	>
 		{#if metadata.image}
-			<div class="relative h-48 w-full overflow-hidden bg-white/5">
+			<div class="relative h-48 w-full overflow-hidden bg-(--reader-card)">
 				<LazyImage
 					src={metadata.image}
 					alt={metadata.title}
@@ -53,14 +53,16 @@
 			</div>
 		{/if}
 		<div class="p-4">
-			<div class="mb-1 text-xs font-medium tracking-wider text-white/50 uppercase">
+			<div class="mb-1 text-xs font-medium tracking-wider text-(--reader-secondary) uppercase">
 				{metadata.hostname}
 			</div>
-			<div class="mb-2 text-lg leading-tight font-bold text-white group-hover:text-blue-400">
+			<div
+				class="mb-2 text-lg leading-tight font-bold text-(--reader-foreground) group-hover:text-blue-400"
+			>
 				{metadata.title}
 			</div>
 			{#if metadata.description}
-				<div class="line-clamp-2 text-sm text-white/70">
+				<div class="line-clamp-2 text-sm text-(--reader-secondary)">
 					{metadata.description}
 				</div>
 			{/if}

@@ -4,12 +4,10 @@
 	 *
 	 * 桌面布局左侧的侧边栏，包含主导航、动态列表区域和版权信息。
 	 *
-	 * @prop backgroundMode - 背景模式 (image | color | mosaic 等)
-	 * @prop infoComponent - 额外显示的组件 (如 MosaicInfo)
 	 */
 	import LiquidGlass from '$lib/components/ui/effect/LiquidGlass.svelte';
 	import BottomInfo from '../bottom-info/BottomInfo.svelte';
-	import { navItems, type BackgroundMode } from '$lib/config/index'; // 背景模式类型
+	import { navItems } from '$lib/config/index';
 	import { page } from '$app/state';
 	import { sidebarState } from '$lib/stores/app.svelte';
 	import { isActiveRoute } from '$lib/utils/domain/nav';
@@ -23,10 +21,7 @@
 	import {} from 'svelte/transition';
 	import { SvelteMap } from 'svelte/reactivity';
 	import SegmentedControl from '$lib/components/ui/display/SegmentedControl.svelte';
-
-	let { backgroundMode = 'image' } = $props<{
-		backgroundMode?: BackgroundMode;
-	}>();
+	import { X } from 'lucide-svelte';
 
 	// 监听路由变化，如果当前页面不需要侧边栏列表，则立即清理
 	$effect(() => {
@@ -148,8 +143,12 @@
 	// 不需要 resolvedExtraInfoComponent 了，直接使用 sidebarState.extraInfoComponent
 </script>
 
-<!-- 左侧侧边栏：路由、列表、版权 -->
-<LiquidGlass class="pointer-events-auto relative z-20 h-full w-72 flex-none pt-3 pr-2 pb-3 pl-2">
+<!-- 左侧侧边栏：路由、列表、版权。贴边一体化布局：外部留白转移到内部，仅保留右侧细分界线 -->
+<LiquidGlass
+	variant="panel"
+	flat
+	class="pointer-events-auto relative z-20 h-full w-[248px] flex-none rounded-none border-r border-border/40 px-3 py-3 shadow-none! lg:w-64"
+>
 	<div class="flex h-full flex-col">
 		<!-- 可滚动内容区域 -->
 		<FadeEdge
@@ -165,13 +164,13 @@
 			>
 				<!-- 1. 路由导航区域 -->
 				<div class="flex flex-none flex-col">
-					<h2 class="mb-2 flex-none px-3 text-xs font-semibold text-muted-foreground/80">
-						<Crossfade key={$t('layout.sidebar.navigation')} class="inline-grid"
+					<h2 class="sidebar-section-title mb-2 flex-none">
+						<Crossfade key={$t('layout.sidebar.navigation')} inline class="inline-grid"
 							><span>{$t('layout.sidebar.navigation')}</span></Crossfade
 						>
 					</h2>
 					<div class="flex flex-col px-1">
-						<div class="flex flex-col gap-0.5">
+						<div class="flex flex-col gap-1">
 							{#each sidebarNavItems as item (item.href)}
 								<SidebarTree {item} />
 							{/each}
@@ -188,9 +187,11 @@
 						{#if sidebarState.listComponent}
 							<div class="flex flex-col pt-4">
 								{#if $t(sidebarState.listTitle)}
-									<div class="mb-2 flex flex-none items-center justify-between px-3">
-										<h2 class="text-xs font-semibold text-muted-foreground/80">
-											<Crossfade key={$t(sidebarState.listTitle)} class="inline-grid"
+									<div
+										class="sidebar-section-title mb-2 flex flex-none items-center justify-between"
+									>
+										<h2>
+											<Crossfade key={$t(sidebarState.listTitle)} inline class="inline-grid"
 												><span>{$t(sidebarState.listTitle)}</span></Crossfade
 											>
 										</h2>
@@ -214,6 +215,23 @@
 									</div>
 								{/if}
 
+								<Crossfade
+									key={sidebarState.filterLabel || 'no-filter'}
+									class="grid-cols-[minmax(0,1fr)] grid-rows-[minmax(0,1fr)]"
+								>
+									{#if sidebarState.filterLabel}
+										<div class="flex-none px-1 pb-1">
+											<button
+												class="sidebar-item-base sidebar-item-active group"
+												onclick={() => sidebarState.onFilterClear?.()}
+											>
+												<X class="sidebar-icon" />
+												<span class="truncate">{sidebarState.filterLabel}</span>
+											</button>
+										</div>
+									{/if}
+								</Crossfade>
+
 								<div class="flex flex-col px-1">
 									<sidebarState.listComponent
 										{...sidebarState.listProps}
@@ -229,8 +247,8 @@
 				</div>
 			</div>
 		</FadeEdge>
-		<!-- 3. 版权区域 -->
-		<div class="mt-auto">
+		<!-- 3. 版权区域：独立固定区，禁止 Flex 压缩 -->
+		<div class="mt-auto shrink-0">
 			<BottomInfo
 				direction="vertical"
 				infoComponent={sidebarState.extraInfoComponent}

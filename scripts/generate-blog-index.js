@@ -1,71 +1,31 @@
 /**
  * 博客索引生成脚本
  *
- * 扫描 static/posts 目录下的 Markdown 文件，生成以下索引文件：
+ * 扫描构建输入快照中的 Markdown 文件，生成以下索引文件：
  * - all.json: 包含所有文章元数据的列表
  * - categories.json: 分类元数据
  */
-import fs from 'fs';
-import path from 'path';
+import fs from 'node:fs';
+import path from 'node:path';
 import matter from 'gray-matter';
 
-// 手动加载环境变量
-function loadEnv() {
-	// 根据环境决定加载哪个文件
-	const isDev = process.env.NODE_ENV === 'development';
-	const envFile = isDev ? '.env.dev' : '.env';
-	const envPath = path.join(process.cwd(), envFile);
-
-	if (fs.existsSync(envPath)) {
-		console.log(`[DEBUG] 正在从 ${envPath} 加载环境变量...`);
-		const envContent = fs.readFileSync(envPath, 'utf-8');
-		const lines = envContent.split(/\r?\n/);
-		lines.forEach((line) => {
-			const trimmedLine = line.trim();
-			// 跳过注释和空行
-			if (!trimmedLine || trimmedLine.startsWith('#')) return;
-
-			const match = trimmedLine.match(/^([\w.-]+)\s*=\s*(.*)$/);
-			if (match) {
-				const key = match[1];
-				let value = match[2].trim();
-
-				// 移除可能的行尾注释 (例如 KEY=VALUE # comment)
-				if (value.includes('#')) {
-					value = value.split('#')[0].trim();
-				}
-
-				// 移除包围的引号
-				if (value.startsWith('"') && value.endsWith('"')) {
-					value = value.substring(1, value.length - 1);
-				} else if (value.startsWith("'") && value.endsWith("'")) {
-					value = value.substring(1, value.length - 1);
-				}
-
-				process.env[key] = value;
-			}
-		});
-	} else {
-		console.warn(`[WARN] 环境变量文件 ${envPath} 不存在。`);
-	}
+function requiredEnv(name) {
+	const value = process.env[name];
+	if (!value) throw new Error(`缺少 ${name}，请通过构建输入准备脚本调用博客索引器`);
+	return value;
 }
 
-loadEnv();
+// 服务端路径必须由构建输入准备阶段显式传入，禁止回写 static 或内容源。
+const POSTS_DIR = requiredEnv('FUYAO_POSTS_SOURCE_DIR');
 
-// 定义路径
-// VITE_BLOG_SOURCE_DIR: 指向存放源 .md 文件的目录 (默认为 static/posts)
-const POSTS_DIR = process.env.VITE_BLOG_SOURCE_DIR || path.join(process.cwd(), 'static/posts');
-
-// 支持通过环境变量指定输出目录（用于服务端自动化部署）
-// VITE_BLOG_OUTPUT_DIR: 指向 Web 服务器的 posts 目录 (例如 /home/caddy/www/index/posts)
-// VITE_STATIC_OUTPUT_DIR: 指向 Web 服务器的根目录 (例如 /home/caddy/www/index)
-const BLOG_OUTPUT_DIR = process.env.VITE_BLOG_OUTPUT_DIR || POSTS_DIR;
-const STATIC_OUTPUT_DIR = process.env.VITE_STATIC_OUTPUT_DIR || path.join(process.cwd(), 'static');
+const BLOG_OUTPUT_DIR = requiredEnv('FUYAO_BLOG_OUTPUT_DIR');
+const STATIC_OUTPUT_DIR = requiredEnv('FUYAO_STATIC_OUTPUT_DIR');
 
 const OUTPUT_ALL = path.join(BLOG_OUTPUT_DIR, 'all.json');
 const OUTPUT_CATEGORIES = path.join(BLOG_OUTPUT_DIR, 'categories.json');
-const OUTPUT_RSS = path.join(STATIC_OUTPUT_DIR, 'posts/rss.xml');
+const OUTPUT_RSS = path.join(STATIC_OUTPUT_DIR, 'blog/rss.xml');
 const OUTPUT_SITEMAP = path.join(STATIC_OUTPUT_DIR, 'sitemap.xml');
+const OUTPUT_MANIFEST = path.join(BLOG_OUTPUT_DIR, 'manifest.json');
 
 // 确保输出目录存在
 [BLOG_OUTPUT_DIR, path.dirname(OUTPUT_RSS), path.dirname(OUTPUT_SITEMAP)].forEach((dir) => {
@@ -82,10 +42,12 @@ console.log(`索引输出 (Blog Output): ${BLOG_OUTPUT_DIR}`);
 console.log(`静态文件输出 (Static Output): ${STATIC_OUTPUT_DIR}`);
 console.log('----------------\n');
 
-// 获取配置信息（从环境变量或默认值）
-const siteUrl = process.env.VITE_SITE_URL.replace(/\/$/, '');
-const siteName = process.env.VITE_SEO_AUTHOR;
-const siteDescription = process.env.VITE_SEO_DESCRIPTION;
+const siteConfigPath = process.env.FUYAO_SITE_CONFIG_JSON;
+if (!siteConfigPath) throw new Error('缺少 FUYAO_SITE_CONFIG_JSON，禁止从 VITE_* 读取构建配置');
+const siteConfig = JSON.parse(fs.readFileSync(siteConfigPath, 'utf8'));
+const siteUrl = siteConfig.site.url.replace(/\/$/, '');
+const siteName = siteConfig.site.name;
+const siteDescription = siteConfig.seo.description;
 
 /**
  * 递归获取目录下的所有 Markdown 文件
@@ -292,6 +254,19 @@ try {
 	// 写入文件
 	fs.writeFileSync(OUTPUT_ALL, JSON.stringify(posts, null, 2));
 	fs.writeFileSync(OUTPUT_CATEGORIES, JSON.stringify(categoriesList, null, 2));
+	fs.writeFileSync(
+		OUTPUT_MANIFEST,
+		JSON.stringify(
+			{
+				schemaVersion: 1,
+				generatedAt: new Date().toISOString(),
+				postCount: posts.length,
+				categoryCount: categoriesList.length
+			},
+			null,
+			2
+		)
+	);
 
 	// 删除旧文件
 	const OLD_FILES = [path.join(POSTS_DIR, 'latest.json'), path.join(POSTS_DIR, 'archive.json')];
@@ -477,4 +452,5 @@ ${allSitemapUrls
 	console.log(`- Search Index 已生成: ${path.relative(process.cwd(), OUTPUT_SEARCH)}`);
 } catch (e) {
 	console.error('生成索引时出错:', e);
+	process.exitCode = 1;
 }

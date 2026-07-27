@@ -4,6 +4,9 @@
 @import 'tw-animate-css';
 @import './theme.css';
 
+/* Tailwind CSS v4 插件 */
+@plugin '@tailwindcss/typography';
+
 /* 定义暗黑模式下的自定义变体 */
 @custom-variant dark (&:is(.dark *));
 

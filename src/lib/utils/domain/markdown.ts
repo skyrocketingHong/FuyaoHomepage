@@ -5,8 +5,9 @@
  * 1. 封装 unified/remark/rehype 工具链，实现从 Markdown 源码到 HTML 的异步转换。
  * 2. 具备自动 TOC (目录) 提取功能。
  * 3. 实现代码块增强（语言标签显示与复制功能封装）。
- * 4. 具备数学公式 (Katex) 与 代码高亮 (Highlight.js) 的按需加载能力。
+ * 4. 通过 AST 白名单净化原始 HTML，并生成 KaTeX 公式与代码高亮结构。
  */
+import type { Options as RehypeSanitizeOptions } from 'rehype-sanitize';
 
 /**
  * HAST (HTML AST) 节点类型
@@ -25,38 +26,88 @@ interface HastParent extends HastNode {
 	children: HastNode[];
 }
 
+/** Markdown 渲染选项。 */
+export interface MarkdownRenderOptions {
+	/** 代码块复制按钮文本。 */
+	copyLabel?: string;
+	/** 横向滚动表格的无障碍标签。 */
+	tableScrollLabel?: string;
+}
+
+/** Markdown 渲染结果。 */
+export interface MarkdownRenderResult {
+	/** 安全转换后的 HTML。 */
+	html: string;
+	/** 从一级至三级标题提取的目录。 */
+	toc: { id: string; text: string; depth: number }[];
+}
+
+/**
+ * 判断独立链接的可见文字是否与目标 HTTP(S) URL 等价。
+ *
+ * URL 构造器会统一主机名大小写、默认端口、尾部斜杠和百分号编码，避免直接字符串比较误判。
+ */
+export function isStandalonePreviewLink(href: string, visibleText: string): boolean {
+	try {
+		const target = new URL(href.trim());
+		const label = new URL(visibleText.trim());
+		if (
+			!['http:', 'https:'].includes(target.protocol) ||
+			!['http:', 'https:'].includes(label.protocol)
+		) {
+			return false;
+		}
+		return target.href === label.href;
+	} catch {
+		return false;
+	}
+}
+
 /**
  * Markdown 渲染核心函数
  *
  * 采用动态加载依赖策略以优化 Bundle 体积和首屏加载速度。
  *
  * @param src - 原始 Markdown 字符串源码
- * @returns 包含渲染后的 HTML 字符串和解析出的 TOC 结构
+ * @param options - 本地化文案等渲染选项
+ * @returns 包含渲染后 HTML 和目录结构的结果
  */
-export async function renderMarkdown(src: string, options: { copyLabel?: string } = {}) {
+export async function renderMarkdown(
+	src: string,
+	options: MarkdownRenderOptions = {}
+): Promise<MarkdownRenderResult> {
 	if (!src) return { html: '', toc: [] };
 
 	const copyLabel = options.copyLabel || 'Copy';
+	const tableScrollLabel = options.tableScrollLabel || '可横向滚动表格';
 
 	// 1. 并行动态加载所有依赖，确保模块上下文一致
 	const [
 		{ unified },
 		{ default: remarkParse },
 		{ default: remarkGfm },
+		{ default: remarkMath },
 		{ default: remarkRehype },
+		{ default: rehypeRaw },
+		{ default: rehypeSanitize, defaultSchema },
+		{ default: rehypeKatex },
+		{ default: rehypeHighlight },
 		{ default: rehypeStringify },
 		{ default: rehypeSlug },
-		{ visit, SKIP },
-		{ default: DOMPurify }
+		{ visit, SKIP }
 	] = await Promise.all([
 		import('unified'),
 		import('remark-parse'),
 		import('remark-gfm'),
+		import('remark-math'),
 		import('remark-rehype'),
+		import('rehype-raw'),
+		import('rehype-sanitize'),
+		import('rehype-katex'),
+		import('rehype-highlight'),
 		import('rehype-stringify'),
 		import('rehype-slug'),
-		import('unist-util-visit'),
-		import('dompurify')
+		import('unist-util-visit')
 	]);
 
 	// 内部文本提取工具 (更安全)
@@ -71,6 +122,19 @@ export async function renderMarkdown(src: string, options: { copyLabel?: string 
 	}
 
 	const localToc: { id: string; text: string; depth: number }[] = [];
+
+	const sanitizeSchema: RehypeSanitizeOptions = {
+		...defaultSchema,
+		tagNames: [...new Set([...(defaultSchema.tagNames || []), 'mark'])],
+		attributes: {
+			...defaultSchema.attributes,
+			code: [
+				...(defaultSchema.attributes?.code || []),
+				['className', 'math-inline', 'math-display']
+			]
+		},
+		strip: [...new Set([...(defaultSchema.strip || []), 'style', 'iframe', 'object', 'embed'])]
+	};
 
 	// 2. 自定义插件：TOC 提取器 (闭包模式)
 	const rehypeExtractToc = () => (tree: unknown) => {
@@ -188,7 +252,12 @@ export async function renderMarkdown(src: string, options: { copyLabel?: string 
 					const wrapperNode = {
 						type: 'element',
 						tagName: 'div',
-						properties: { className: ['table-container'] },
+						properties: {
+							className: ['table-container'],
+							tabIndex: 0,
+							role: 'region',
+							ariaLabel: tableScrollLabel
+						},
 						children: [node]
 					};
 
@@ -199,6 +268,53 @@ export async function renderMarkdown(src: string, options: { copyLabel?: string 
 				}
 			}
 		);
+	};
+
+	/** 修复 sanitize 为防止 DOM clobbering 添加前缀后，文内锚点仍指向旧 ID 的情况。 */
+	const rehypeRepairFragmentLinks = () => (tree: unknown) => {
+		const ids = new Set<string>();
+		visit(tree as HastNode, 'element', (node: HastNode) => {
+			const id = node.properties?.id;
+			if (typeof id === 'string') ids.add(id);
+		});
+
+		visit(tree as HastNode, 'element', (node: HastNode) => {
+			if (node.tagName !== 'a') return;
+			const href = node.properties?.href;
+			if (typeof href !== 'string' || !href.startsWith('#')) return;
+
+			const targetId = href.slice(1);
+			if (!ids.has(targetId) && ids.has(`user-content-${targetId}`)) {
+				node.properties = { ...node.properties, href: `#user-content-${targetId}` };
+			}
+		});
+	};
+
+	/** 为媒体、外部链接、表头和任务列表补充浏览器原生语义。 */
+	const rehypeEnhanceContent = () => (tree: unknown) => {
+		visit(tree as HastNode, 'element', (node: HastNode) => {
+			node.properties = node.properties || {};
+
+			if (node.tagName === 'img') {
+				node.properties.loading = 'lazy';
+				node.properties.decoding = 'async';
+			}
+
+			if (node.tagName === 'a') {
+				const href = String(node.properties.href ?? '');
+				if (/^https?:\/\//i.test(href)) {
+					node.properties.rel = ['noopener', 'noreferrer'];
+				}
+			}
+
+			if (node.tagName === 'th' && !node.properties.scope) {
+				node.properties.scope = 'col';
+			}
+
+			if (node.tagName === 'input' && node.properties.type === 'checkbox') {
+				node.properties.disabled = true;
+			}
+		});
 	};
 
 	// 5. 自定义插件：图片说明检测 (Image Caption)
@@ -275,98 +391,25 @@ export async function renderMarkdown(src: string, options: { copyLabel?: string 
 		);
 	};
 
-	let processor = unified()
+	const processor = unified()
 		.use(remarkParse)
 		.use(remarkGfm)
-		.use(remarkRehype, { allowDangerousHtml: true });
-
-	// 按需加载：数学公式
-	if (src.includes('$')) {
-		const [{ default: remarkMath }, { default: rehypeKatex }] = await Promise.all([
-			import('remark-math'),
-			import('rehype-katex')
-		]);
-
-		processor = processor.use(remarkMath).use(rehypeKatex);
-	}
-
-	// 按需加载：代码高亮
-	if (src.includes('```')) {
-		const { default: rehypeHighlight } = await import('rehype-highlight');
-		// @ts-expect-error - 某些版本的 rehype-highlight 类型定义与当前 unified 版本可能存在细微冲突
-		processor = processor.use(rehypeHighlight, { ignoreMissing: true });
-	}
-
-	// 执行解析
-	const file = await processor
+		.use(remarkMath)
+		.use(remarkRehype, { allowDangerousHtml: true })
+		.use(rehypeRaw)
+		.use(rehypeSanitize, sanitizeSchema)
+		.use(rehypeKatex)
+		.use(rehypeHighlight)
 		.use(rehypeSlug)
-
+		.use(rehypeRepairFragmentLinks)
 		.use(rehypeCodeWrapper)
-
 		.use(rehypeTableWrapper)
 		.use(rehypeImageCaption)
+		.use(rehypeEnhanceContent)
 		.use(rehypeExtractToc)
-		.use(rehypeStringify, { allowDangerousHtml: true })
-		.process(src);
+		.use(rehypeStringify);
 
-	// 最终过滤
-	const cleanHtml = DOMPurify.sanitize(String(file), {
-		ADD_TAGS: [
-			'math',
-			'maction',
-			'maligngroup',
-			'malignmark',
-			'menclose',
-			'merror',
-			'mfenced',
-			'mfrac',
-			'mglyph',
-			'mi',
-			'mlabeledtr',
-			'mlongdiv',
-			'mmultiscripts',
-			'mn',
-			'mo',
-			'mover',
-			'mpadded',
-			'mphantom',
-			'mroot',
-			'mrow',
-			'ms',
-			'mscarries',
-			'mscarry',
-			'msgroup',
-			'msline',
-			'mspace',
-			'msqrt',
-			'msrow',
-			'mstack',
-			'mstyle',
-			'msub',
-			'msubsup',
-			'msup',
-			'mtable',
-			'mtd',
-			'mtext',
-			'mtr',
-			'munder',
-			'munderover',
-			'semantics',
-			'annotation',
-			'annotation-xml',
-			'button'
-		],
-		ADD_ATTR: [
-			'allow',
-			'allowfullscreen',
-			'frameborder',
-			'scrolling',
-			'id',
-			'class',
-			'data-code',
-			'style'
-		]
-	});
+	const file = await processor.process(src);
 
-	return { html: cleanHtml, toc: localToc };
+	return { html: String(file), toc: localToc };
 }

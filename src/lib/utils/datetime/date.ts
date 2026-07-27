@@ -35,7 +35,7 @@ export function formatDate(
 
 	// 基于语言环境的默认格式
 	if (dayjsLocale === 'zh-cn') {
-		return d.locale('zh-cn').format('YYYY年M月D日');
+		return d.locale('zh-cn').format('YYYY年MM月DD日');
 	} else {
 		return d.locale('en').format('MMMM D, YYYY');
 	}
@@ -80,3 +80,17 @@ export function formatDuration(seconds: number, locale: LocaleKey = 'zh-CN'): st
 }
 
 export { dayjs };
+
+/**
+ * 根据 locale 生成月份标题
+ *
+ * @param year - 年份
+ * @param month - 月份（1-12）
+ * @param locale - 语言环境键（zh-CN 或 en-US）
+ * @returns 月份标题，如 "2025年03月" 或 "Mar 2025"
+ */
+export function getMonthLabel(year: number, month: number, locale: LocaleKey = 'zh-CN'): string {
+	if (locale === 'zh-CN') return `${year}年${String(month).padStart(2, '0')}月`;
+	const name = new Intl.DateTimeFormat('en', { month: 'short' }).format(new Date(year, month - 1));
+	return `${name} ${year}`;
+}
