@@ -31,7 +31,7 @@ seo:
 services:
   wallpaper:
     defaultUrl: https://picsum.photos/seed/fuyao-homepage/1920/1080
-    apiUrl: https://api.example.com/wallpaper
+    apiUrl: https://api.imyan.ren/bing/wallpaper
   amap:
     browserKey: your_amap_key_here
     securityCode: your_amap_security_code_here

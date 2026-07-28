@@ -15,6 +15,7 @@
 	import { page } from '$app/state';
 	import { replaceState } from '$app/navigation';
 	import { resolve } from '$app/paths';
+	import type { Pathname } from '$app/types';
 	import { sidebarState, headerState } from '$lib/stores/app.svelte';
 	import { loadPostContent } from '$lib/utils/domain/loader';
 	import type { BlogPost } from '$lib/utils/domain/blog';
@@ -146,7 +147,7 @@
 			if (window.location.hash !== `#${id}`) {
 				replaceState(
 					resolve(
-						`${window.location.pathname}${window.location.search}#${id}` as `/blog/${string}`
+						`${window.location.pathname}${window.location.search}#${id}` as Pathname
 					),
 					page.state
 				);

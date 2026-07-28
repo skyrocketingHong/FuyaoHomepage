@@ -4,8 +4,8 @@
 	 *
 	 * 用于 Header 和 HeaderActions 中的交互按钮。
 	 * 默认模式：独立圆形控件，使用 .header-control-shell 共享材质
-	 * (macOS 风格半透明中性外壳 + 单次 control 级原生背景模糊，见 components.css
-	 * 与 theme.css 的 --header-control-* token)；不注册 WebGL 合成器，不使用 SVG 折射。
+	 * (统一 --glass-surface 染色 + 单次 control 级原生背景模糊，见 components.css
+	 * 与 theme.css)；不注册 WebGL 合成器，不使用 SVG 折射。
 	 * 移动端命中区域不小于 44×44px，桌面端 36×36px。
 	 * bare 模式：用于 ActionGroup 分段胶囊内部，背景透明、不单独模糊/加边框/加阴影，
 	 * 由胶囊外壳统一提供材质与边界，hover/active 仅改变内部填充。

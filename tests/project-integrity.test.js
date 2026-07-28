@@ -87,9 +87,9 @@ test('开发和构建命令不修改版本文件，相册默认命令不重命�
 });
 
 test('营销版本与 Build Train 独立显示', () => {
-	assert.equal(formatBuildIdentifier('4A', 83), '4A083');
-	assert.equal(formatVersionDisplay('27.0.0', '4A', 83), '27.0 (4A083)');
-	assert.equal(formatVersionDisplay('27.0.1', '4A', 84), '27.0.1 (4A084)');
+	assert.equal(formatBuildIdentifier('4B', 96), '4B96');
+	assert.equal(formatVersionDisplay('27.1.0', '4B', 96), '27.1 (4B96)');
+	assert.equal(formatVersionDisplay('27.1.1', '4B', 97), '27.1.1 (4B97)');
 });
 
 test('RSS 与 Sitemap 使用单一静态产物并保持可发布', () => {

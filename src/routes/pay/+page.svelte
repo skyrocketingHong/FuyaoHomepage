@@ -1,15 +1,18 @@
 <script lang="ts">
 	/**
-	 * 支付页面
+	 * 支付页面。
 	 *
-	 * 展示支付方式列表和二维码。
+	 * 统一外层控制说明卡与 Wallet 工作区的最大宽度和水平边界。手机与平板使用
+	 * 固定视口 Wallet 堆叠，宽屏使用支付方式列表与当前详情双栏；页面及内部组件
+	 * 均不创建滚动容器。
 	 */
 	import { onMount } from 'svelte';
 	import QRCodeCard from '$lib/components/pay/QRCodeCard.svelte';
-	import Crossfade from '$lib/components/ui/effect/Crossfade.svelte';
-	import LoadingState from '$lib/components/ui/feedback/LoadingState.svelte';
+	import PaymentIntro from '$lib/components/pay/PaymentIntro.svelte';
+	import StatusState from '$lib/components/ui/feedback/StatusState.svelte';
 	import { loadYaml } from '$lib/utils/network/loading';
 	import { t, locale } from '$lib/i18n/store';
+	import { CircleAlert, LoaderCircle, WalletCards } from 'lucide-svelte';
 
 	interface Payment {
 		name: string;
@@ -19,38 +22,60 @@
 		[key: string]: unknown;
 	}
 
-	let payments: Payment[] = $state([]);
+	let payments = $state<Payment[]>([]);
 	let loading = $state(true);
 	let error = $state('');
+	let cardReady = $state(false);
 
 	onMount(async () => {
 		try {
 			payments = await loadYaml<Payment[]>('/data/payments.yaml');
-		} catch (e) {
-			error = 'Error loading configuration';
-			console.error(e);
+		} catch (loadError) {
+			error = loadError instanceof Error ? loadError.message : 'payment-config-load-failed';
+			console.error('Error loading payment configuration', loadError);
 		} finally {
 			loading = false;
 		}
 	});
 </script>
 
-<div class="flex h-full w-full flex-col items-center justify-start px-0 pt-4 md:px-4 md:pt-8">
-	<!-- 标题 -->
-	<div class="mb-4 px-4 text-center">
-		<h1
-			class="bg-gradient-to-r from-blue-400 via-purple-500 to-pink-500 bg-clip-text text-3xl font-bold text-transparent md:text-4xl"
-		>
-			<Crossfade key={$locale} inline class="inline-grid">
-				<span>{$t('pay.title')}</span>
-			</Crossfade>
-		</h1>
-	</div>
+{#if loading}
+	<StatusState
+		icon={LoaderCircle}
+		title={$t('pay.states.loading')}
+		description={$t('pay.states.loading_hint')}
+		transitionKey={$locale}
+		layout="viewport"
+		iconClass="animate-spin opacity-60"
+	/>
+{:else if error}
+	<StatusState
+		icon={CircleAlert}
+		code="!"
+		title={$t('pay.states.load_error')}
+		description={$t('pay.states.load_error_hint')}
+		transitionKey={$locale}
+		layout="viewport"
+	/>
+{:else if payments.length === 0}
+	<StatusState
+		icon={WalletCards}
+		code={0}
+		title={$t('pay.states.empty')}
+		description={$t('pay.states.empty_hint')}
+		transitionKey={$locale}
+		layout="viewport"
+	/>
+{:else}
+	<div
+		class="payment-page mx-auto flex h-[calc(100%-var(--mobile-dock-clearance))] min-h-0 w-full max-w-[var(--payment-content-max-width)] flex-col items-center gap-3 md:h-full md:gap-4"
+	>
+		{#if cardReady}
+			<PaymentIntro />
+		{/if}
 
-	<!-- 内容区域 -->
-	<LoadingState {loading} {error} class="px-4">
-		<div class="w-full">
-			<QRCodeCard {payments} />
+		<div class="flex min-h-0 w-full flex-1 justify-center">
+			<QRCodeCard {payments} onready={() => (cardReady = true)} />
 		</div>
-	</LoadingState>
-</div>
+	</div>
+{/if}

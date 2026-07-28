@@ -39,5 +39,5 @@
 	detailLabel={$t('blog.article_index')}
 	detailValue={$t('blog.article_count', { count: '0' })}
 	{action}
-	class="min-h-[28rem] py-8"
+	layout="viewport"
 />

@@ -2,7 +2,7 @@
  * 项目版本管理入口。
  *
  * `version.json` 是营销版本、Build Train 与构建序号的唯一人工维护入口；
- * 脚本在修改后同步 `package.json`，并生成类似 `27.0 (4A083)` 的展示文本。
+ * 脚本在修改后同步 `package.json`，并生成类似 `27.1 (4B96)` 的展示文本。
  */
 import fs from 'node:fs';
 import path from 'node:path';
@@ -38,14 +38,14 @@ export function parseVersion(version) {
 }
 
 /**
- * 生成 Build Train 标识，例如 4A + 83 => 4A083。
+ * 生成 Build Train 标识，例如 4B + 96 => 4B96。
  * @param {string} buildTrain
  * @param {number} build
  */
 export function formatBuildIdentifier(buildTrain, build) {
 	validateBuildTrain(buildTrain);
 	validateBuild(build);
-	return `${buildTrain}${String(build).padStart(3, '0')}`;
+	return `${buildTrain}${build}`;
 }
 
 /**

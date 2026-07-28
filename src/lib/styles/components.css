@@ -136,11 +136,11 @@
 	 * 每个外壳只承担一次 control 级原生背景模糊 (blur + 轻微 saturate)，
 	 * 不注册 WebGL 合成器、不使用 SVG 折射、不依赖 HeaderChrome 提供模糊；
 	 * 边界只保留一层 1px 半透明边缘 + 顶部轻微内高光 + 一个向下偏移的柔和环境阴影。
-	 * hover 仅调整表面亮度，pressed 降低亮度并缩小至 0.97 (不改变控件宽度)。
+	 * 交互状态不改写主体染色；pressed 仅缩小至 0.97 (不改变控件宽度)。
 	 */
 	.header-control-shell {
 		padding: 0;
-		background: var(--header-control-surface);
+		background: var(--glass-surface);
 		border: 1px solid var(--header-control-edge);
 		box-shadow:
 			inset 0 1px 0 var(--header-control-highlight),
@@ -148,17 +148,10 @@
 		-webkit-backdrop-filter: blur(var(--header-control-blur))
 			saturate(var(--header-control-saturate));
 		backdrop-filter: blur(var(--header-control-blur)) saturate(var(--header-control-saturate));
-		transition:
-			background-color 150ms ease-out,
-			transform 150ms ease-out;
-	}
-
-	.header-control-shell:hover {
-		background: var(--header-control-surface-hover);
+		transition: transform 150ms ease-out;
 	}
 
 	.header-control-shell:active {
-		background: var(--header-control-surface-pressed);
 		transform: scale(0.97);
 	}
 
@@ -189,7 +182,7 @@
 	 * 禁止再叠加径向高光、顶部弧形反射、内阴影或 SVG 二次阴影。
 	 */
 	.liquid-glass-icon {
-		background: var(--section-icon-surface, var(--glass-card-tint));
+		background: var(--section-icon-surface, var(--glass-surface));
 		color: var(--section-icon-foreground, inherit);
 		box-shadow: 0 6px 14px -3px var(--section-icon-shadow, rgb(0 0 0 / 20%));
 	}

@@ -8,10 +8,10 @@
 	 * 月份筛选通过 pushState 映射到 URL。
 	 *
 	 * URL 格式：
-	 * - /albums        → 最新年份网格
-	 * - /albums/2025   → 指定年份网格
-	 * - /albums/2025/03 → 指定年份+月份网格
-	 * - /albums/2025/03/15/d4f8e2a1 → 灯箱
+	 * - /albums/         → 最新年份网格
+	 * - /albums/2025/    → 指定年份网格
+	 * - /albums/2025/03/ → 指定年份+月份网格
+	 * - /albums/2025/03/15/d4f8e2a1/ → 灯箱
 	 */
 	import { onMount, onDestroy } from 'svelte';
 	import { goto, pushState, replaceState } from '$app/navigation';
@@ -86,18 +86,18 @@
 		return String(n).padStart(2, '0');
 	}
 
-	function getPhotoUrl(photo: Photo): `/albums/${string}` {
+	function getPhotoUrl(photo: Photo): `/albums/${string}/` {
 		const d = new Date(photo.date);
-		return `/albums/${d.getUTCFullYear()}/${pad(d.getUTCMonth() + 1)}/${pad(d.getUTCDate())}/${photo.filename}`;
+		return `/albums/${d.getUTCFullYear()}/${pad(d.getUTCMonth() + 1)}/${pad(d.getUTCDate())}/${photo.filename}/`;
 	}
 
-	function getYearUrl(year: number): `/albums/${string}` {
-		return `/albums/${year}`;
+	function getYearUrl(year: number): `/albums/${string}/` {
+		return `/albums/${year}/`;
 	}
 
-	function getMonthUrl(year: number, monthId: string): `/albums/${string}` {
+	function getMonthUrl(year: number, monthId: string): `/albums/${string}/` {
 		const month = monthId.split('-')[1];
-		return `/albums/${year}/${month}`;
+		return `/albums/${year}/${month}/`;
 	}
 
 	function getPhotoPageTitle(photo: Photo): string {
@@ -149,7 +149,7 @@
 		const returnUrl = lightboxState.returnUrl || getYearUrl(data.currentYear);
 		lightboxState.close();
 		// 只替换当前历史记录恢复相册 URL，禁止 history.back()
-		replaceState(resolve(returnUrl as `/albums/${string}`), {});
+		replaceState(resolve(returnUrl as `/albums/${string}/`), {});
 	}
 
 	function handleLightboxNavigate(index: number) {
@@ -205,10 +205,10 @@
 				// 深链接打开：历史栈中没有相册网格记录，关闭时进入照片所属的月份相册
 				const photo = filteredPhotos[index];
 				const d = new Date(photo.date);
-				lightboxState.returnUrl = `/albums/${d.getUTCFullYear()}/${pad(d.getUTCMonth() + 1)}`;
+				lightboxState.returnUrl = `/albums/${d.getUTCFullYear()}/${pad(d.getUTCMonth() + 1)}/`;
 				lightboxState.open(filteredPhotos, index);
 				lightboxState.pageTitle = getPhotoPageTitle(photo);
-				replaceState(resolve(page.url.pathname as `/albums/${string}`), {
+				replaceState(resolve(page.url.pathname as `/albums/${string}/`), {
 					albumLightbox: true,
 					photoId
 				});
@@ -317,6 +317,7 @@
 		transitionKey={$locale}
 		detailLabel={$t('album.index_status')}
 		detailValue={$t('album.photo_count', { count: '0' })}
+		layout="viewport"
 	/>
 {:else}
 	<AlbumGrid yearGroups={filteredYearGroups} onPhotoClick={openLightbox} />

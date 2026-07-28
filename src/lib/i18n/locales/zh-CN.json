@@ -31,7 +31,8 @@
 		},
 		"bottom_info": {
 			"service_status": "服务状态",
-			"deployed_on": "部署于阿里云"
+			"deployed_on": "部署于阿里云",
+			"bing_wallpaper": "Bing 每日壁纸"
 		},
 		"header": {
 			"toggle_theme": "切换主题",
@@ -91,12 +92,46 @@
 			"coding_activity": {
 				"title": "编程统计",
 				"past_week": "近 7 日",
-				"powered_by": "Powered by WakaTime"
+				"powered_by": "Powered by WakaTime",
+				"total": "总时长",
+				"other": "其他",
+				"legend": "编程语言图例",
+				"weekly_distribution": "七日语言分布",
+				"daily_breakdown_unavailable": "代理未返回当日语言明细",
+				"not_configured": "未配置编程统计代理端点",
+				"load_error": "编程统计加载失败"
 			}
 		}
 	},
 	"pay": {
 		"title": "打钱",
+		"card": {
+			"ready": "可收款",
+			"unavailable": "暂不可用",
+			"status": "状态",
+			"purpose": "用于支持本站内容与维护",
+			"local_qr": "二维码仅在浏览器生成，不上传支付链接。选择支付方式后，使用对应应用扫描。",
+			"expand": "展开{{method}}收款卡片",
+			"collapse": "收起{{method}}收款卡片",
+			"select": "选择{{method}}支付方式"
+		},
+		"ticket": {
+			"scan_hint": "使用对应支付应用扫描",
+			"qr_alt": "{{method}} 收款二维码",
+			"open_app": "打开支付应用",
+			"open_in": "在{{method}}中打开"
+		},
+		"states": {
+			"loading": "正在生成收款二维码",
+			"loading_hint": "二维码处理仅在当前浏览器中进行。",
+			"load_error": "收款配置加载失败",
+			"load_error_hint": "请稍后刷新页面重试。",
+			"empty": "暂未配置收款方式",
+			"empty_hint": "配置可用的支付方式后将在此显示。",
+			"qr_error": "二维码生成失败",
+			"qr_error_hint": "仍可使用下方按钮打开支付应用。",
+			"link_unavailable": "支付链接不可用"
+		},
 		"modal": {
 			"pay_with": "使用 {{method}} 付款",
 			"scan_qr": "扫描二维码进行支付",
@@ -107,7 +142,8 @@
 			"alipay": "支付宝",
 			"wechat": "微信支付",
 			"qq": "QQ 钱包",
-			"unionpay": "云闪付"
+			"unionpay": "云闪付",
+			"other": "其他支付"
 		}
 	},
 	"footprint": {

@@ -129,7 +129,7 @@
 			transitionKey={$locale}
 			detailLabel={$t('album.filter_status')}
 			detailValue={$t('album.photo_count', { count: '0' })}
-			class="min-h-[28rem] py-8"
+			layout="viewport"
 		/>
 	{:else}
 		{#each yearGroups as yearGroup, yearIdx (yearGroup.year)}

@@ -1,216 +1,273 @@
 <script lang="ts">
 	/**
-	 * 支付二维码卡片组件
+	 * 响应式 Wallet 主从布局控制器。
 	 *
-	 * 展示支付方式列表，点击后在原地展开显示二维码。
-	 * 使用 LiquidGlass 效果和 i18n 国际化。
+	 * 统一校验支付配置、在浏览器本地生成二维码，并以同一个 `selectedIndex`
+	 * 驱动手机／平板的 Wallet 展开态和宽屏当前详情。小于 1024px 时渲染单列
+	 * Wallet 栈；宽屏渲染固定支付方式列表与单张详情卡，不创建滚动区域。
 	 *
-	 * @prop payments - 支付方式配置数组 (包含名称、URL、颜色及图标)
+	 * @prop payments - 支付方式配置数组。
+	 * @prop onready - 二维码处理结束后的回调。
 	 */
 	import { onMount } from 'svelte';
 	import QRCode from 'qrcode';
-	import LoadingSpinner from '$lib/components/ui/feedback/LoadingSpinner.svelte';
-	import LiquidGlass from '$lib/components/ui/effect/LiquidGlass.svelte';
+	import WalletPass from '$lib/components/pay/WalletPass.svelte';
+	import type { WalletPayment } from '$lib/components/pay/WalletPass.svelte';
 	import Crossfade from '$lib/components/ui/effect/Crossfade.svelte';
-	import LazyImage from '$lib/components/ui/display/LazyImage.svelte';
+	import StatusState from '$lib/components/ui/feedback/StatusState.svelte';
 	import { t, locale } from '$lib/i18n/store';
-	import { slide } from 'svelte/transition';
+	import { LoaderCircle, WalletCards } from 'lucide-svelte';
 
-	import { SiAlipay, SiWechat, SiQq, SiContactlesspayment } from '@icons-pack/svelte-simple-icons';
-
-	interface PaymentOriginal {
+	interface PaymentConfig {
 		name: string;
 		url: string;
 		color: string;
 		icon: string;
 	}
 
-	interface Payment extends PaymentOriginal {
-		qrCodeDataUrl?: string;
+	interface Props {
+		payments: PaymentConfig[];
+		onready?: () => void;
 	}
 
-	let { payments = [] }: { payments: PaymentOriginal[] } = $props();
+	let { payments = [], onready }: Props = $props();
 
-	let processedPayments = $state<Payment[]>([]);
-	let selectedIndex: number | null = $state(null);
-	let loading = $state(true);
+	let processedPayments = $state<WalletPayment[]>([]);
+	let processing = $state(true);
+	let selectedIndex = $state<number | null>(null);
 
-	// 图标映射
-	const iconMap: Record<string, typeof SiAlipay> = {
-		alipay: SiAlipay,
-		wechat: SiWechat,
-		qq: SiQq,
-		unionpay: SiContactlesspayment
+	let defaultIndex = $derived.by(() => {
+		const availableIndex = processedPayments.findIndex((payment) => payment.linkAvailable);
+		return availableIndex >= 0 ? availableIndex : 0;
+	});
+	let activeIndex = $derived(selectedIndex ?? defaultIndex);
+	let activePayment = $derived(processedPayments[activeIndex]);
+
+	const brandColorMap: Record<string, string> = {
+		alipay: '#1677ff',
+		wechat: '#07c160',
+		qq: '#12b7f5',
+		unionpay: '#d9251d'
 	};
 
-	// i18n 键名映射
-	const i18nKeyMap: Record<string, string> = {
-		alipay: 'alipay',
-		wechat: 'wechat',
-		qq: 'qq',
-		unionpay: 'unionpay'
-	};
+	/** 根据品牌规则与配置值返回可用的不透明十六进制色。 */
+	function normalizeBrandColor(color: string, icon: string): string {
+		if (icon === 'alipay' || icon === 'qq') return brandColorMap[icon];
+		if (/^#[\da-f]{6}$/i.test(color)) return color.toLowerCase();
+		return brandColorMap[icon] ?? '#475569';
+	}
 
-	onMount(async () => {
-		try {
-			processedPayments = await Promise.all(
-				payments.map(async (p) => {
+	/** 依据 WCAG 相对亮度在深色与白色前景间选择对比度更高的一项。 */
+	function getForegroundColor(hex: string): '#111827' | '#ffffff' {
+		const value = hex.slice(1);
+		const red = Number.parseInt(value.slice(0, 2), 16) / 255;
+		const green = Number.parseInt(value.slice(2, 4), 16) / 255;
+		const blue = Number.parseInt(value.slice(4, 6), 16) / 255;
+		const linearize = (channel: number) =>
+			channel <= 0.03928 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4;
+		const luminance =
+			0.2126 * linearize(red) + 0.7152 * linearize(green) + 0.0722 * linearize(blue);
+		return luminance > 0.179 ? '#111827' : '#ffffff';
+	}
+
+	/** 仅接受显式协议链接，并拒绝可执行或可嵌入数据协议。 */
+	function normalizePaymentUrl(value: unknown): string {
+		if (typeof value !== 'string') return '';
+		const url = value.trim();
+		if (!/^[a-z][a-z\d+.-]*:/i.test(url)) return '';
+		if (/^(?:javascript|data|vbscript):/i.test(url)) return '';
+		return url;
+	}
+
+	/** 手机／平板再次选择已展开 Pass 时收起，其他情况展开当前 Pass。 */
+	function togglePayment(index: number) {
+		selectedIndex = selectedIndex === index ? null : index;
+	}
+
+	/** 宽屏选择仅替换右侧详情，不改变布局或页面滚动位置。 */
+	function selectPayment(index: number) {
+		selectedIndex = index;
+	}
+
+	/** 返回未选中 Pass 在顶部摘要栈中的连续位置。 */
+	function getStackPosition(index: number): number {
+		if (selectedIndex === null || index < selectedIndex) return index;
+		if (index > selectedIndex) return index - 1;
+		return processedPayments.length - 1;
+	}
+
+	/** Escape 关闭移动展开态；宽屏自动回到第一个可用支付方式。 */
+	function handleEscape(event: KeyboardEvent) {
+		if (event.key === 'Escape' && selectedIndex !== null) {
+			event.preventDefault();
+			selectedIndex = null;
+		}
+	}
+
+	onMount(() => {
+		let active = true;
+
+		async function processPayments() {
+			if (payments.length === 0) {
+				processing = false;
+				onready?.();
+				return;
+			}
+
+			const nextPayments = await Promise.all(
+				payments.map(async (payment) => {
+					const brandColor = normalizeBrandColor(payment.color, payment.icon);
+					const foregroundColor = getForegroundColor(brandColor);
+					const paymentUrl = normalizePaymentUrl(payment.url);
+					const base: WalletPayment = {
+						name: payment.name,
+						url: paymentUrl,
+						icon: payment.icon,
+						brandColor,
+						foregroundColor,
+						iconSurfaceColor:
+							foregroundColor === '#ffffff' ? 'rgb(0 0 0 / 0.2)' : 'rgb(255 255 255 / 0.58)',
+						linkAvailable: paymentUrl.length > 0
+					};
+
+					if (!paymentUrl) return { ...base, qrError: true };
+
 					try {
-						const dataUrl = await QRCode.toDataURL(p.url, {
-							margin: 2,
+						const qrCodeDataUrl = await QRCode.toDataURL(paymentUrl, {
+							margin: 0,
 							width: 320,
-							color: {
-								dark: p.color,
-								light: '#ffffff'
-							}
+							errorCorrectionLevel: 'M',
+							color: { dark: '#000000', light: '#ffffff' }
 						});
-						return { ...p, qrCodeDataUrl: dataUrl };
-					} catch (err) {
-						console.error(`Failed to generate QR for ${p.name}`, err);
-						return { ...p };
+						return { ...base, qrCodeDataUrl };
+					} catch (error) {
+						console.error(`Failed to generate QR for ${payment.name}`, error);
+						return { ...base, qrError: true };
 					}
 				})
 			);
-		} catch (e) {
-			console.error('Error processing payments', e);
-		} finally {
-			loading = false;
-		}
-	});
 
-	function togglePayment(index: number) {
-		if (selectedIndex === index) {
+			if (!active) return;
+			processedPayments = nextPayments;
 			selectedIndex = null;
-		} else {
-			selectedIndex = index;
+			processing = false;
+			onready?.();
 		}
-	}
 
-	/**
-	 * 获取支付方式的本地化名称
-	 */
-	function getPaymentName(icon: string): string {
-		const key = i18nKeyMap[icon];
-		if (key) {
-			return $t(`pay.methods.${key}`);
-		}
-		return icon;
-	}
+		void processPayments();
+		return () => {
+			active = false;
+		};
+	});
 </script>
 
-{#if loading}
-	<div class="flex items-center justify-center p-8">
-		<LoadingSpinner size="lg" />
-	</div>
+<svelte:window onkeydown={handleEscape} />
+
+{#if processing}
+	<StatusState
+		icon={LoaderCircle}
+		title={$t('pay.states.loading')}
+		description={$t('pay.states.loading_hint')}
+		transitionKey={$locale}
+		layout="viewport"
+		iconClass="animate-spin opacity-60"
+	/>
+{:else if processedPayments.length === 0}
+	<StatusState
+		icon={WalletCards}
+		code={0}
+		title={$t('pay.states.empty')}
+		description={$t('pay.states.empty_hint')}
+		transitionKey={$locale}
+		layout="viewport"
+	/>
 {:else}
-	<div class="mx-auto flex w-full max-w-3xl flex-col gap-3">
-		{#each processedPayments as payment, i (payment.name)}
-			<LiquidGlass
-				opaque={true}
-				class="overflow-hidden rounded-2xl p-0 transition-all duration-300"
-				tilt={selectedIndex !== i}
-			>
-				<!-- 卡片头部 -->
-				<button
-					class="flex w-full items-center gap-4 p-4 text-left"
-					onclick={() => togglePayment(i)}
-				>
-					<!-- 图标 -->
-					{#if iconMap[payment.icon]}
-						{@const IconComponent = iconMap[payment.icon]}
-						<div class="shrink-0 rounded-xl bg-white/10 p-3" style="color: {payment.color}">
-							<IconComponent size={24} />
-						</div>
-					{:else}
-						<div class="shrink-0 rounded-xl bg-secondary/50 p-3" style="color: {payment.color}">
-							<span class="text-lg font-bold">{payment.name.charAt(0)}</span>
-						</div>
-					{/if}
+	<div class="wallet-responsive-root h-full min-h-0 w-full">
+		<div class="wallet-pass-stack relative mx-auto h-full min-h-0 w-full max-w-[460px] lg:hidden">
+			{#each processedPayments as payment, index (`${payment.name}-${index}`)}
+				{@const stackPosition = getStackPosition(index)}
+				<WalletPass
+					mode="mobile-stack"
+					{payment}
+					{index}
+					expanded={selectedIndex === index}
+					{stackPosition}
+					selectedPosition={processedPayments.length - 1}
+					stackZIndex={stackPosition + 1}
+					ontoggle={() => togglePayment(index)}
+				/>
+			{/each}
+		</div>
 
-					<!-- 名称 -->
-					<div class="flex-1">
-						<h3 class="text-lg font-bold text-foreground">
-							<Crossfade key={$locale} inline class="inline-grid">
-								<span>{getPaymentName(payment.icon)}</span>
-							</Crossfade>
-						</h3>
+		<div class="wallet-desktop-workspace hidden h-full min-h-0 w-full lg:grid">
+			<div class="wallet-method-list flex min-h-0 flex-col gap-3" role="list">
+				{#each processedPayments as payment, index (`summary-${payment.name}-${index}`)}
+					<div role="listitem">
+						<WalletPass
+							mode="desktop-summary"
+							{payment}
+							{index}
+							expanded={activeIndex === index}
+							ontoggle={() => selectPayment(index)}
+						/>
 					</div>
+				{/each}
+			</div>
 
-					<!-- 展开/收起指示器 -->
-					<div
-						class="shrink-0 text-muted-foreground transition-transform duration-300"
-						class:rotate-180={selectedIndex === i}
-					>
-						<svg
-							xmlns="http://www.w3.org/2000/svg"
-							width="18"
-							height="18"
-							viewBox="0 0 24 24"
-							fill="none"
-							stroke="currentColor"
-							stroke-width="2"
-							stroke-linecap="round"
-							stroke-linejoin="round"
-						>
-							<polyline points="6 9 12 15 18 9"></polyline>
-						</svg>
-					</div>
-				</button>
-
-				<!-- 展开区域 - 二维码 -->
-				{#if selectedIndex === i}
-					<div class="px-4 pb-5" transition:slide={{ duration: 250 }}>
-						<div class="flex flex-col items-center gap-4">
-							{#if payment.qrCodeDataUrl}
-								<Crossfade key={payment.qrCodeDataUrl} class="rounded-2xl bg-white p-3 shadow-lg">
-									<LazyImage
-										src={payment.qrCodeDataUrl}
-										alt="{payment.name} QR Code"
-										class="h-64 w-64 object-contain md:h-72 md:w-72"
-										fit="contain"
-										width="auto"
-										height="auto"
-									/>
-								</Crossfade>
-							{:else}
-								<div
-									class="flex h-48 w-48 items-center justify-center rounded-xl bg-secondary/30 text-muted-foreground"
-								>
-									<Crossfade key={$locale} class="inline-grid">
-										<span>{$t('pay.modal.no_qr')}</span>
-									</Crossfade>
-								</div>
-							{/if}
-
-							<!-- 直接打开链接 -->
-							<a
-								href={payment.url}
-								target="_blank"
-								class="flex items-center gap-2 rounded-full bg-secondary/50 px-5 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-secondary/70"
-							>
-								<Crossfade key={$locale} inline class="inline-grid">
-									<span>{$t('pay.modal.open_link')}</span>
-								</Crossfade>
-								<svg
-									xmlns="http://www.w3.org/2000/svg"
-									width="12"
-									height="12"
-									viewBox="0 0 24 24"
-									fill="none"
-									stroke="currentColor"
-									stroke-width="2"
-									stroke-linecap="round"
-									stroke-linejoin="round"
-								>
-									<path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
-									<polyline points="15 3 21 3 21 9"></polyline>
-									<line x1="10" y1="14" x2="21" y2="3"></line>
-								</svg>
-							</a>
-						</div>
-					</div>
+			<div class="wallet-detail-shell min-h-0 min-w-0">
+				{#if activePayment}
+					<Crossfade key={activeIndex} duration={180} class="h-full">
+						<WalletPass
+							mode="desktop-detail"
+							payment={activePayment}
+							index={activeIndex}
+							expanded={true}
+							ontoggle={() => selectPayment(activeIndex)}
+						/>
+					</Crossfade>
 				{/if}
-			</LiquidGlass>
-		{/each}
+			</div>
+		</div>
 	</div>
 {/if}
+
+<style>
+	.wallet-responsive-root {
+		--wallet-summary-height: 68px;
+		--wallet-stack-step: clamp(44px, 7dvh, 52px);
+		--wallet-qr-size: clamp(128px, min(54vw, 32dvh), 220px);
+		--wallet-expanded-height: min(100%, 420px);
+	}
+
+	.wallet-desktop-workspace {
+		grid-template-columns:
+			var(--payment-desktop-list-width)
+			var(--payment-desktop-detail-width);
+		gap: var(--payment-workspace-gap);
+		align-content: start;
+		justify-content: center;
+	}
+
+	.wallet-detail-shell {
+		width: var(--payment-desktop-detail-width);
+		height: min(100%, 420px);
+	}
+
+	@media (min-width: 1024px) {
+		.wallet-responsive-root {
+			--wallet-qr-size: clamp(180px, min(22vw, 28dvh), 220px);
+		}
+	}
+
+	@media (max-width: 359px) and (max-height: 620px) and (orientation: portrait) {
+		.wallet-responsive-root {
+			--wallet-qr-size: 128px;
+		}
+	}
+
+	@media (orientation: landscape) and (max-height: 600px) {
+		.wallet-responsive-root {
+			--wallet-qr-size: clamp(128px, 26vw, 160px);
+		}
+	}
+</style>

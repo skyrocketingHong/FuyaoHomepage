@@ -46,4 +46,5 @@
 	detailLabel={$t('error.request_path')}
 	detailValue={page.url.pathname}
 	{action}
+	layout="viewport"
 />

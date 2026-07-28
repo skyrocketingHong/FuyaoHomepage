@@ -11,15 +11,25 @@
 	 * @prop width - 图片宽度
 	 * @prop height - 图片高度
 	 * @prop fit - 图片填充模式 (object-fit)
+	 * @prop sources - 响应式 picture source 列表
+	 * @prop loading - 浏览器加载策略，默认保持 lazy
 	 */
 	import { cn } from '$lib/utils/index';
 	import LoadingSpinner from '../feedback/LoadingSpinner.svelte';
 	import { fade } from 'svelte/transition';
 
+	interface ResponsiveSource {
+		srcset: string;
+		media?: string;
+		sizes?: string;
+		type?: string;
+	}
+
 	interface Props {
 		src: string;
 		srcset?: string;
 		sizes?: string;
+		sources?: ResponsiveSource[];
 		alt?: string;
 		class?: string;
 		/** 图片宽度 */
@@ -36,6 +46,9 @@
 		imgClass?: string;
 		/** 图片加载失败回调 */
 		onerror?: () => void;
+		/** 浏览器加载策略；普通内容图片默认继续懒加载 */
+		loading?: 'eager' | 'lazy';
+		decoding?: 'async' | 'sync' | 'auto';
 		fetchpriority?: 'high' | 'low' | 'auto';
 	}
 
@@ -43,6 +56,7 @@
 		src,
 		srcset,
 		sizes,
+		sources = [],
 		alt = '',
 		class: className = '',
 		width,
@@ -52,6 +66,8 @@
 		onload,
 		onerror,
 		imgClass = '',
+		loading = 'lazy',
+		decoding = 'async',
 		fetchpriority = 'auto'
 	}: Props = $props();
 
@@ -87,27 +103,32 @@
 		</div>
 	{/if}
 
-	<!-- 图片 -->
-	<img
-		{src}
-		{srcset}
-		{sizes}
-		{alt}
-		loading="lazy"
-		decoding="async"
-		{fetchpriority}
-		class={cn(
-			'will-change-opacity transition-opacity duration-500',
-			loaded ? 'opacity-100' : 'opacity-0',
-			fill ? 'h-full w-full' : '',
-			fit === 'cover' && 'object-cover',
-			fit === 'contain' && 'object-contain',
-			fit === 'fill' && 'object-fill',
-			fit === 'none' && 'object-none',
-			fit === 'scale-down' && 'object-scale-down',
-			imgClass
-		)}
-		onload={handleLoad}
-		onerror={handleError}
-	/>
+	<!-- 图片；未传 sources 时仍保持既有内容图片行为 -->
+	<picture class={fill ? 'block h-full w-full' : undefined}>
+		{#each sources as source (source.srcset)}
+			<source srcset={source.srcset} media={source.media} sizes={source.sizes} type={source.type} />
+		{/each}
+		<img
+			{src}
+			{srcset}
+			{sizes}
+			{alt}
+			{loading}
+			{decoding}
+			{fetchpriority}
+			class={cn(
+				'will-change-opacity transition-opacity duration-500',
+				loaded ? 'opacity-100' : 'opacity-0',
+				fill ? 'h-full w-full' : '',
+				fit === 'cover' && 'object-cover',
+				fit === 'contain' && 'object-contain',
+				fit === 'fill' && 'object-fill',
+				fit === 'none' && 'object-none',
+				fit === 'scale-down' && 'object-scale-down',
+				imgClass
+			)}
+			onload={handleLoad}
+			onerror={handleError}
+		/>
+	</picture>
 </div>

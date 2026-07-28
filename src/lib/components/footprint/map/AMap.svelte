@@ -59,7 +59,6 @@
 	const zooms = $derived(props.zooms ?? [2, 20]);
 	const selectedPlace = $derived(props.selectedPlace ?? null);
 	const onMarkerClick = $derived(props.onMarkerClick ?? (() => {}));
-	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	const onInfoWindowClose = $derived(props.onInfoWindowClose ?? (() => {}));
 	const onCopyrightLoad = $derived(props.onCopyrightLoad ?? (() => {}));
 	const onMapLoad = $derived(props.onMapLoad ?? (() => {}));
@@ -76,7 +75,7 @@
 	// 控制器实例
 	let viewController = new MapViewController();
 	let infoWindowController = new MapInfoWindowController(
-		props.onInfoWindowClose || (() => {}), // Close callback
+		() => onInfoWindowClose(), // Close callback
 		(enabled) => viewController.setMapInteraction(enabled) // Interaction callback
 	);
 

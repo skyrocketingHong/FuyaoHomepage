@@ -10,6 +10,7 @@ import {
 	loadSiteConfig,
 	resolveContentPaths
 } from '../src/lib/config/server.ts';
+import { normalizePublicTreePermissions } from './lib/public-permissions.js';
 
 const projectRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const args = new Set(process.argv.slice(2));
@@ -26,7 +27,7 @@ const lockPath = production
 	: path.join(projectRoot, '.fuyao', 'prepare.lock');
 
 if (production) {
-	for (const name of ['FUYAO_CONFIG_ROOT', 'FUYAO_CONTENT_ROOT']) {
+	for (const name of ['FUYAO_CONFIG_ROOT', 'FUYAO_CONTENT_ROOT', 'FUYAO_FAVICON_ROOT']) {
 		if (!process.env[name]) throw new Error(`生产模式缺少 ${name}，禁止回退到仓库演示内容`);
 	}
 }
@@ -112,6 +113,9 @@ try {
 	const contentRoot = production
 		? requireDirectory(process.env.FUYAO_CONTENT_ROOT, 'FUYAO_CONTENT_ROOT')
 		: path.join(projectRoot, 'fixtures', 'content');
+	const faviconRoot = production
+		? requireDirectory(process.env.FUYAO_FAVICON_ROOT, 'FUYAO_FAVICON_ROOT')
+		: path.join(projectRoot, 'static', 'favicon');
 	const siteFile = path.join(configRoot, production ? 'site.yaml' : 'site.example.yaml');
 	const contentFile = path.join(configRoot, production ? 'content.yaml' : 'content.example.yaml');
 	if (!fs.existsSync(siteFile) || !fs.existsSync(contentFile)) {
@@ -136,7 +140,7 @@ try {
 	fs.mkdirSync(privateRoot, { recursive: true });
 
 	// 仅复制代码仓库中明确公开的静态资产；演示内容统一从 fixtures/content 进入快照。
-	copyIfPresent(path.join(projectRoot, 'static', 'favicon'), path.join(publicRoot, 'favicon'));
+	copyTree(faviconRoot, path.join(publicRoot, 'favicon'));
 	copyIfPresent(path.join(projectRoot, 'static', 'fonts'), path.join(publicRoot, 'fonts'));
 	copyIfPresent(
 		path.join(projectRoot, 'static', 'robots.txt'),
@@ -173,6 +177,8 @@ try {
 			FUYAO_REQUIRE_EXISTING_THUMBNAILS: production ? '1' : '0'
 		}
 	);
+	// 内容源允许使用 0600/0700 保存；进入公开快照后必须解除源权限继承，供 Caddy 读取。
+	normalizePublicTreePermissions(publicRoot);
 	run(
 		process.execPath,
 		[path.join(projectRoot, 'scripts', 'validate-deployment.js'), '--phase=inputs'],

@@ -2,13 +2,16 @@
 	/**
 	 * 跑马灯组件 (Marquee)
 	 *
-	 * 当文本内容超过容器尺寸时，通过鼠标悬停或触摸交互触发滚动播放效果。
+	 * 当内容超过容器尺寸时，通过鼠标悬停、触摸或自动播放模式触发滚动；未溢出时保持静止。
 	 *
 	 * @prop text - 需要显示的文本内容 (可选，若不传则使用 children)
 	 * @prop class - 容器的额外 CSS 类名 (默认 '')
 	 * @prop direction - 滚动方向：'horizontal' | 'vertical' (默认 'horizontal')
 	 * @prop fadeSize - 边缘渐变大小 (默认 '10%')
 	 * @prop autoPlay - 是否自动播放 (默认 false)
+	 * @prop showFade - 是否启用边缘渐隐 (默认 true)
+	 * @prop measurementKey - 变化时立即重新测量溢出状态
+	 * @prop contentAlignment - 未溢出时的内容对齐方向 (默认 'start')
 	 */
 	import { cn } from '$lib/utils/index';
 	import FadeEdge from '$lib/components/ui/effect/FadeEdge.svelte';
@@ -20,6 +23,9 @@
 		direction = 'horizontal',
 		fadeSize = '10%',
 		autoPlay = false,
+		showFade = true,
+		measurementKey,
+		contentAlignment = 'start',
 		children
 	} = $props<{
 		text?: string;
@@ -27,6 +33,9 @@
 		direction?: 'horizontal' | 'vertical';
 		fadeSize?: string;
 		autoPlay?: boolean;
+		showFade?: boolean;
+		measurementKey?: unknown;
+		contentAlignment?: 'start' | 'end';
 		children?: Snippet;
 	}>();
 
@@ -39,6 +48,7 @@
 	let isActive = $derived(autoPlay || isHovered);
 
 	$effect(() => {
+		void measurementKey;
 		if (containerRef && spanRef) {
 			const check = async () => {
 				await tick();
@@ -75,9 +85,9 @@
 		className
 	)}
 	orientation={direction}
-	visible={isOverflowing}
-	showStart={isActive}
-	showEnd={true}
+	visible={showFade && isOverflowing}
+	showStart={showFade && isActive}
+	showEnd={showFade}
 	{fadeSize}
 	title={isOverflowing && text ? text : undefined}
 	role="group"
@@ -91,6 +101,7 @@
 		class={cn(
 			'flex',
 			direction === 'horizontal' ? 'flex-row items-center gap-8' : 'flex-col gap-4',
+			!isOverflowing && contentAlignment === 'end' && 'justify-end',
 			isOverflowing && isActive && 'will-change-transform',
 			isOverflowing &&
 				isActive &&

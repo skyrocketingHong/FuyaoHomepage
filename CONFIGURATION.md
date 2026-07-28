@@ -6,6 +6,7 @@
 | :----------- | :---------------------------------------------- | :------------------------- | :----------------------------- |
 | 公开源码     | GitHub `main`                                   | 是                         | 按前端打包规则                 |
 | 公开站点配置 | `shared/config/site.yaml`                       | 仅提交 `site.example.yaml` | 仅 Schema 白名单字段           |
+| 公开根资产   | `shared/legacy/root-assets/favicon/`            | 否                         | 复制到 `/favicon/`             |
 | 私有内容     | `shared/content/`                               | 否                         | 仅生成页面、公开索引及媒体 URL |
 | 服务端密钥   | `shared/secrets/secrets.env` 或 Secret 管理平台 | 否                         | 否                             |
 
@@ -23,6 +24,9 @@
 │   │   └── content.yaml
 │   ├── secrets/
 │   │   └── secrets.env
+│   ├── legacy/
+│   │   └── root-assets/
+│   │       └── favicon/
 │   └── content/
 │       ├── posts/
 │       ├── data/
@@ -50,11 +54,34 @@
 - `profile`：公开姓名、生日、公开邮箱、头像、双语角色与签名
 - `repository`：公开仓库名称、URL 和所有者
 - `seo`：作者、描述、关键词和可选 Twitter ID
-- `services.wallpaper`：默认壁纸和可选公开代理端点
+- `services.wallpaper.apiUrl`：日常壁纸图片端点。默认使用 `https://api.imyan.ren/bing/wallpaper`，接口直接返回 `image/jpeg` 二进制，不返回图片 URL 文本，前端不得对响应执行文本解析。桌面端、平板及横屏使用默认 `1920×1080` 图片；宽度小于 `768px` 的移动竖屏通过 `URL.searchParams` 增加 `type=mini`，使用 `768×1366` 图片。
+- `services.wallpaper.defaultUrl`：本地或外部默认壁纸，仅在 Bing 图片端点加载失败时作为备用图片，不作为日常主图片来源；备用图片也失败时回退全局主题纯色背景。
 - `services.amap`：浏览器 Key、安全码和代理地址；必须配置域名白名单与最小权限
 - `services.*ProxyUrl`：不含秘密的统计与编程活动代理地址
 
 生产校验拒绝未知字段、重复字段、错误类型、无效 URL、无效日期、无效邮箱、错误语言代码、秘密字段、空关键字段和示例占位值。
+
+编程统计使用两个可选公开端点：`codingActivityProxyUrl` 返回每日活动，`codingLanguagesProxyUrl` 返回七日总语言分布。每日活动端点需要保留真实的逐日语言秒数，响应契约如下：
+
+```json
+{
+  "data": [
+    {
+      "range": { "date": "2026-07-28", "text": "Today" },
+      "grand_total": { "hours": 1, "minutes": 30, "total_seconds": 5400, "text": "1 hr 30 mins" },
+      "languages": [
+        { "name": "Svelte", "total_seconds": 3600, "percent": 66.67, "color": "#ff3e00" },
+        { "name": "TypeScript", "total_seconds": 1800, "percent": 33.33, "color": "#3178c6" }
+      ]
+    }
+  ]
+}
+```
+
+- 从 WakaTime 每日 summary 直接映射 `languages[].total_seconds` 与 `percent`，不得把七日总比例复制到每一天。
+- 仅返回每日 `grand_total` 时，前端将日柱显示为中性色，并把 `codingLanguagesProxyUrl` 的七日分布放在独立分段条中。
+- `color` 仅接受合法十六进制颜色；缺失时前端使用内置语言颜色，仍无法识别时归入中性“其他”。
+- WakaTime API Key 只保存在代理服务的 Secret 中，两个浏览器端 URL 均不得包含密钥或签名参数。
 
 ## 4. 内容目录映射
 
@@ -70,6 +97,7 @@
 | :---------------------------- | :----------------------- | :--------------------------------------------- |
 | `FUYAO_CONFIG_ROOT`           | 生产构建、部署           | 外部 `site.yaml` 与 `content.yaml` 所在目录    |
 | `FUYAO_CONTENT_ROOT`          | 生产构建、迁移、内容准备 | 外部持久化内容根目录                           |
+| `FUYAO_FAVICON_ROOT`          | 生产构建、部署           | 外部持久化 favicon 目录                        |
 | `FUYAO_SHARED_ROOT`           | 部署                     | 配置、内容和密钥的持久化根目录                 |
 | `FUYAO_RELEASE_ROOT`          | 部署                     | 独立 release 保存目录                          |
 | `FUYAO_CURRENT_LINK`          | 部署                     | 当前线上 release 的符号链接                    |
@@ -117,10 +145,12 @@ npm run build
 ```bash
 export FUYAO_CONFIG_ROOT=/srv/fuyao/shared/config
 export FUYAO_CONTENT_ROOT=/srv/fuyao/shared/content
+export FUYAO_FAVICON_ROOT=/srv/fuyao/shared/legacy/root-assets/favicon
+export FUYAO_DEPLOY_LOCK="$PWD/.fuyao/production-build.lock"
 npm run build:production
 ```
 
-生产模式不接受缺失目录、示例配置或不兼容 Schema。相册公开元数据保留 EXIF GPS，位置会进入浏览器可读取的 JSON；最终构建再次扫描秘密和服务器绝对路径。
+本地构建时应把 `FUYAO_DEPLOY_LOCK` 指向当前工作区内的临时锁文件；服务器部署服务继续使用 `/srv/fuyao/deploy.lock`。生产模式不接受缺失目录、示例配置或不兼容 Schema。相册公开元数据保留 EXIF GPS，位置会进入浏览器可读取的 JSON；最终构建再次扫描秘密和服务器绝对路径。
 
 ## 7. 原子部署与回滚
 
@@ -154,7 +184,7 @@ node scripts/deploy.js --rollback=<release-id>
 
 服务使用 `/srv/fuyao/tooling/current` 中的已验证源码与依赖，并通过 `/opt/fuyao/node/bin/node` 运行。代码版本发布后必须同步更新 tooling；内容变更不再从远程仓库临时克隆。
 
-服务器只准备内容并写入 `/srv/fuyao/shared/content/state/pending-deploy.json`，不执行 Vite 生产构建。发布时将外部配置和内容下载到本地，运行 `npm run build:production`，再上传独立 release 并原子切换 `current`。该模式避免 1.8 GB 内存服务器因预渲染进入 OOM 或重度换页。
+服务器只准备内容并写入 `/srv/fuyao/shared/content/state/pending-deploy.json`，不执行 Vite 生产构建。发布时将外部配置、内容和 favicon 下载到本地，运行 `npm run build:production`，再通过 rsync 上传独立 release 并原子切换 `current`。该模式避免低内存服务器因预渲染进入 OOM 或重度换页。
 
 ```bash
 systemctl reload fuyao-content-watcher.service
@@ -201,13 +231,14 @@ npm run audit:history
 
 ## 10. 版本与 Build Train
 
-`version.json` 是唯一人工维护入口。27.0 使用 SemVer 存储值 `27.0.0`，页面显示为 `27.0`；Build Train 独立设为 `4A`，三位构建序号 83 显示为 `4A083`。
+`version.json` 是唯一人工维护入口。27.1 使用 SemVer 存储值 `27.1.0`，页面显示为 `27.1`；Build Train 独立设为 `4B`，构建序号 96 显示为 `4B96`。构建标识直接拼接 Build Train 与构建序号，不补前导零。
 
 ```bash
 npm run version:show
-npm run version:set -- 27.0.0 4A
+npm run version:set -- 27.1.0 4B
+npm run build:set -- 96
 npm run build:bump
-npm run train:set -- 4B
+npm run train:set -- 4C
 ```
 
 开发、检查、测试和构建不会自动修改版本。只有显式版本命令会同步 `version.json`、`package.json` 和 `package-lock.json`。

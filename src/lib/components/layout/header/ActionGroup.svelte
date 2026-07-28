@@ -3,8 +3,8 @@
 	 * 顶栏分段胶囊容器组件
 	 *
 	 * 将多个相关操作按钮合并为单一玻璃胶囊，避免多个独立玻璃按钮叠加产生多重边框。
-	 * 胶囊外壳使用 .header-control-shell 共享材质 (见 components.css 与 theme.css 的
-	 * --header-control-* token)：外壳自行承担一次 control 级原生背景模糊，
+	 * 胶囊外壳使用 .header-control-shell 共享 --glass-surface 材质：
+	 * 外壳自行承担一次 control 级原生背景模糊，
 	 * 不依赖 HeaderChrome (页面顶部时 Chrome 会隐藏并卸载)，不注册 WebGL 合成器；
 	 * 内部按钮应使用 ActionButton 的 bare 模式 (透明背景，不单独模糊/加边框/加阴影，
 	 * hover/active 仅改变内部填充)，按钮之间由容器提供低透明度内部竖线 (hairline divider)。
@@ -24,7 +24,7 @@
 <div
 	role="group"
 	class={cn(
-		'header-control-shell action-group flex h-11 items-center overflow-hidden rounded-full md:h-9',
+		'header-control-shell action-group flex h-11 shrink-0 items-center overflow-hidden rounded-full md:h-9',
 		className
 	)}
 >

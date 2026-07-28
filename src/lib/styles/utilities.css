@@ -64,29 +64,29 @@
 	/*
 	 * 玻璃材质（统一 token 驱动，见 theme.css 中的 --glass-* 变量）
 	 *
-	 * - tint 层：带背景色倾向的低透明度蓝灰（日间）/ 深蓝灰（夜间），禁止纯白主体。
+	 * - 主体层：所有玻璃 variant 共用 --glass-surface 的颜色与透明度。
 	 * - 主体层只铺设 tint，不再叠加白色渐变；边缘反光由 .liquid-glass-edge/gloss 负责。
-	 * - 明暗主题通过 token 切换，无需单独的 .dark 覆盖。
+	 * - variant 只区分模糊、边缘、阴影、圆角和合成职责，不再区分表面染色。
 	 */
 
 	/* 面板材质：侧栏、抽屉等大面积常驻区域 (blur 20~24px, 保留背景色块, 低饱和度) */
 	.bg-glass-panel {
-		background: var(--glass-panel-tint);
+		background: var(--glass-surface);
 	}
 
 	/* 卡片材质：普通信息卡片 */
 	.bg-glass-card {
-		background: var(--glass-card-tint);
+		background: var(--glass-surface);
 	}
 
-	/* chrome 材质：顶栏、移动端底栏等连续系统材质 (blur 22~28px, tint 更实) */
+	/* chrome 材质：顶栏、移动端底栏等连续系统材质 (blur 22~28px) */
 	.bg-glass-chrome {
-		background: var(--glass-chrome-tint);
+		background: var(--glass-surface);
 	}
 
-	/* 控件材质：独立按钮、搜索框 (blur 10~14px, 更透明更轻) */
+	/* 控件材质：独立按钮、搜索框 (blur 10~14px) */
 	.bg-glass-control {
-		background: var(--glass-control-tint);
+		background: var(--glass-surface);
 	}
 
 	/* Header 胶囊选中层：半透明浅色填充 (日间浅灰 / 夜间浅白)，token 见 theme.css */
@@ -96,36 +96,71 @@
 
 	/*
 	 * 实时模糊材质 (liveBackdrop)：配合最外层原生 backdrop-filter 使用，
-	 * 高浓度 chrome tint，用于覆盖实时 DOM 内容的常驻区域 (如移动端底栏)。
+	 * 使用统一基准表面，用于覆盖实时 DOM 内容的常驻区域 (如顶栏、移动端底栏)。
 	 */
 	.bg-glass-live {
-		background: color-mix(in oklab, var(--glass-chrome-tint) 72%, transparent);
+		background: var(--glass-surface);
 	}
 
-	/* 底栏实时模糊材质：tint 略高于顶栏 (token: --glass-bottom-tint)，承载导航与小字号元数据 */
+	/* 底栏实时模糊材质：与顶栏共用基准表面，保留独立 chrome 模糊和边缘职责 */
 	.bg-glass-live-bottom {
-		background: color-mix(in oklab, var(--glass-bottom-tint) 78%, transparent);
+		background: var(--glass-surface);
 	}
 
 	/*
-	 * 移动端悬浮导航胶囊 (MobileNav)：独立圆角玻璃胶囊，不贴合屏幕底边。
-	 * 单层 LiquidGlass chrome + 一次 liveBackdrop 实时模糊 (blur 24px)，
-	 * 饱和度局部提升至 1.2；表面/边界/投影颜色全部来自 theme.css 的 --mobile-nav-* token。
-	 * 定义在 utilities 层末段，覆盖 LiquidGlass 的 bg-glass-live-bottom 默认表面。
+	 * 移动端 Dock 胶囊：MobileNav 与底部信息分别使用的独立圆角玻璃表面。
+	 * 每个胶囊由单层 LiquidGlass chrome 执行一次 liveBackdrop 实时模糊，
+	 * 模糊半径读取 --glass-chrome-blur，饱和度固定为 0.9；主体统一使用 --glass-surface。
 	 */
-	.mobile-nav-capsule {
-		--glass-saturation: 1.2;
-		background: var(--mobile-nav-surface);
-		box-shadow: 0 10px 30px var(--mobile-nav-shadow);
+	.mobile-dock-capsule {
+		--glass-saturation: 0.9;
+		background: var(--glass-surface);
+		box-shadow: 0 10px 30px var(--mobile-dock-capsule-shadow);
 	}
 
 	/*
 	 * 胶囊唯一常驻边界：一层 1px 半透明高光边 (顶部高光渐变保留在同一边界层背景中)，
-	 * 覆盖 chrome-bottom 边缘默认的向上分离阴影 (胶囊投影由 .mobile-nav-capsule 统一承担)。
+	 * 覆盖 chrome-bottom 边缘默认的向上分离阴影（胶囊投影由 .mobile-dock-capsule 统一承担）。
 	 */
-	.mobile-nav-capsule .liquid-glass-edge--chrome-bottom::before {
-		border: 1px solid var(--mobile-nav-edge);
+	.mobile-dock-capsule .liquid-glass-edge--chrome-bottom::before {
+		border: 1px solid var(--mobile-dock-capsule-edge);
 		box-shadow: none;
+	}
+
+	/* 六等分 Tab：点击区域始终不小于 44×44px，项目本身不建立玻璃层。 */
+	.mobile-nav-item {
+		isolation: isolate;
+		min-width: var(--mobile-nav-item-min-size);
+		min-height: var(--mobile-nav-item-min-size);
+	}
+
+	/* 激活板按所属等分区域四边等距收缩，且不建立额外玻璃层。 */
+	.mobile-nav-indicator {
+		inset: var(--mobile-nav-indicator-inset);
+		border: 0;
+		border-radius: var(--mobile-nav-indicator-radius);
+		background: var(--mobile-nav-active-surface);
+		box-shadow: none;
+		backdrop-filter: none;
+		-webkit-backdrop-filter: none;
+		pointer-events: none;
+	}
+
+	.mobile-nav-label {
+		max-width: 100%;
+		font-size: 11px;
+		line-height: 13px;
+		letter-spacing: -0.01em;
+		white-space: nowrap;
+	}
+
+	/* 320px 级窄屏只调整标签字号，不改变六等分与点击区域。 */
+	@media (max-width: 359px) {
+		.mobile-nav-label {
+			font-size: 10px;
+			line-height: 12px;
+			letter-spacing: -0.03em;
+		}
 	}
 
 	/*
@@ -135,7 +170,7 @@
 	 * 背景可以透出，但不依赖实时合成。
 	 */
 	.bg-frosted-static {
-		background: var(--glass-panel-tint);
+		background: var(--glass-surface);
 		border-color: var(--glass-border);
 		box-shadow:
 			0 12px 32px var(--glass-shadow),
@@ -254,13 +289,13 @@
 		}
 
 		/* 关闭导航胶囊交互动效、HeaderChrome 显隐过渡与滚动平滑 */
-		.mobile-nav-capsule,
-		.mobile-nav-capsule a,
+		.mobile-dock-capsule,
+		.mobile-dock-capsule a,
 		.header-chrome {
 			transition: none;
 		}
 
-		.mobile-nav-capsule a:active {
+		.mobile-dock-capsule a:active {
 			transform: none;
 		}
 

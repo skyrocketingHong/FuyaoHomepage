@@ -23,7 +23,6 @@
 
 <div class="relative w-[280px] origin-bottom animate-in duration-300 zoom-in-95">
 	<LiquidGlass
-		opaque={false}
 		refractive
 		blur={8}
 		refractionStrength={4}
@@ -42,7 +41,7 @@
 
 		<div class="relative flex w-full flex-col">
 			<!-- 内容区域 -->
-			<div class="flex flex-1 flex-col bg-card/10 p-5 pt-7">
+			<div class="flex flex-1 flex-col p-5 pt-7">
 				<!-- 标题 -->
 				<div class="mb-1 flex items-start justify-between gap-2">
 					<Crossfade key={`${$locale}-${place.title}`}>
@@ -71,6 +70,6 @@
 
 	<!-- 底部小三角指示器 (模拟气泡尾巴) -->
 	<div
-		class="absolute -bottom-2 left-1/2 z-[-1] h-4 w-4 -translate-x-1/2 rotate-45 border-r border-b border-border bg-card shadow-sm"
+		class="absolute -bottom-2 left-1/2 z-[-1] h-4 w-4 -translate-x-1/2 rotate-45 border-r border-b border-border bg-[var(--glass-surface)] shadow-sm"
 	></div>
 </div>

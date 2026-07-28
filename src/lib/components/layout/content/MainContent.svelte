@@ -9,6 +9,8 @@
 	 * 以真实内部滚动容器为准 (不监听 window)，滚动阈值等于 Header-Content 间距。
 	 * 底部边缘渐隐在本实例局部关闭 (fadeEndSize=0)：正文滚动到底后保持完整不透明；
 	 * 顶部渐隐、共享 FadeEdge/ScrollContainer 默认行为及其他实例均不受影响。
+	 * 当后代包含 StatusState viewport 数据标记时，使用 :has() 声明式关闭本实例滚动、
+	 * 移除渐隐并隐藏布局底部占位，不恢复页面生命周期维护全局滚动状态的旧方案。
 	 *
 	 * @prop children - Svelte Snippet 页面内容
 	 * @prop pathname - 当前页面路径 (用于触发切换动画的 key)
@@ -41,6 +43,11 @@
 	let isScrollable = $derived(scrollable);
 	// 自动检测 Header 是否处于扩展模式 (即存在中间组件 - CategoryNav)
 	let isHeaderExtended = $derived(!!headerState.middle.component);
+	let mainContentTopInset = $derived(
+		isHeaderExtended
+			? 'calc(var(--header-height-extended) + var(--header-content-gap))'
+			: 'calc(var(--header-height) + var(--header-content-gap))'
+	);
 
 	let hasScrollTop = $state(false);
 	let hasScrollBottom = $state(false);
@@ -112,20 +119,21 @@
 	class={cn(
 		// 两者的基础样式 (使用响应式前缀区分)
 		// 仅过渡布局 padding (Header 扩展时顶部间距变化)，不使用 transition-all
-		'flex w-full flex-col transition-[padding] duration-300 ease-in-out',
+		'main-content relative flex w-full flex-col transition-[padding] duration-300 ease-in-out',
 		// 移动端特定: 100dvh, padding. 针对扩展头部动态调整顶部 padding.
 		// 顶部内边距统一为 Header 高度 + Header-Content 间距 token，页面不得再单独补间距
-		'h-[100dvh] pr-2 pl-2',
+		'h-[100dvh] px-[var(--content-inline-inset)]',
 		isHeaderExtended
 			? 'pt-[calc(var(--header-height-extended)+var(--header-content-gap))] lg:pt-[calc(var(--header-height)+var(--header-content-gap))]'
 			: 'pt-[calc(var(--header-height)+var(--header-content-gap))]',
 		// 桌面端特定: h-full (嵌套在受限容器中), 不同的 padding
-		'lg:h-full lg:min-h-0 lg:pr-4 lg:pb-4 lg:pl-4',
+		'lg:h-full lg:min-h-0 lg:pb-4',
 		// 滚动状态样式
 		isScrollable ? 'overflow-y-auto' : 'overflow-hidden',
 		layoutState.isContentTransparent ? 'pointer-events-none' : 'pointer-events-auto',
 		className
 	)}
+	style={`--main-content-top-inset: ${mainContentTopInset};`}
 	enabled={isScrollable}
 	fadeEndSize="0px"
 	bind:hasScrollTop
@@ -138,3 +146,22 @@
 		</Crossfade>
 	</div>
 </ScrollContainer>
+
+<style>
+	:global(.main-content:has([data-status-layout='viewport'])) {
+		overflow-x: hidden !important;
+		overflow-y: hidden !important;
+		mask-image: none !important;
+		-webkit-mask-image: none !important;
+	}
+
+	:global(.main-content:has([data-status-layout='viewport']) [data-main-content-spacer]) {
+		display: none !important;
+	}
+
+	@media (min-width: 1024px) {
+		:global(.main-content) {
+			--main-content-top-inset: calc(var(--header-height) + var(--header-content-gap)) !important;
+		}
+	}
+</style>

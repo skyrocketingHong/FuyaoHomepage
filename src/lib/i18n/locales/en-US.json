@@ -31,7 +31,8 @@
 		},
 		"bottom_info": {
 			"service_status": "Service Status",
-			"deployed_on": "Deployed on Aliyun"
+			"deployed_on": "Deployed on Aliyun",
+			"bing_wallpaper": "Bing Daily Wallpaper"
 		},
 		"header": {
 			"toggle_theme": "Toggle Theme",
@@ -91,12 +92,46 @@
 			"coding_activity": {
 				"title": "Coding Activity",
 				"past_week": "Last 7 Days",
-				"powered_by": "Powered by WakaTime"
+				"powered_by": "Powered by WakaTime",
+				"total": "Total",
+				"other": "Other",
+				"legend": "Programming language legend",
+				"weekly_distribution": "Seven-day language distribution",
+				"daily_breakdown_unavailable": "The proxy did not return a daily language breakdown",
+				"not_configured": "Coding activity proxy is not configured",
+				"load_error": "Coding activity failed to load"
 			}
 		}
 	},
 	"pay": {
 		"title": "Donate",
+		"card": {
+			"ready": "Ready",
+			"unavailable": "Unavailable",
+			"status": "Status",
+			"purpose": "Support this site",
+			"local_qr": "The QR code is generated only in your browser. The payment link is never uploaded. Choose a payment method, then scan it with the corresponding app.",
+			"expand": "Expand the {{method}} payment card",
+			"collapse": "Collapse the {{method}} payment card",
+			"select": "Select {{method}} as the payment method"
+		},
+		"ticket": {
+			"scan_hint": "Scan with the corresponding payment app",
+			"qr_alt": "{{method}} payment QR code",
+			"open_app": "Open Payment App",
+			"open_in": "Open in {{method}}"
+		},
+		"states": {
+			"loading": "Generating payment QR codes",
+			"loading_hint": "QR code processing happens only in this browser.",
+			"load_error": "Payment configuration failed to load",
+			"load_error_hint": "Refresh the page and try again later.",
+			"empty": "No payment method configured",
+			"empty_hint": "Available payment methods will appear here once configured.",
+			"qr_error": "QR code generation failed",
+			"qr_error_hint": "You can still open the payment app using the button below.",
+			"link_unavailable": "Payment link unavailable"
+		},
 		"modal": {
 			"pay_with": "Pay with {{method}}",
 			"scan_qr": "Scan the QR code to proceed",
@@ -107,7 +142,8 @@
 			"alipay": "Alipay",
 			"wechat": "WeChat Pay",
 			"qq": "QQ Wallet",
-			"unionpay": "UnionPay"
+			"unionpay": "UnionPay",
+			"other": "Other Payment"
 		}
 	},
 	"footprint": {

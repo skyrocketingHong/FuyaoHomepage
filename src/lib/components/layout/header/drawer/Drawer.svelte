@@ -39,7 +39,7 @@
 				<!-- 背景 LiquidGlass -->
 				<LiquidGlass
 					variant="panel"
-					class="absolute inset-0 h-full w-full rounded-b-2xl border-b border-border bg-background/80"
+					class="absolute inset-0 h-full w-full rounded-b-2xl border-b border-border"
 				>
 					<!-- 空子元素仅用于视觉效果 -->
 					<div></div>
@@ -73,7 +73,7 @@
 										onSelect={(id) => sidebarState.setViewMode(id)}
 										size="sm"
 										noShadow={true}
-										class="!bg-transparent !p-0"
+										class="!p-0"
 									/>
 								</Crossfade>
 							{/if}

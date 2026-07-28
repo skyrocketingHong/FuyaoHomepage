@@ -86,9 +86,7 @@
 <div class="mx-auto flex min-h-[60vh] max-w-[980px] flex-col xl:max-w-[1100px]">
 	<LiquidGlass class="flex w-full flex-col !p-0" variant="control" showLighting={false}>
 		<!-- 搜索头部 -->
-		<div
-			class="flex items-center gap-3 border-b border-white/10 bg-white/50 px-6 py-6 backdrop-blur-md dark:bg-black/50"
-		>
+		<div class="flex items-center gap-3 border-b border-white/10 px-6 py-6">
 			<SearchIcon class="shrink-0 text-muted-foreground" size={24} />
 			<input
 				bind:this={inputEl}
@@ -112,9 +110,8 @@
 					title={$t('blog.search.load_error')}
 					description={$t('blog.search.load_error_hint')}
 					transitionKey={$locale}
-					surface="embedded"
+					layout="embedded"
 					action={retryAction}
-					class="min-h-[24rem] py-8"
 				/>
 			{:else if search.loading}
 				<div class="flex items-center justify-center py-12 text-muted-foreground">
@@ -132,8 +129,7 @@
 					transitionKey={$locale}
 					detailLabel={$t('blog.search.query_label')}
 					detailValue={search.query}
-					surface="embedded"
-					class="min-h-[24rem] py-8"
+					layout="embedded"
 				/>
 			{:else if search.results.length > 0}
 				<div class="space-y-2">
@@ -192,7 +188,7 @@
 		<!-- 底部状态栏 -->
 		{#if search.results.length > 0}
 			<div
-				class="flex justify-between border-t border-white/10 bg-white/30 px-6 py-3 text-sm text-muted-foreground backdrop-blur-md dark:bg-black/30"
+				class="flex justify-between border-t border-white/10 px-6 py-3 text-sm text-muted-foreground"
 			>
 				<Crossfade
 					key={`search-count-${search.results.length}-${$locale}`}

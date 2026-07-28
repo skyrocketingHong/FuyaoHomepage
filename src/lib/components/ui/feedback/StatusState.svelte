@@ -1,8 +1,9 @@
 <script lang="ts">
 	/**
-	 * 统一状态页卡片
+	 * 统一状态卡片。
 	 *
-	 * 复用全局错误页的视觉层级，适用于错误、空数据等全尺寸状态。
+	 * viewport 模式固定在 Header 与 Bottom Dock 之间的实际可用区域中央，并由
+	 * MainContent 通过稳定数据标记关闭当前实例滚动；embedded 模式仅渲染在已有父容器内。
 	 * 所有可变文本通过 transitionKey 触发 Crossfade，避免语言切换时直接跳变。
 	 *
 	 * @prop icon - 状态图标组件
@@ -13,7 +14,8 @@
 	 * @prop detailLabel - 可选详情标签
 	 * @prop detailValue - 可选详情值
 	 * @prop action - 可选操作区 snippet
-	 * @prop surface - card 显示独立玻璃卡片，embedded 用于已有容器内
+	 * @prop layout - viewport 用于页面级状态，embedded 用于局部父容器
+	 * @prop iconClass - 状态图标附加类名
 	 * @prop class - 状态区域的附加布局类
 	 */
 	import LiquidGlass from '$lib/components/ui/effect/LiquidGlass.svelte';
@@ -23,14 +25,15 @@
 
 	interface Props {
 		icon: ComponentType;
-		code: string | number;
+		code?: string | number;
 		title: string;
 		description: string;
 		transitionKey: unknown;
 		detailLabel?: string;
 		detailValue?: string;
 		action?: Snippet;
-		surface?: 'card' | 'embedded';
+		layout?: 'viewport' | 'embedded';
+		iconClass?: string;
 		class?: string;
 	}
 
@@ -43,25 +46,28 @@
 		detailLabel,
 		detailValue,
 		action,
-		surface = 'card',
+		layout = 'viewport',
+		iconClass = '',
 		class: className = ''
 	}: Props = $props();
 </script>
 
 {#snippet content()}
-	<div class="flex flex-col items-center justify-center gap-8 py-4 text-center">
-		<Icon class="size-20 opacity-20" strokeWidth={1.5} />
+	<div class="flex flex-col items-center justify-center gap-4 text-center">
+		<Icon class={cn('size-12 opacity-25', iconClass)} strokeWidth={1.5} aria-hidden="true" />
 
 		<div class="flex flex-col items-center gap-2">
-			<span class="text-6xl font-black tracking-tighter opacity-90">{code}</span>
-			<h1 class="text-2xl font-bold tracking-tight">
+			{#if code !== undefined && code !== ''}
+				<span class="text-[44px] leading-none font-black tracking-tighter opacity-90">{code}</span>
+			{/if}
+			<h1 class="text-xl font-bold tracking-tight md:text-2xl">
 				<Crossfade key={`status-title-${String(transitionKey)}`} inline class="inline-grid">
 					<span>{title}</span>
 				</Crossfade>
 			</h1>
 		</div>
 
-		<p class="text-sm text-balance text-muted-foreground opacity-70">
+		<p class="max-w-md text-sm leading-5 text-balance text-muted-foreground opacity-75">
 			<Crossfade key={`status-description-${String(transitionKey)}`} inline class="inline-grid">
 				<span>{description}</span>
 			</Crossfade>
@@ -69,22 +75,21 @@
 
 		{#if detailLabel && detailValue}
 			<div
-				class="w-full rounded-2xl bg-black/5 p-4 transition-colors group-hover:bg-black/10 dark:bg-white/5 dark:group-hover:bg-white/10"
+				class="inline-flex max-w-full items-center justify-center gap-2 rounded-xl bg-black/5 px-3 py-2 text-sm transition-colors dark:bg-white/5"
 			>
-				<div class="flex items-center justify-between gap-4 text-sm">
-					<span class="shrink-0 font-medium opacity-50">
-						<Crossfade key={`status-detail-${String(transitionKey)}`} inline class="inline-grid">
-							<span>{detailLabel}</span>
-						</Crossfade>
-					</span>
-					<code
-						class="truncate rounded-md bg-black/5 px-2 py-1 font-mono text-xs opacity-70 dark:bg-white/5"
-					>
-						<Crossfade key={`status-value-${String(transitionKey)}`} inline class="inline-grid">
-							<span>{detailValue}</span>
-						</Crossfade>
-					</code>
-				</div>
+				<span class="shrink-0 font-medium opacity-55">
+					<Crossfade key={`status-detail-${String(transitionKey)}`} inline class="inline-grid">
+						<span>{detailLabel}</span>
+					</Crossfade>
+				</span>
+				<code
+					class="min-w-0 truncate rounded-md bg-black/5 px-2 py-1 font-mono text-xs opacity-75 dark:bg-white/5"
+					title={detailValue}
+				>
+					<Crossfade key={`status-value-${String(transitionKey)}`} inline class="inline-grid">
+						<span class="truncate">{detailValue}</span>
+					</Crossfade>
+				</code>
 			</div>
 		{/if}
 
@@ -94,13 +99,21 @@
 	</div>
 {/snippet}
 
-<div class={cn('z-content flex h-full w-full flex-col items-center justify-center', className)}>
-	{#if surface === 'card'}
-		<LiquidGlass class="w-full max-w-lg" tilt={false}>
+<div
+	data-status-layout={layout}
+	class={cn(
+		layout === 'viewport'
+			? 'viewport-state-region z-content'
+			: 'flex w-full min-w-0 items-center justify-center',
+		className
+	)}
+>
+	{#if layout === 'viewport'}
+		<LiquidGlass class="w-full max-w-[520px] rounded-[24px] !p-5 md:!p-6" tilt={false}>
 			{@render content()}
 		</LiquidGlass>
 	{:else}
-		<div class="w-full max-w-lg">
+		<div class="w-full max-w-[520px] px-5 py-5 md:px-6 md:py-6">
 			{@render content()}
 		</div>
 	{/if}

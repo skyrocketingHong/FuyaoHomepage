@@ -207,10 +207,10 @@
 		</div>
 
 		{#if mapLoaded && !loading}
-			<!-- 概览/重置按钮：移动端定位于导航胶囊上方 (底部安全距离 + 导航高度 + 10px 净空)，
+			<!-- 概览/重置按钮：移动端统一依据固定 Dock 净空定位，
 			     水平居中于整个视口；桌面端保持原位置与侧栏宽度补偿 -->
 			<div
-				class="z-controls pointer-events-auto fixed bottom-[calc(var(--mobile-nav-bottom-inset)+var(--mobile-nav-height)+var(--mobile-nav-overlay-gap))] left-1/2 max-w-[calc(100vw-24px)] -translate-x-1/2 md:bottom-6 md:left-[calc(50%+124px)] lg:left-[calc(50%+128px)]"
+				class="z-controls pointer-events-auto fixed bottom-[var(--mobile-dock-clearance)] left-1/2 max-w-[calc(100vw-24px)] -translate-x-1/2 md:bottom-6 md:left-[calc(50%+124px)] lg:left-[calc(50%+128px)]"
 			>
 				<LiquidGlass
 					tag="button"
@@ -245,7 +245,7 @@
 		     版权层改在按钮上方独立展示，避开导航胶囊与概览按钮；桌面端仍由侧栏 BottomInfo 承载 -->
 		{#if mapCopyrightData}
 			<div
-				class="z-controls pointer-events-auto fixed bottom-[calc(var(--mobile-nav-bottom-inset)+var(--mobile-nav-height)+var(--mobile-nav-overlay-gap)+44px+8px)] left-3 max-w-[70vw] md:hidden"
+				class="z-controls pointer-events-auto fixed bottom-[calc(var(--mobile-dock-clearance)+52px)] left-3 max-w-[70vw] md:hidden"
 			>
 				<MapCopyright {...mapCopyrightData} />
 			</div>

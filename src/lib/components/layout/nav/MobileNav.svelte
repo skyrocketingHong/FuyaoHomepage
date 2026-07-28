@@ -2,20 +2,20 @@
 	/**
 	 * 移动端悬浮导航胶囊组件
 	 *
-	 * 仅包含导航项目的独立悬浮圆角玻璃胶囊，与 BottomInfo 完全分离：
-	 * BottomInfo (背景信息、服务状态、版权) 已移至根布局可滚动内容末尾的普通文档流页脚。
+	 * 仅包含导航项目的独立悬浮圆角玻璃胶囊，作为 MobileBottomDock 的子元素渲染，
+	 * 不再自行承担固定定位（由 Dock 统一编排 Tab Bar + 间距 + 底部信息区 + 安全区）。
 	 *
-	 * - 定位：左右各距视口 12px，底部 max(10px, env(safe-area-inset-bottom))，
-	 *   尺寸与间距全部来自 theme.css 的 --mobile-nav-* token
-	 * - 材质：整个胶囊仅一层 LiquidGlass variant="chrome" + 一次 liveBackdrop 实时模糊
-	 *   (blur 24px, saturate 1.2)，不注册 WebGL 合成器，导航项目不再单独模糊；
-	 *   表面/边界/投影颜色由 --mobile-nav-surface/edge/shadow token 驱动 (见 utilities.css
-	 *   的 .mobile-nav-capsule)
+	 * - 材质：整个胶囊仅一层 LiquidGlass variant="chrome" + 一次 liveBackdrop 实时模糊，
+	 *   局部饱和度降至 0.9（由 .mobile-dock-capsule 覆盖 --glass-saturation），
+	 *   避免放大马赛克背景产生浑浊黄色玻璃；与底部版权胶囊共用 --glass-surface、
+	 *   --glass-chrome-blur、圆角、单层边缘高光和环境阴影
 	 * - 边界：只保留一层 1px 半透明高光边，顶部高光合并在同一边界层；
 	 *   投影为向下扩散的柔和阴影 (0 10px 30px, 黑色约 18%)
-	 * - 导航项：最小点击区域 44x44，图标 24px，文字 11px/13px，内容严格水平垂直居中；
-	 *   激活项使用 52px 高、20px 圆角的半透明主题色底板 (无独立模糊/边框/阴影)，
-	 *   未激活项约 62% 前景色；hover 仅调整亮度，按下缩放至 0.97 (无位移/发光)
+	 * - 导航项：首页、足迹、博客、相册、打钱、友链恒为六项等宽直达链接，不折叠、不横向滚动；
+	 *   最小点击区域 44×44px，图标 22px，文字默认 11px/13px，内容严格水平垂直居中
+	 * - 激活底板相对单个等分区域四边统一内缩 4px，仅使用低透明度主题色填充；
+	 *   未激活项降低前景色透明度，激活项使用主题色并提高字重
+	 * - 320px 等窄屏仅收紧项目内部水平留白并将文字缩至 10px，不删除、不隐藏或换行
 	 */
 	import LiquidGlass from '$lib/components/ui/effect/LiquidGlass.svelte';
 	import Crossfade from '$lib/components/ui/effect/Crossfade.svelte';
@@ -27,9 +27,7 @@
 	import { fade } from 'svelte/transition';
 </script>
 
-<nav
-	class="z-controls fixed right-[var(--mobile-nav-inline-inset)] bottom-[var(--mobile-nav-bottom-inset)] left-[var(--mobile-nav-inline-inset)] md:hidden"
->
+<nav class="h-full w-full p-0">
 	<!--
 		统一 chrome 胶囊：liveBackdrop 禁用共享 WebGL 合成器，在最外层直接应用原生 backdrop-filter，
 		实时模糊胶囊后方的 DOM 内容；整个导航仅此一次模糊
@@ -39,11 +37,13 @@
 		chromeEdge="bottom"
 		liveBackdrop
 		showGloss={false}
-		class="mobile-nav-capsule pointer-events-auto h-[var(--mobile-nav-height)] w-full rounded-[28px] p-0 shadow-none"
+		contentLayout="fill"
+		contentClass="h-full w-full !p-0"
+		class="mobile-dock-capsule pointer-events-auto h-[var(--mobile-nav-height)] w-full rounded-[var(--mobile-dock-capsule-radius)] !p-0 shadow-none"
 	>
-		<!-- 导航项网格：六项等宽排列 -->
+		<!-- 导航项网格：六项恒定等宽，不使用横向滚动 -->
 		<div
-			class="grid h-full w-full items-center"
+			class="grid h-full w-full items-center p-0"
 			style="grid-template-columns: repeat({navItems.length}, minmax(0, 1fr))"
 		>
 			{#each navItems as item (item.href)}
@@ -51,24 +51,24 @@
 				<a
 					href={resolve(item.href as '/')}
 					aria-current={active ? 'page' : undefined}
-					class="group relative flex h-full min-h-11 min-w-11 flex-col items-center justify-center gap-[3px] rounded-[20px] transition-[color,transform,filter] duration-200 hover:brightness-110 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primary/60 active:scale-[0.97] {active
+					class="mobile-nav-item group relative flex h-full w-full max-w-full min-w-0 flex-col items-center justify-center gap-[2px] rounded-[20px] transition-[color,transform,filter] duration-200 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primary/60 active:scale-[0.97] {active
 						? 'font-semibold text-[var(--theme-color)]'
 						: 'text-[color-mix(in_oklab,var(--foreground)_62%,transparent)]'}"
 				>
-					<!-- 激活底板：52px 高、20px 圆角的半透明主题色层，无独立模糊/边框/阴影 -->
 					{#if active}
-						<div
-							class="z-deep absolute inset-x-1 inset-y-1.5 rounded-[20px] bg-[color-mix(in_srgb,var(--theme-color)_15%,transparent)]"
-							transition:fade={{ duration: 200 }}
-						></div>
+						<span
+							aria-hidden="true"
+							class="mobile-nav-indicator z-deep absolute"
+							transition:fade={{ duration: 180 }}
+						></span>
 					{/if}
 
-					<item.icon class="size-6 shrink-0" />
+					<item.icon class="z-content size-[22px] shrink-0" strokeWidth={active ? 2.25 : 2} />
 
-					<span class="text-[11px] leading-[13px]"
-						><Crossfade key={$locale} inline class="inline-grid"
-							><span>{$t(item.i18nKey)}</span></Crossfade
-						>
+					<span class="mobile-nav-label z-content min-w-0 overflow-hidden">
+						<Crossfade key={$locale} inline class="inline-grid max-w-full">
+							<span>{$t(item.i18nKey)}</span>
+						</Crossfade>
 					</span>
 				</a>
 			{/each}

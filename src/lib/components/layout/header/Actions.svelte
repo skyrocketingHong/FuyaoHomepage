@@ -29,7 +29,7 @@
 	}
 </script>
 
-<div class="flex items-center gap-2">
+<div class="flex shrink-0 items-center gap-2">
 	<!-- 背景模式切换 (锁定背景页面不渲染) -->
 	{#if backgroundSwitchable}
 		<BackgroundSwitcher />
@@ -53,15 +53,16 @@
 	</HeaderActionButton>
 
 	<!-- 语言切换：独立紧凑胶囊 -->
-	<ActionGroup>
+	<ActionGroup class="h-11 w-11 shrink-0 md:h-9 md:w-9">
 		<HeaderActionButton
 			bare
 			onclick={toggleLanguage}
 			title={$t('layout.header.switch_language')}
 			crossfadeKey={$locale}
+			class="w-11 max-w-11 min-w-11 shrink-0 px-0 md:w-9 md:max-w-9 md:min-w-9"
 		>
 			{#snippet icon()}
-				<div class="relative size-5 shrink-0">
+				<div class="relative size-5 shrink-0 basis-5">
 					<span
 						class="absolute inset-0 flex items-center justify-center text-xs font-bold transition-all duration-300 {$locale ===
 						'zh-CN'

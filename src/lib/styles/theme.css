@@ -35,7 +35,8 @@
 	--sidebar-border: oklch(0.929 0.013 255.508);
 	--sidebar-ring: oklch(0.704 0.04 256.788);
 	--theme-color: #ff8800;
-	--bg-overlay: oklch(1 0 0 / 0.2);
+	/* Bing 壁纸可读性遮罩：仅由 BackgroundLayer 的 image 模式使用 */
+	--wallpaper-readability-overlay: oklch(0.97 0.005 255 / 0.3);
 	/* 侧栏布局变量：图标列起点 = 列表外层 gutter + 导航项内部 padding */
 	--sidebar-outer-padding: 12px;
 	--sidebar-list-gutter: 4px;
@@ -45,21 +46,41 @@
 	--header-height: 52px;
 	--header-height-extended: 96px;
 	--header-content-gap: 12px;
+	/* 普通页面唯一水平外边距：由 MainContent 与固定底部 Dock 共同引用 */
+	--content-inline-inset: 8px;
+	/* 固定视口状态与支付页尺寸：页面和组件只引用 token，不重复建立水平边界 */
+	--layout-sidebar-width: 0px;
+	--viewport-state-bottom-clearance: var(--mobile-dock-clearance);
+	--payment-content-max-width: 460px;
+	--payment-desktop-list-width: 340px;
+	--payment-desktop-detail-width: 420px;
+	--payment-workspace-gap: 20px;
 	/* 移动端悬浮导航胶囊 token：尺寸与间距集中定义，页面禁止各自硬编码避让值 */
 	--mobile-nav-height: 64px;
-	--mobile-nav-inline-inset: 12px;
-	--mobile-nav-bottom-inset: max(10px, env(safe-area-inset-bottom));
+	--mobile-dock-capsule-radius: 28px;
+	--mobile-nav-item-min-size: 44px;
+	--mobile-nav-indicator-inset: 4px;
+	--mobile-nav-indicator-radius: 24px;
 	--mobile-nav-content-gap: 16px;
-	--mobile-nav-overlay-gap: 10px;
-	/* 导航高度 + 底部安全距离 + 内容间距之和，作为可滚动内容的底部占位 */
-	--mobile-nav-clearance: calc(
-		var(--mobile-nav-height) + var(--mobile-nav-bottom-inset) + var(--mobile-nav-content-gap)
+	/* 固定底部 Dock 编排 token：Tab Bar + 间距 + 底部信息区 + 安全区 */
+	--mobile-bottom-info-height: 38px;
+	--mobile-dock-gap: 5px;
+	--mobile-dock-bottom-inset: max(10px, env(safe-area-inset-bottom));
+	/* Dock 整体净空 = 安全区 + 信息区 + 间距 + Tab 高度 + 正文净空 16px；
+	   作为可滚动内容底部占位与固定视口页面避让的唯一来源 */
+	--mobile-dock-clearance: calc(
+		var(--mobile-dock-bottom-inset) + var(--mobile-bottom-info-height) + var(--mobile-dock-gap) +
+			var(--mobile-nav-height) + var(--mobile-nav-content-gap)
 	);
-	/* 胶囊表面/边界/投影：日间低饱和乳白 (~68%)，不使用纯白作为玻璃主体色 */
-	--mobile-nav-surface: oklch(0.96 0.006 255 / 0.68);
-	--mobile-nav-edge: oklch(1 0 0 / 0.4);
-	--mobile-nav-shadow: oklch(0 0 0 / 0.18);
-	/* 玻璃材质 token：低透明度蓝灰，不使用纯白作为玻璃主体色 */
+	/* Dock 两个独立胶囊共用的边界与投影；主体表面统一引用 --glass-surface */
+	--mobile-dock-capsule-edge: oklch(1 0 0 / 0.4);
+	--mobile-dock-capsule-shadow: oklch(0 0 0 / 0.18);
+	--mobile-nav-active-surface: color-mix(in srgb, var(--theme-color) 15%, transparent);
+	/* 唯一玻璃基准材质：沿用当前 Sidebar panel 的低透明度蓝灰表面。
+	 * panel/card/chrome/control/liveBackdrop/Header 控件/移动底栏只共享染色，
+	 * 各自的模糊半径、圆角、边缘、阴影与合成职责保持独立。 */
+	--glass-surface-opacity: 0.18;
+	--glass-surface: oklch(0.72 0.02 255 / var(--glass-surface-opacity));
 	/* 模糊半径与滤镜参数：由 LiquidGlass 按 variant 读取 */
 	--glass-panel-blur: 22px;
 	--glass-card-blur: 14px;
@@ -68,11 +89,6 @@
 	--glass-saturation: 1.08;
 	--glass-brightness: 0.98;
 	--glass-contrast: 0.96;
-	/* tint 不透明度：panel 保留背景色块，chrome 更实，control 更透明更轻 */
-	--glass-panel-tint-opacity: 0.18;
-	--glass-card-tint-opacity: 0.28;
-	--glass-chrome-tint-opacity: 0.26;
-	--glass-control-tint-opacity: 0.14;
 	/* 方向性边缘不透明度：顶边最明显，左侧稍亮，右边接近不可见，底边为轻微暗边 */
 	--glass-edge-top-opacity: 0.3;
 	--glass-edge-left-opacity: 0.14;
@@ -81,25 +97,15 @@
 	/* 边缘暗边基色与 chrome 底部分割线不透明度 */
 	--glass-edge-dark: rgb(15 23 42);
 	--glass-chrome-divider-opacity: 0.18;
-	/* 材质染色：普通透明度混合的低饱和蓝灰，由不透明度 token 驱动 */
-	--glass-panel-tint: oklch(0.72 0.02 255 / var(--glass-panel-tint-opacity));
-	--glass-card-tint: oklch(0.74 0.018 255 / var(--glass-card-tint-opacity));
-	--glass-chrome-tint: oklch(0.7 0.02 255 / var(--glass-chrome-tint-opacity));
-	--glass-control-tint: oklch(0.76 0.016 255 / var(--glass-control-tint-opacity));
-	/* 移动端底栏 tint：不透明度略高于顶栏 chrome，保证小字号元数据可读 */
-	--glass-bottom-tint: oklch(0.7 0.02 255 / min(calc(var(--glass-chrome-tint-opacity) + 0.08), 1));
 	--glass-highlight: oklch(1 0 0 / 0.14);
 	--glass-border: oklch(0.4 0.02 255 / 0.15);
 	--glass-shadow: oklch(0.35 0.03 265 / 0.14);
 	/* Header 工具栏控件 token (macOS 风格)：独立按钮 (ActionButton)、分段胶囊
 	 * (ActionGroup / SegmentedControl embedded) 共用同一组材质，外壳样式见
 	 * components.css 的 .header-control-shell。
-	 * 日间为半透明中性灰白材质，禁止不透明纯白 */
+	 * 主体表面统一使用 --glass-surface，不注册 GPU 合成器 */
 	--header-control-blur: 20px;
 	--header-control-saturate: 1.12;
-	--header-control-surface: oklch(0.96 0.005 255 / 0.55);
-	--header-control-surface-hover: oklch(0.96 0.005 255 / 0.7);
-	--header-control-surface-pressed: oklch(0.92 0.007 255 / 0.72);
 	--header-control-selected: oklch(0.55 0.015 255 / 0.14);
 	--header-control-edge: oklch(0.4 0.02 255 / 0.16);
 	--header-control-highlight: oklch(1 0 0 / 0.45);
@@ -189,40 +195,28 @@
 	--sidebar-border: oklch(1 0 0 / 10%);
 	--sidebar-ring: oklch(0.551 0.027 264.364);
 	--theme-color: #ff8800;
-	--bg-overlay: oklch(0 0 0 / 0.4);
-	/* 玻璃材质 token：深灰/深蓝灰 tint，不复用日间白色；
-	 * 顶部高光透明度降低，底部暗边与投影稍强；tint 不透明度均低于 0.5，禁止不透明黑色覆盖整个材质 */
-	--glass-panel-tint-opacity: 0.4;
-	--glass-card-tint-opacity: 0.5;
-	--glass-chrome-tint-opacity: 0.46;
-	--glass-control-tint-opacity: 0.3;
+	--wallpaper-readability-overlay: oklch(0.12 0.005 265 / 0.47);
+	/* 夜间唯一玻璃基准材质：沿用当前夜间 Sidebar panel 表面 */
+	--glass-surface-opacity: 0.4;
+	--glass-surface: oklch(0.24 0.02 265 / var(--glass-surface-opacity));
 	--glass-edge-top-opacity: 0.16;
 	--glass-edge-left-opacity: 0.08;
 	--glass-edge-bottom-opacity: 0.24;
 	--glass-edge-right-opacity: 0.04;
 	--glass-edge-dark: rgb(0 0 0);
 	--glass-chrome-divider-opacity: 0.4;
-	--glass-panel-tint: oklch(0.24 0.02 265 / var(--glass-panel-tint-opacity));
-	--glass-card-tint: oklch(0.3 0.02 265 / var(--glass-card-tint-opacity));
-	--glass-chrome-tint: oklch(0.22 0.02 265 / var(--glass-chrome-tint-opacity));
-	--glass-control-tint: oklch(0.32 0.02 265 / var(--glass-control-tint-opacity));
-	--glass-bottom-tint: oklch(0.22 0.02 265 / min(calc(var(--glass-chrome-tint-opacity) + 0.08), 1));
 	--glass-highlight: oklch(1 0 0 / 0.08);
 	--glass-border: oklch(1 0 0 / 0.12);
 	--glass-shadow: oklch(0 0 0 / 0.35);
-	/* Header 工具栏控件 token (夜间)：半透明石墨材质，禁止不透明纯黑 */
-	--header-control-surface: oklch(0.3 0.02 265 / 0.5);
-	--header-control-surface-hover: oklch(0.36 0.02 265 / 0.55);
-	--header-control-surface-pressed: oklch(0.26 0.02 265 / 0.55);
+	/* Header 工具栏控件 token (夜间)：主体表面仍由 --glass-surface 提供 */
 	--header-control-selected: oklch(1 0 0 / 0.14);
 	--header-control-edge: oklch(1 0 0 / 0.14);
 	--header-control-highlight: oklch(1 0 0 / 0.1);
 	--header-control-shadow: oklch(0 0 0 / 0.4);
 	--header-control-divider: oklch(1 0 0 / 0.16);
-	/* 移动端导航胶囊 (夜间)：中性深灰黑表面 (~72%)，边界与投影同步加深 */
-	--mobile-nav-surface: oklch(0.24 0.015 265 / 0.72);
-	--mobile-nav-edge: oklch(1 0 0 / 0.16);
-	--mobile-nav-shadow: oklch(0 0 0 / 0.4);
+	/* 移动端 Dock 胶囊（夜间）：边界与投影同步加深 */
+	--mobile-dock-capsule-edge: oklch(1 0 0 / 0.16);
+	--mobile-dock-capsule-shadow: oklch(0 0 0 / 0.4);
 	/* 阅读语义 token (夜间)：近黑阅读背景 + 浅色文字，语法调色板为 GitHub 深色 */
 	--reader-background: oklch(0.176 0.014 258.4);
 	--reader-foreground: oklch(0.857 0.014 248);
@@ -270,23 +264,26 @@
 	--section-icon-cutout-purple: oklch(0.55 0.26 303);
 }
 
-/* 降低透明度偏好：提高 tint 不透明度，高成本模糊由组件侧关闭 */
+/* 降低透明度偏好：所有玻璃语义表面同步提高基准不透明度，高成本模糊由组件侧关闭 */
 @media (prefers-reduced-transparency: reduce) {
 	:root {
-		--glass-panel-tint-opacity: 0.92;
-		--glass-card-tint-opacity: 0.94;
-		--glass-chrome-tint-opacity: 0.94;
-		--glass-control-tint-opacity: 0.9;
-		/* Header 控件模糊同步关闭 (见 components.css)，表面提升至接近不透明 */
-		--header-control-surface: oklch(0.95 0.005 255 / 0.94);
-		/* 导航胶囊关闭实时模糊 (组件侧)，表面提升至接近不透明并保留清晰边界 */
-		--mobile-nav-surface: oklch(0.96 0.006 255 / 0.94);
-		--mobile-nav-edge: oklch(0.4 0.02 255 / 0.4);
+		--glass-surface-opacity: 0.92;
+		/* Header 控件与导航胶囊关闭实时模糊，保留清晰边界 */
+		--mobile-dock-capsule-edge: oklch(0.4 0.02 255 / 0.4);
 	}
 	.dark {
-		--header-control-surface: oklch(0.28 0.02 265 / 0.94);
-		--mobile-nav-surface: oklch(0.24 0.015 265 / 0.94);
-		--mobile-nav-edge: oklch(1 0 0 / 0.3);
+		--mobile-dock-capsule-edge: oklch(1 0 0 / 0.3);
+	}
+}
+
+/* 提高对比度偏好：只增强图片壁纸可读性遮罩，不改变非图片背景。 */
+@media (prefers-contrast: more) {
+	:root {
+		--wallpaper-readability-overlay: oklch(0.97 0.005 255 / 0.44);
+	}
+
+	.dark {
+		--wallpaper-readability-overlay: oklch(0.12 0.005 265 / 0.6);
 	}
 }
 
@@ -300,7 +297,10 @@
 
 @media (min-width: 768px) {
 	:root {
+		--content-inline-inset: 16px;
 		--edge-fade-size: 2.5rem;
+		--layout-sidebar-width: 248px;
+		--viewport-state-bottom-clearance: 0px;
 	}
 }
 
@@ -309,7 +309,28 @@
 	:root {
 		--header-height: 64px;
 		--header-content-gap: 16px;
+		--layout-sidebar-width: 256px;
+		--payment-content-max-width: calc(
+			var(--payment-desktop-list-width) + var(--payment-workspace-gap) +
+				var(--payment-desktop-detail-width)
+		);
 	}
+}
+
+/* Header 下方、固定 Bottom Dock 上方的统一可用内容区域。
+ * StatusState viewport 与 LoadingState fullscreen 共用，避免超大 min-height 或嵌套滚动。 */
+.viewport-state-region {
+	position: fixed;
+	top: var(--main-content-top-inset, calc(var(--header-height) + var(--header-content-gap)));
+	right: var(--content-inline-inset);
+	bottom: var(--viewport-state-bottom-clearance);
+	left: calc(var(--layout-sidebar-width) + var(--content-inline-inset));
+	display: flex;
+	min-width: 0;
+	min-height: 0;
+	align-items: center;
+	justify-content: center;
+	overflow: hidden;
 }
 
 @theme inline {

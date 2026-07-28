@@ -5,6 +5,8 @@ import os from 'node:os';
 import path from 'node:path';
 import process from 'node:process';
 
+import { normalizePublicTreePermissions } from './lib/public-permissions.js';
+
 function required(name) {
 	const value = process.env[name];
 	if (!value) throw new Error(`缺少生产部署变量 ${name}`);
@@ -46,6 +48,7 @@ function atomicSwitch(currentLink, releasePath) {
 
 const configRoot = fs.realpathSync(required('FUYAO_CONFIG_ROOT'));
 const contentRoot = fs.realpathSync(required('FUYAO_CONTENT_ROOT'));
+const faviconRoot = fs.realpathSync(required('FUYAO_FAVICON_ROOT'));
 const releaseRoot = fs.realpathSync(required('FUYAO_RELEASE_ROOT'));
 const currentLink = required('FUYAO_CURRENT_LINK');
 const sharedRoot = fs.realpathSync(required('FUYAO_SHARED_ROOT'));
@@ -69,6 +72,7 @@ if (!Number.isSafeInteger(keep) || keep < 1) throw new Error('FUYAO_RELEASE_KEEP
 
 assertWithin(sharedRoot, configRoot, '配置目录');
 assertWithin(sharedRoot, contentRoot, '内容目录');
+assertWithin(sharedRoot, faviconRoot, 'favicon 目录');
 
 let lockFd;
 let temporaryRoot;
@@ -110,6 +114,7 @@ try {
 		...process.env,
 		FUYAO_CONFIG_ROOT: configRoot,
 		FUYAO_CONTENT_ROOT: contentRoot,
+		FUYAO_FAVICON_ROOT: faviconRoot,
 		FUYAO_SKIP_LOCK: '1'
 	};
 	if (deployReasons.has('albums')) {
@@ -159,6 +164,8 @@ try {
 			2
 		)}\n`
 	);
+	// release 是公开静态站点；发布前再次归一化，避免构建工具或私有源传播限制权限。
+	normalizePublicTreePermissions(releasePath);
 
 	const oldTarget = fs.existsSync(currentLink) ? fs.realpathSync(currentLink) : undefined;
 	atomicSwitch(currentLink, releasePath);
@@ -178,6 +185,28 @@ try {
 			if (healthRelease.releaseId !== releaseId) {
 				throw new Error(`线上 release-id 不一致：${String(healthRelease.releaseId)}`);
 			}
+
+			const publicDataUrl = new URL('/data/friends.yaml', process.env.FUYAO_HEALTHCHECK_URL);
+			publicDataUrl.searchParams.set('release', releaseId);
+			runCapture('curl', [
+				'--fail',
+				'--silent',
+				'--show-error',
+				'--max-time',
+				'15',
+				publicDataUrl.toString()
+			]);
+
+			const faviconUrl = new URL('/favicon/favicon-32x32.png', process.env.FUYAO_HEALTHCHECK_URL);
+			faviconUrl.searchParams.set('release', releaseId);
+			runCapture('curl', [
+				'--fail',
+				'--silent',
+				'--show-error',
+				'--max-time',
+				'15',
+				faviconUrl.toString()
+			]);
 		}
 	} catch (error) {
 		if (oldTarget) atomicSwitch(currentLink, oldTarget);

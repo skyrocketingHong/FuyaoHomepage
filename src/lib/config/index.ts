@@ -26,7 +26,7 @@ export interface NavItem {
 	hasSidebarList?: boolean;
 	/** 背景模式 (可选，覆盖默认行为) */
 	backgroundMode?: BackgroundMode;
-	/** 内容区域是否可滚动 (默认 true；固定视口页面如足迹地图设为 false) */
+	/** 内容区域是否可滚动 (默认 true；固定视口页面如足迹地图、赞赏页设为 false) */
 	contentScrollable?: boolean;
 }
 
@@ -72,7 +72,7 @@ export const navItems: NavItem[] = [
 	},
 	{
 		i18nKey: 'nav.footprint',
-		href: '/footprint',
+		href: '/footprint/',
 		icon: MapPin,
 		seo: {
 			description: `${seoConfig.author}的足迹，记录我走过的城市和地方。`,
@@ -95,7 +95,7 @@ export const navItems: NavItem[] = [
 	},
 	{
 		i18nKey: 'nav.album',
-		href: '/albums/',
+		href: '/albums/' as Pathname,
 		icon: Image,
 		seo: {
 			description: `${seoConfig.author}的时光相册，记录生活中的美好瞬间。`,
@@ -112,7 +112,8 @@ export const navItems: NavItem[] = [
 			description: `${seoConfig.author}的赞赏支持，如果您觉得我的内容对您有帮助，欢迎赞赏支持。`,
 			keywords: ['赞赏', '捐赠', '支持']
 		},
-		backgroundMode: 'mosaic'
+		backgroundMode: 'mosaic',
+		contentScrollable: false
 	},
 	{
 		i18nKey: 'nav.friends',
@@ -262,7 +263,7 @@ export function getBackgroundMode(
 /**
  * 根据路径获取内容区域是否可滚动
  *
- * 默认可滚动；仅固定视口页面（如足迹地图）配置为 false。
+ * 默认可滚动；仅固定视口页面（如足迹地图、赞赏页）配置为 false。
  * 该配置是内容滚动模式的唯一来源，页面不得再自行修改全局滚动状态。
  *
  * @param pathname 当前路径

@@ -208,7 +208,7 @@
 													onSelect={(id) => sidebarState.setViewMode(id)}
 													size="sm"
 													noShadow={true}
-													class="!bg-transparent !p-0"
+											class="!p-0"
 												/>
 											</Crossfade>
 										{/if}

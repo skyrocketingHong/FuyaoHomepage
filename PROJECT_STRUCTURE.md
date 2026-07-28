@@ -45,11 +45,13 @@
 ├── version.json          # 营销版本、Build Train 与构建序号的唯一人工维护入口
 ├── vite.config.ts        # Vite 构建配置
 ├── scripts/              # 工具脚本及版本管理
+│   ├── lib/
+│   │   └── public-permissions.js # 公开构建及 release 权限归一化与校验
 │   ├── generate-blog-index.js # 博客索引生成脚本 (支持 RSS/Sitemap)
 │   ├── generate-album-index.js# 相册 EXIF 索引及响应式缩略图生成脚本
-│   ├── prepare-build-inputs.js # 校验、复制并冻结构建输入快照
+│   ├── prepare-build-inputs.js # 校验、复制外部 favicon/内容并冻结构建输入快照
 │   ├── prepare-content-update.js # 低内存相册整理与待发布状态写入
-│   ├── validate-deployment.js  # 构建输入与最终产物泄漏检查
+│   ├── validate-deployment.js  # 构建输入与最终产物泄漏、公开读取权限检查
 │   ├── audit-repository.js     # 当前文件和完整 Git 历史隐私扫描
 │   ├── migrate-content.js      # 外部持久化内容复制与 SHA-256 清单
 │   ├── deploy.js               # 独立 release、原子切换与回滚
@@ -125,7 +127,7 @@
 │   │   │   │   ├── Hero.svelte              # 首页主组件
 │   │   │   │   └── content/                 # 首页内容组件
 │   │   │   │       ├── CloudflareAnalytics.svelte # 访问统计
-│   │   │   │       ├── CodingActivity.svelte # 编程活动统计
+│   │   │   │       ├── CodingActivity.svelte # 编程活动统计 (真实每日语言堆叠与无明细中性回退)
 │   │   │   │       ├── GithubProjects.svelte # GitHub 项目展示
 │   │   │   │       ├── LatestPosts.svelte    # 最新文章
 │   │   │   │       ├── ProfileSection.svelte # 个人信息展示
@@ -164,16 +166,16 @@
 │   │   │   │       └── SearchButton.svelte   # 搜索按钮
 │   │   │   ├── layout/       # 布局组件
 │   │   │   │   ├── background/   # 背景组件
-│   │   │   │   │   └── BackgroundLayer.svelte # 通用背景层包裹
+│   │   │   │   │   └── BackgroundLayer.svelte # 通用背景层包裹（Bing 响应式壁纸与两级故障回退）
 │   │   │   │   ├── bottom-info/  # 底部信息组件
-│   │   │   │   │   ├── BottomInfo.svelte       # 底部信息容器 (垂直/水平布局, 移动端为文档流页脚)
-│   │   │   │   │   ├── BackgroundInfo.svelte   # 背景信息展示
-│   │   │   │   │   ├── CopyrightText.svelte    # 版权文本
-│   │   │   │   │   └── ServiceStatus.svelte    # 服务状态
+│   │   │   │   │   ├── BottomInfo.svelte       # 底部信息容器 (桌面侧栏/移动端居中紧凑两列四条静态单行)
+│   │   │   │   │   ├── BackgroundInfo.svelte   # 背景地点单行展示、完整语义与静态省略
+│   │   │   │   │   ├── CopyrightText.svelte    # 左对齐静态两行版权、仓库与版本信息
+│   │   │   │   │   └── ServiceStatus.svelte    # 紧凑服务状态与部署平台静态单行信息
 │   │   │   │   ├── content/      # 内容区域组件
-│   │   │   │   │   └── MainContent.svelte    # 主内容区域容器 (底部边缘渐隐局部关闭, 其余实例不受影响)
+│   │   │   │   │   └── MainContent.svelte    # 主内容区域容器 (统一水平边距、滚动行为与 viewport 状态声明式居中)
 │   │   │   │   ├── header/       # 头部组件
-│   │   │   │   │   ├── Header.svelte         # 统一网站 Header
+│   │   │   │   │   ├── Header.svelte         # 统一网站 Header (移动端站点主标题与页面副标题)
 │   │   │   │   │   ├── HeaderChrome.svelte   # 顶栏连续 chrome 背景层 (liveBackdrop 实时模糊, 内容进入 Header 后方时显示; 移动端覆盖控件区及 12px 底部间距, 单行 64px/双行 108px)
 │   │   │   │   │   ├── Actions.svelte        # 全局操作区 (背景/主题/语言分组)
 │   │   │   │   │   ├── BackgroundSwitcher.svelte # 背景模式切换 (桌面端嵌入 chrome 分段胶囊 / 移动端循环按钮)
@@ -183,7 +185,8 @@
 │   │   │   │   │       └── Drawer.svelte         # 移动端侧栏抽屉
 │   │   │   │   ├── nav/          # 导航
 │   │   │   │   │   ├── CategoryNav.svelte    # 顶部分类导航
-│   │   │   │   │   └── MobileNav.svelte      # 移动端悬浮导航胶囊 (独立玻璃胶囊仅含导航项, 与 BottomInfo 文档流页脚分离)
+│   │   │   │   │   ├── MobileBottomDock.svelte # 编排两个独立同材质实时模糊胶囊、5px 间距与安全区
+│   │   │   │   │   └── MobileNav.svelte      # 六项等宽直达、复用 Dock 胶囊材质的悬浮 Tab Bar
 │   │   │   │   ├── loader/       # 加载指示器
 │   │   │   │   │   └── GlobalLoader.svelte   # 首次背景加载与画布尺寸重建的全局遮罩
 │   │   │   │   └── sidebar/      # 全局侧边栏
@@ -191,19 +194,22 @@
 │   │   │   │       ├── SidebarTree.svelte    # 递归导航树
 │   │   │   │       └── Item.svelte           # 导航项/菜单项
 │   │   │   ├── pay/          # 支付/赞赏组件
-│   │   │   │   └── QRCodeCard.svelte         # 付款码展示卡片
+│   │   │   │   ├── PaymentIntro.svelte       # 与友链信息卡同层级的水平支付说明卡
+│   │   │   │   ├── QRCodeCard.svelte         # 二维码生成及响应式 Wallet 主从布局控制器
+│   │   │   │   └── WalletPass.svelte         # 支持移动堆叠、桌面摘要和详情三种模式的品牌 Pass
 │   │   │   ├── seo/          # SEO 组件
 │   │   │   │   └── SeoHead.svelte            # HTML Meta 管理
 │   │   │   └── ui/           # 基础 UI 原子组件
-│   │   │       ├── background/   # 背景特效
+│   │   │       ├── background/   # 背景特效与来源信息
+│   │   │       │   ├── BingWallpaperInfo.svelte # Bing 每日壁纸来源单行展示与静态省略
 │   │   │       │   ├── FlowingBackground.svelte # 流动渐变
 │   │   │       │   ├── MosaicBackground.svelte  # 马赛克动态背景（防抖尺寸事务、绘制提交与故障回退）
+│   │   │       │   ├── MosaicInfo.svelte        # 马赛克车站单行来源信息
 │   │   │       │   └── SolidBackground.svelte   # 纯色/基础背景
 │   │   │       ├── display/      # 内容展示
 │   │   │       │   ├── Avatar.svelte         # 头像
-│   │   │       │   ├── LazyImage.svelte      # 懒加载图片
-│   │   │       │   ├── Marquee.svelte        # 跑马灯
-│   │   │       │   ├── MosaicInfo.svelte     # 马赛克卡片信息
+│   │   │       │   ├── LazyImage.svelte      # 支持 picture source 与可配置加载优先级的图片组件（默认懒加载）
+│   │   │       │   ├── Marquee.svelte        # 按需溢出滚动、可关闭边缘渐隐的跑马灯
 │   │   │       │   └── SegmentedControl.svelte # 分段切换按钮
 │   │   │       ├── effect/       # 视觉效果
 │   │   │       │   ├── Crossfade.svelte      # 交叉淡入淡出动画
@@ -213,9 +219,9 @@
 │   │   │       │   └── TextEffect.svelte     # 文本打字/特效
 │   │   │       ├── feedback/     # 反馈/状态
 │   │   │       │   ├── LoadingSpinner.svelte # 加载转圈
-│   │   │       │   ├── LoadingState.svelte   # 加载中状态封面（全屏模式底部信息居中并适配安全区）
+│   │   │       │   ├── LoadingState.svelte   # 加载状态（全屏模式复用统一可用视口区域）
 │   │   │       │   ├── Skeleton.svelte       # 骨架屏占位
-│   │   │       │   └── StatusState.svelte    # 404 与空数据状态共用的玻璃卡片及语言过渡
+│   │   │       │   └── StatusState.svelte    # viewport/embedded 错误与空数据状态卡及语言过渡
 │   │   │       └── layout/       # 布局辅助
 │   │   │           └── ScrollContainer.svelte# 统一滚动容器
 │   │   ├── i18n/             # 国际化支持
@@ -277,7 +283,7 @@
 │       │   └── +page.svelte
 │       └── +error.svelte     # 全局错误页面
 ├── static/                   # 仅允许公开白名单静态资产
-│   ├── favicon/              # 匿名或通用站点图标
+│   ├── favicon/              # 开发与 CI favicon 样例，生产使用服务器持久化目录
 │   ├── fonts/                # 可公开分发的字体
 │   └── robots.txt            # 搜索引擎协议
 ├── tests/                    # Node.js 项目完整性测试
@@ -286,7 +292,9 @@
 │   ├── content-watcher.test.js # 内容监听、GPS 保留与部署约束回归测试
 │   ├── home-components.test.js # 首页组件布局回归测试
 │   ├── markdown-rendering.test.js # Markdown HTML、链接、公式与表格回归测试
+│   ├── mobile-experience.test.js # Header、底部 Dock、Wallet 与编程统计回归测试
 │   ├── navigation-state.test.js # Header 插槽所有权及博客路由、背景策略回归测试
+│   ├── public-permissions.test.js # 私有源权限与公开产物读取权限回归测试
 │   ├── project-integrity.test.js
 │   └── verify-build.js       # 生产构建正文、文章阅读背景及 Header 背景切换器验证
 ```

@@ -6,14 +6,13 @@
 	 * - 移动端：显示为固定顶部条，包含菜单、动态操作项、站点名称及页面标题。
 	 * - 桌面端：显示为绝对定位，字体更宽大，布局扁平化。
 	 *
-	 * @prop pageLabel - 当前页面标题 (显示在站点名称后)
+	 * @prop pageLabel - 当前页面标题
 	 * @prop backgroundSwitchable - 是否渲染背景切换器 (锁定背景页面为 false，从 DOM 卸载)
 	 * @prop class - 额外的 CSS 类名
 	 */
 	import HeaderActions from '$lib/components/layout/header/Actions.svelte';
 	import HeaderActionButton from '$lib/components/layout/header/ActionButton.svelte';
 	import Crossfade from '$lib/components/ui/effect/Crossfade.svelte';
-	import Marquee from '$lib/components/ui/display/Marquee.svelte';
 	import { Menu } from 'lucide-svelte';
 	import { seoConfig } from '$lib/config/index';
 	import { sidebarState, headerState } from '$lib/stores/app.svelte';
@@ -39,18 +38,33 @@
 	<div
 		class="pointer-events-none order-1 flex w-full items-center justify-between gap-2 lg:contents"
 	>
-		<h1
-			class="pointer-events-auto flex min-w-0 flex-1 shrink items-center gap-1 text-xl font-bold text-foreground drop-shadow-md lg:order-1 lg:min-w-[200px] lg:flex-initial lg:shrink-[100] lg:text-2xl lg:tracking-wide"
+		<div
+			class="pointer-events-auto min-w-0 flex-1 shrink text-foreground drop-shadow-md lg:order-1 lg:min-w-[200px] lg:flex-initial lg:shrink-[100]"
 		>
-			<Marquee class="flex w-full items-center" fadeSize="1.5rem" autoPlay={true}>
-				<div class="flex items-center gap-1">
+			<!-- 移动端：站点名称为主标题，当前页面为静态副标题。 -->
+			<div class="grid min-w-0 grid-rows-[22px_14px] content-center lg:hidden">
+				<h1 class="truncate text-[19px] leading-[22px] font-bold" title={seoConfig.siteName}>
 					{seoConfig.siteName}
-					<Crossfade key={pageLabel} inline class="inline-grid">
-						<span>· {pageLabel}</span>
-					</Crossfade>
-				</div>
-			</Marquee>
-		</h1>
+				</h1>
+				<Crossfade key={pageLabel} inline class="inline-grid min-w-0">
+					<span
+						class="truncate text-[12px] leading-[14px] font-medium text-foreground/60"
+						title={pageLabel}>{pageLabel}</span
+					>
+				</Crossfade>
+			</div>
+
+			<!-- 桌面端保留原有单行标题，不启用自动滚动。 -->
+			<h1
+				class="hidden min-w-0 truncate text-2xl font-bold tracking-wide lg:block"
+				title={`${seoConfig.siteName} · ${pageLabel}`}
+			>
+				{seoConfig.siteName}
+				<Crossfade key={pageLabel} inline class="inline-grid">
+					<span>· {pageLabel}</span>
+				</Crossfade>
+			</h1>
+		</div>
 
 		<!-- 4. 右侧操作按钮（移动端：顺序 2；桌面端：顺序 4） -->
 		<!-- 组内间距 8px (gap-2)；页面上下文操作与全局操作之间 12px (gap-2 + ml-1) -->

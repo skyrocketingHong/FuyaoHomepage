@@ -5,7 +5,7 @@
 	 * 采用胶囊样式，支持图标和标签，带平滑激活背景切换。
 	 * 默认模式由 LiquidGlass (variant="control") 提供玻璃材质；
 	 * embedded 模式用于 Header 工具栏胶囊：外壳使用 .header-control-shell 共享材质
-	 * (见 components.css 与 theme.css 的 --header-control-* token)，自行承担一次
+	 * (主体染色来自 --glass-surface)，自行承担一次
 	 * control 级原生背景模糊，不依赖 HeaderChrome、不注册 WebGL 合成器、不使用 SVG 折射；
 	 * 尺寸由外壳单层 padding 控制 (桌面：外壳 36px + 四边 4px 内距 + 内部轨道 28px；
 	 * 移动端：外壳 44px + 四边 4px 内距 + 内部轨道 36px)，按钮与选中指示直接占满轨道；

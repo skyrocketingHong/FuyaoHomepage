@@ -9,7 +9,7 @@
 	import { navItems, getBackgroundPolicy, getContentScrollable } from '$lib/config/index';
 	import type { BackgroundMode } from '$lib/config/index';
 	import { page, navigating } from '$app/state';
-	import { backgroundState, layoutState, sidebarState } from '$lib/stores/app.svelte';
+	import { backgroundState, layoutState } from '$lib/stores/app.svelte';
 	import { t } from '$lib/i18n/store';
 	import { fade } from 'svelte/transition';
 
@@ -18,8 +18,7 @@
 	import GlobalLoader from '$lib/components/layout/loader/GlobalLoader.svelte';
 	import LoadingSpinner from '$lib/components/ui/feedback/LoadingSpinner.svelte';
 
-	import MobileNav from '$lib/components/layout/nav/MobileNav.svelte';
-	import BottomInfo from '$lib/components/layout/bottom-info/BottomInfo.svelte';
+	import MobileBottomDock from '$lib/components/layout/nav/MobileBottomDock.svelte';
 	import MobileDrawer from '$lib/components/layout/header/drawer/Drawer.svelte';
 	import Sidebar from '$lib/components/layout/sidebar/Sidebar.svelte';
 	import Header from '$lib/components/layout/header/Header.svelte';
@@ -60,9 +59,7 @@
 	// 1. 非博客页面（如首页、足迹等）
 	// 2. 博客根路径 /blog 首页
 	let shouldRenderLayoutSeo = $derived(
-		!page.url.pathname.startsWith('/blog/') ||
-			page.url.pathname === '/blog' ||
-			page.url.pathname === '/blog/'
+		!page.url.pathname.startsWith('/blog/') || page.url.pathname === '/blog/'
 	);
 
 	// 路由背景策略：背景模式 + 是否允许用户切换 (集中自 config)
@@ -110,8 +107,10 @@
 			: 'text-white'
 		: 'text-foreground'}"
 >
-	<!-- 移动端：底部导航栏 -->
-	<MobileNav />
+	<!-- 移动端：固定底部 Dock (Tab Bar + 底部信息区)，灯箱打开时整体卸载 -->
+	{#if !lightboxState.isOpen}
+		<MobileBottomDock />
+	{/if}
 
 	<!-- 主布局容器：统一管理移动端和桌面端结构 -->
 	<div class="flex h-screen w-full overflow-hidden">
@@ -140,21 +139,14 @@
 			<!-- 避免了 resize 时组件的卸载和重新挂载 -->
 			<MainContent pathname={page.url.pathname} scrollable={contentScrollable} bind:headerObscured>
 				{@render children()}
-				<!-- 移动端页脚：BottomInfo 位于可滚动内容末尾，普通文档流，不再并入固定导航表面 -->
-				<!-- 固定视口页面 (如足迹地图) 不渲染全局移动页脚 -->
+				<!-- 底部占位：移动端为固定 Dock 净空 (--mobile-dock-clearance = Tab 高度 + 间距 + 信息区高度 + 安全区 + 16px 正文净空)，
+				     桌面端固定 16px；仅可滚动页面在正文末尾保留净空 -->
 				{#if contentScrollable}
-					<footer class="w-full shrink-0 px-2 pt-6 pb-2 md:hidden">
-						<BottomInfo
-							direction="horizontal"
-							infoComponent={sidebarState.extraInfoComponent}
-							infoComponentProps={{ ...sidebarState.extraInfoProps }}
-							infoKey={sidebarState.extraInfoKey || 'default'}
-						/>
-					</footer>
+					<div
+						data-main-content-spacer
+						class="h-[var(--mobile-dock-clearance)] w-full shrink-0 md:h-4"
+					></div>
 				{/if}
-				<!-- 底部占位：移动端为导航胶囊净空 (--mobile-nav-clearance = 导航高度 + 底部安全距离 + 16px 内容间距)，
-				     桌面端固定 16px；位于正文与移动页脚之后，属于 MainContent 滚动内容 -->
-				<div class="h-[var(--mobile-nav-clearance)] w-full shrink-0 md:h-4"></div>
 			</MainContent>
 		</div>
 	</div>

@@ -35,10 +35,17 @@ test('生产构建和 systemd watcher 保留照片 GPS 并使用低内存内容�
 
 	assert.doesNotMatch(prepareScript, /strip-gps/);
 	assert.match(deployScript, /FUYAO_SOURCE_ROOT/);
+	assert.match(prepareScript, /FUYAO_FAVICON_ROOT/);
 	assert.doesNotMatch(deployScript, /strip-gps/);
 	assert.doesNotMatch(contentPrepareScript, /strip-gps/);
 	assert.match(deployScript, /线上 release-id 不一致/);
+	assert.match(deployScript, /\/data\/friends\.yaml/);
+	assert.match(deployScript, /\/favicon\/favicon-32x32\.png/);
 	assert.match(service, /InaccessiblePaths=\/srv\/fuyao\/shared\/secrets/);
+	assert.match(
+		fs.readFileSync('deploy/systemd/fuyao-deploy.service', 'utf8'),
+		/FUYAO_FAVICON_ROOT=\/srv\/fuyao\/shared\/legacy\/root-assets\/favicon/
+	);
 	assert.match(service, /Environment=FUYAO_WATCH_MODE=prepare/);
 	assert.match(service, /MemoryHigh=640M/);
 	assert.match(service, /MemoryMax=768M/);

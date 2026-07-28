@@ -4,16 +4,16 @@
 	 *
 	 * 实现分层透射、单层边缘高光与可选单通道 SVG 折射，带有鼠标光照跟随和 3D 倾斜交互。
 	 *
-	 * 材质层级 (variant)，tint/blur/edge/shadow/gloss 均由 variant 自动决定：
+	 * 材质层级 (variant) 共用 --glass-surface 染色，仅 blur/edge/shadow/gloss 按职责区分：
 	 * - panel: 大面积常驻区域 (侧栏、抽屉)。blur 20~24px，保留背景色块，低饱和度。
 	 *   不绘制四周完整边框，分隔线由调用方按需提供。优先使用共享 GPU 合成器模糊，
 	 *   回退到 CSS backdrop-filter，最终回退到静态磨砂材质 (.bg-frosted-static)。
 	 * - card: 普通信息卡片 (默认)。GPU 合成器或 CSS backdrop-filter，
 	 *   单层弱边界 + 柔和外阴影，无折射与鼠标跟随。
-	 * - chrome: 连续系统材质 (顶栏、移动端底栏)。blur 22~28px，tint 更实，
+	 * - chrome: 连续系统材质 (顶栏、移动端底栏)。blur 22~28px，
 	 *   不绘制完整圆角边框：仅顶部极弱内高光 + 底部 1px 分割线 + 底部柔和阴影。
 	 *   覆盖实时 DOM，默认不注册 GPU 合成器。
-	 * - control: 小面积交互控件 (按钮、搜索框)。blur 10~14px，更透明更轻。
+	 * - control: 小面积交互控件 (按钮、搜索框)。blur 10~14px。
 	 *   仅使用 CSS backdrop-filter，单层方向性高光边，可开启单通道折射与鼠标光照，禁止额外 ring。
 	 * - icon: 图标底座 (48x48, 圆角 14~16px)。不模糊、不折射、不注册 GPU、无鼠标跟随，
 	 *   固定顶部光源：主体底色由 --section-icon-surface-* token 提供 (见 theme.css)，
@@ -50,7 +50,7 @@
 	 *   在最外层直接应用原生 backdrop-filter，用于覆盖实时 DOM 内容的常驻区域 (如移动端底栏)。
 	 *   滤镜初始值 blur(24px) saturate(1.08) brightness(0.98) contrast(0.96)，由 --glass-* token 驱动。
 	 * @prop chromeEdge - chrome 材质的边缘朝向：'top' (默认，顶栏：底部 1px 分割线 + 向下柔和阴影) |
-	 *   'bottom' (移动端底栏：顶部极弱内高光 + 向上柔和分离阴影，底边不绘制线条，tint 略高)。
+	 *   'bottom' (移动端底栏：顶部极弱内高光 + 向上柔和分离阴影，底边不绘制线条)。
 	 *   仅对 variant="chrome" 生效。
 	 * @prop showLighting - 是否显示光照跟随层 (默认 control 为 true, 其余为 false)
 	 * @prop showGloss - 是否显示表面光泽层 (默认 true；icon 变体强制关闭，光泽由 icon 专属层实现)
@@ -370,7 +370,7 @@
 	});
 
 	// 表面材质类：
-	// liveBackdrop -> 高浓度 chrome tint，模糊由最外层原生 backdrop-filter 提供
+	// liveBackdrop -> 统一基准表面，模糊由最外层原生 backdrop-filter 提供
 	// opaque -> 不透明背景 (Card color), 无开销
 	// icon -> 无玻璃 tint (主体底色由 .liquid-glass-icon 读取 --section-icon-surface-* token)
 	// GPU 合成器或 CSS 模糊激活时 -> 对应变体的 tint 材质 (模糊由合成器/backdrop-filter 提供)

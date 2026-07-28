@@ -226,7 +226,7 @@ export function useBlogState(initialPosts: BlogPost[] = [], initialCategories: C
 		actionsId = headerState.setRight(
 			HeaderBlogActions,
 			{
-				onOpenSearch: () => void goto(resolve('/blog/search'))
+				onOpenSearch: () => void goto(resolve('/blog/search/'))
 			},
 			'blog-actions'
 		);

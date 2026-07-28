@@ -6,6 +6,8 @@ import { fileURLToPath } from 'node:url';
 import matter from 'gray-matter';
 import yaml from 'js-yaml';
 
+import { assertPublicTreePermissions } from './lib/public-permissions.js';
+
 const projectRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const phase =
 	process.argv.find((value) => value.startsWith('--phase='))?.split('=', 2)[1] ?? 'build';
@@ -71,6 +73,7 @@ function validateInputs(snapshotRoot) {
 	const publicRoot = path.join(snapshotRoot, 'public');
 	const postsRoot = path.join(publicRoot, 'posts');
 	const dataRoot = path.join(publicRoot, 'data');
+	const faviconRoot = path.join(publicRoot, 'favicon');
 	const albumIndex = path.join(publicRoot, 'albums', 'index.json');
 	const issues = [];
 
@@ -110,8 +113,19 @@ function validateInputs(snapshotRoot) {
 	for (const required of ['all.json', 'categories.json', 'search.json', 'manifest.json']) {
 		if (!fs.existsSync(path.join(postsRoot, required))) issues.push(`博客索引缺少 ${required}`);
 	}
+	for (const required of [
+		'apple-touch-icon.png',
+		'favicon-32x32.png',
+		'favicon-16x16.png',
+		'site.webmanifest',
+		'safari-pinned-tab.svg',
+		'mstile-144x144.png'
+	]) {
+		if (!fs.existsSync(path.join(faviconRoot, required))) issues.push(`favicon 缺少 ${required}`);
+	}
 	if (issues.length) throw new Error(`构建输入校验失败：\n- ${issues.join('\n- ')}`);
 	assertNoLeaks(publicRoot, '公开构建输入');
+	assertPublicTreePermissions(publicRoot, '公开构建输入');
 }
 
 if (phase === 'inputs') {
@@ -122,6 +136,7 @@ if (phase === 'inputs') {
 	const buildRoot = process.env.FUYAO_BUILD_ROOT || path.join(projectRoot, 'build');
 	if (!fs.existsSync(buildRoot)) throw new Error(`构建产物不存在：${buildRoot}`);
 	assertNoLeaks(buildRoot, '最终构建产物');
+	assertPublicTreePermissions(buildRoot, '最终构建产物');
 	for (const required of ['index.html', 'sitemap.xml', path.join('blog', 'rss.xml')]) {
 		if (!fs.existsSync(path.join(buildRoot, required))) throw new Error(`构建产物缺少 ${required}`);
 	}

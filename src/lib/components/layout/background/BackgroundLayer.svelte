@@ -9,7 +9,7 @@
 	 * - prefers-reduced-motion 下 Crossfade 时长归零，直接切换最终状态。
 	 */
 	import { onMount, untrack } from 'svelte';
-	import { backgroundState } from '$lib/stores/app.svelte';
+	import { backgroundState, sidebarState } from '$lib/stores/app.svelte';
 	import {
 		appearanceTransitionState,
 		APPEARANCE_TRANSITION_MS
@@ -17,6 +17,7 @@
 	import SolidBackground from '../../ui/background/SolidBackground.svelte';
 	import FlowingBackground from '../../ui/background/FlowingBackground.svelte';
 	import MosaicBackground from '../../ui/background/MosaicBackground.svelte';
+	import BingWallpaperInfo from '$lib/components/ui/background/BingWallpaperInfo.svelte';
 	import Crossfade from '$lib/components/ui/effect/Crossfade.svelte';
 	import LazyImage from '$lib/components/ui/display/LazyImage.svelte';
 	import { publicConfig } from '$lib/config/public';
@@ -32,27 +33,58 @@
 		mode?: 'image' | 'solid' | 'flowing' | 'none' | 'mosaic';
 	}>();
 
-	// 当前使用的壁纸 URL (支持从 API 动态加载覆盖传入的默认值)
-	let activeUrl = $state(untrack(() => spotlightUrl));
+	const wallpaperApi = publicConfig.services.wallpaper.apiUrl?.trim() ?? '';
+
+	/** 使用 URL API 保留已有查询参数，并为移动竖屏覆盖 type 参数。 */
+	function createMiniWallpaperUrl(apiUrl: string): string {
+		if (!apiUrl) return '';
+		const url = new URL(apiUrl);
+		url.searchParams.set('type', 'mini');
+		return url.toString();
+	}
+
+	// API 端点直接返回 JPEG；无 API 时才从备用图片开始。
+	let usingFallback = $state(untrack(() => !wallpaperApi));
+	let failedFallbackUrl = $state('');
+	let activeUrl = $derived(usingFallback ? spotlightUrl : wallpaperApi);
+	let mobileUrl = $derived(usingFallback ? '' : createMiniWallpaperUrl(wallpaperApi));
+	let imageUnavailable = $derived(
+		usingFallback && (!spotlightUrl || failedFallbackUrl === spotlightUrl)
+	);
+	// mode 每次变化都会生成新的会话标识；重新进入 image 模式后必须等待新的 onload。
+	let imageSession = $derived.by(() => {
+		const currentMode = mode;
+		return Symbol(currentMode);
+	});
+	let loadedBingSession = $state<symbol | null>(null);
+	let loadingFinished = false;
 	// BackgroundState 初始化时已创建首次加载事务；所有初始异步回调只允许完成该序号。
 	const initialLoadingId = backgroundState.activeLoadingId;
 
-	// 监听 props 变化，如果外部传入的 url 变了 (且不是空)，则更新 activeUrl
-	$effect(() => {
-		if (spotlightUrl) {
-			activeUrl = spotlightUrl;
-		}
-	});
-
-	function handleLoad() {
+	function finishLoading() {
+		if (loadingFinished) return;
+		loadingFinished = true;
 		backgroundState.completeLoading(initialLoadingId);
 		onImageLoad?.();
 	}
 
-	/** 图片加载失败也必须退出加载页 */
+	function handleLoad() {
+		loadedBingSession =
+			mode === 'image' && !usingFallback && wallpaperApi.length > 0 ? imageSession : null;
+		finishLoading();
+	}
+
+	/** API 失败后只切换一次备用图；备用图也失败时回退主题纯色并结束事务。 */
 	function handleError() {
-		backgroundState.completeLoading(initialLoadingId);
-		onImageLoad?.();
+		loadedBingSession = null;
+		if (!usingFallback && spotlightUrl) {
+			usingFallback = true;
+			return;
+		}
+
+		usingFallback = true;
+		failedFallbackUrl = spotlightUrl;
+		finishLoading();
 	}
 
 	// 减少动态效果偏好：直接切换最终状态，不执行交叉淡化
@@ -67,6 +99,20 @@
 		previousMode = nextMode;
 	});
 
+	// Bing 来源信息只属于成功显示的 API 图片；所有权 ID 防止旧清理覆盖后继马赛克信息。
+	$effect(() => {
+		const shouldShowBingInfo =
+			mode === 'image' &&
+			loadedBingSession === imageSession &&
+			!usingFallback &&
+			wallpaperApi.length > 0 &&
+			!backgroundState.component;
+		if (!shouldShowBingInfo) return;
+
+		const id = sidebarState.setExtraInfo(BingWallpaperInfo, {}, 'bing-wallpaper');
+		return () => sidebarState.clearExtraInfo(id);
+	});
+
 	// 语义背景、View Transition 或减少动态效果时，本层 Crossfade 时长归零
 	let fadeDuration = $derived(
 		appearanceTransitionState.active || reducedMotion || semanticModeChange
@@ -77,8 +123,7 @@
 	onMount(() => {
 		// 兜底超时：任何可选视觉效果失败都不得永久阻塞网站内容
 		const fallbackTimer = setTimeout(() => {
-			backgroundState.completeLoading(initialLoadingId);
-			onImageLoad?.();
+			finishLoading();
 		}, 2500);
 
 		// 监听减少动态效果偏好
@@ -93,29 +138,10 @@
 		// 马赛克背景由 MosaicBackground 首次绘制后主动标记
 		// 图片背景由 LazyImage 的 onload/onerror 标记
 		if (mode === 'solid' || mode === 'flowing' || mode === 'none') {
-			backgroundState.completeLoading(initialLoadingId);
-			onImageLoad?.();
+			finishLoading();
 		}
-
-		// 仅在图片模式下尝试加载动态壁纸
-		if (mode === 'image') {
-			void (async () => {
-				const wallpaperApi = publicConfig.services.wallpaper.apiUrl;
-				if (wallpaperApi) {
-					try {
-						const res = await fetch(wallpaperApi);
-						if (res.ok) {
-							const url = await res.text();
-							if (url && url.trim()) {
-								activeUrl = url.trim();
-							}
-						}
-					} catch (error) {
-						console.error('Client-side wallpaper fetch failed:', error);
-						// 失败时保持使用 activeUrl (即默认值)
-					}
-				}
-			})();
+		if (mode === 'image' && imageUnavailable) {
+			finishLoading();
 		}
 
 		return () => {
@@ -142,18 +168,39 @@
 				<MosaicBackground />
 			{:else}
 				<!-- 默认/图片模式 -->
-				<div class="absolute inset-0 bg-black/40">
-					<LazyImage
-						src={activeUrl}
-						alt="Background Wallpaper"
-						class="h-full w-full"
-						fill
-						onload={handleLoad}
-						onerror={handleError}
-					/>
-					<!-- 暗色遮罩 -->
-					<div class="pointer-events-none absolute inset-0 bg-[var(--bg-overlay)]"></div>
-				</div>
+				{#if imageUnavailable}
+					<div class="absolute inset-0 bg-background"></div>
+				{:else}
+					<div class="absolute inset-0 bg-background">
+						{#key `${activeUrl}:${mobileUrl}`}
+							<LazyImage
+								src={activeUrl}
+								sources={mobileUrl
+									? [
+											{
+												srcset: mobileUrl,
+												media: '(max-width: 767px) and (orientation: portrait)',
+												type: 'image/jpeg'
+											}
+										]
+									: []}
+								alt="Background Wallpaper"
+								class="h-full w-full"
+								fill
+								fit="cover"
+								loading="eager"
+								fetchpriority="high"
+								decoding="async"
+								onload={handleLoad}
+								onerror={handleError}
+							/>
+						{/key}
+						<!-- 与图片共用切换生命周期的单层壁纸可读性遮罩 -->
+						<div
+							class="pointer-events-none absolute inset-0 bg-[var(--wallpaper-readability-overlay)]"
+						></div>
+					</div>
+				{/if}
 			{/if}
 		</Crossfade>
 	{/if}

@@ -10,6 +10,7 @@ Group=fuyao
 WorkingDirectory=/srv/fuyao
 Environment=FUYAO_CONFIG_ROOT=/srv/fuyao/shared/config
 Environment=FUYAO_CONTENT_ROOT=/srv/fuyao/shared/content
+Environment=FUYAO_FAVICON_ROOT=/srv/fuyao/shared/legacy/root-assets/favicon
 Environment=FUYAO_SHARED_ROOT=/srv/fuyao/shared
 Environment=FUYAO_RELEASE_ROOT=/srv/fuyao/releases
 Environment=FUYAO_CURRENT_LINK=/srv/fuyao/current
