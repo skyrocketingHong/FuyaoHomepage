@@ -122,100 +122,131 @@ test('固定 Dock 使用统一净空且足迹控件保留高德版权避让', ()
 	assert.match(footprint, /<MapCopyright/);
 });
 
-test('支付页统一信息卡与圆角层级，按断点切换 Wallet 栈和宽屏主从布局', () => {
+test('支付页使用统一三段式 Pass、固定层级和底部轨道', () => {
 	const page = read('src/routes/pay/+page.svelte');
-	const wallet = read('src/lib/components/pay/QRCodeCard.svelte');
-	const pass = read('src/lib/components/pay/WalletPass.svelte');
+	const stack = read('src/lib/components/pay/QRCodeCard.svelte');
+	const wallet = read('src/lib/components/pay/WalletPass.svelte');
 	const intro = read('src/lib/components/pay/PaymentIntro.svelte');
+	const passCard = read('src/lib/components/pay/pass/PassCard.svelte');
+	const identity = read('src/lib/components/pay/pass/PassIdentityBar.svelte');
+	const content = read('src/lib/components/pay/pass/PassContentArea.svelte');
+	const action = read('src/lib/components/pay/pass/PassActionArea.svelte');
+	const mainContent = read('src/lib/components/layout/content/MainContent.svelte');
+	const zh = JSON.parse(read('src/lib/i18n/locales/zh-CN.json'));
+	const en = JSON.parse(read('src/lib/i18n/locales/en-US.json'));
 	const config = read('src/lib/config/index.ts');
 	const theme = read('src/lib/styles/theme.css');
-	const paymentSources = [page, wallet, pass, intro].join('\n');
+	const paymentSources = [page, stack, wallet, intro, passCard, identity, content, action].join(
+		'\n'
+	);
 
-	assert.doesNotMatch(page, /bg-gradient-to-r/);
+	assert.match(page, /data-payment-page/);
+	assert.match(page, /h-full[^"]*overflow-visible/);
+	assert.match(page, /max-w-\[var\(--payment-card-max-width\)\]/);
 	assert.doesNotMatch(page, /\bpx-(?:3|4)\b|md:px-/);
-	assert.match(page, /h-\[calc\(100%-var\(--mobile-dock-clearance\)\)\]/);
-	assert.match(page, /max-w-\[var\(--payment-content-max-width\)\]/);
-	assert.match(page, /<PaymentIntro \/>/);
-	assert.match(intro, /rounded-xl !p-3/);
-	assert.equal((intro.match(/pay\.card\.purpose/g) ?? []).length, 1);
-	assert.equal((intro.match(/pay\.card\.local_qr/g) ?? []).length, 1);
-	assert.match(intro, /flex min-w-0 items-start gap-3 text-left/);
-	assert.match(intro, /size-11 shrink-0[\s\S]*rounded-\[12px\][\s\S]*<WalletCards size=\{22\}/);
-	assert.match(intro, /text-\[15px\] leading-5 font-semibold/);
-	assert.match(intro, /text-xs leading-\[17px\] text-foreground\/65/);
-	assert.doesNotMatch(intro, /mx-auto|text-center|flex-col/);
-	assert.doesNotMatch(intro, /local_status|payment-intro-status/);
-	assert.doesNotMatch(intro, /Marquee|overflow-x|animate-/);
-
-	assert.doesNotMatch(wallet, /pay\.card\.(?:purpose|local_qr)|pay\.ticket\.title|LiquidGlass/);
 	assert.match(
-		wallet,
-		/wallet-pass-stack relative mx-auto h-full min-h-0 w-full max-w-\[460px\] lg:hidden/
+		mainContent,
+		/main-content:has\(\[data-payment-page\]\)[\s\S]*overflow: visible !important/
 	);
-	assert.match(wallet, /mode="mobile-stack"[\s\S]*expanded=\{selectedIndex === index\}/);
-	assert.match(wallet, /selectedIndex = \$state<number \| null>\(null\)/);
-	assert.match(wallet, /findIndex\(\(payment\) => payment\.linkAvailable\)/);
-	assert.match(wallet, /activeIndex = \$derived\(selectedIndex \?\? defaultIndex\)/);
-	assert.match(wallet, /selectedPosition=\{processedPayments\.length - 1\}/);
-	assert.match(wallet, /--wallet-stack-step: clamp\(44px, 7dvh, 52px\)/);
-	assert.match(wallet, /color: \{ dark: '#000000', light: '#ffffff' \}/);
-	assert.match(wallet, /margin: 0/);
-	assert.match(wallet, /event\.key === 'Escape'/);
-	assert.match(wallet, /wallet-desktop-workspace hidden h-full min-h-0 w-full lg:grid/);
-	assert.match(wallet, /wallet-method-list flex min-h-0 flex-col gap-3/);
-	assert.match(wallet, /mode="desktop-summary"/);
-	assert.match(wallet, /mode="desktop-detail"/);
-	assert.match(wallet, /<Crossfade key=\{activeIndex\} duration=\{180\}/);
+
+	assert.match(
+		passCard,
+		/\{@render identity\(\)\}[\s\S]*\{@render content\(\)\}[\s\S]*\{@render action\(\)\}/
+	);
+	assert.match(
+		passCard,
+		/grid-template-rows: var\(--payment-card-header-height\) minmax\(0, 1fr\)/
+	);
+	assert.match(passCard, /overflow: hidden/);
+	assert.match(passCard, /inert=\{!selected\}[\s\S]*aria-hidden=\{!selected\}/);
+	assert.match(identity, /\{#if selectable\}[\s\S]*<button[\s\S]*aria-expanded=\{selected\}/);
+	assert.match(identity, /aria-controls=\{controlsId\}/);
+	assert.doesNotMatch(identity, /aria-pressed/);
+	assert.match(content, /'start' \| 'center' \| 'fill'/);
+	assert.match(content, /min-h-0 min-w-0/);
+	assert.doesNotMatch(content, /overflow-(?:auto|scroll)/);
+	assert.match(action, /mode: 'text' \| 'status'/);
+	assert.match(action, /mode: 'link'/);
+	assert.match(action, /\{#if props\.mode === 'link'\}[\s\S]*<a[\s\S]*href=\{props\.href\}/);
+	assert.doesNotMatch(action, /<button|onclick=/);
+
+	for (const source of [intro, wallet]) {
+		assert.match(source, /<PassCard/);
+		assert.match(source, /<PassIdentityBar/);
+		assert.match(source, /<PassContentArea/);
+		assert.match(source, /<PassActionArea/);
+	}
+	assert.match(intro, /surface="#ffffff"/);
+	assert.match(intro, /foreground="#111827"/);
+	assert.match(intro, /mode="text"/);
+	assert.doesNotMatch(intro, /LiquidGlass|href=|pay\.card\.(?:purpose|local_qr)/);
+	assert.match(intro, /pay\.card\.support_lead/);
+	assert.match(intro, /pay\.card\.support_content_title/);
+	assert.match(intro, /pay\.card\.support_maintenance_title/);
+	assert.match(intro, /pay\.card\.support_privacy/);
+	assert.match(intro, /@container support-content \(max-height:/);
+	assert.match(wallet, /mode="link" href=\{payment\.url\}/);
+	assert.match(wallet, /mode="status"/);
+	assert.match(wallet, /pay\.states\.qr_error/);
+	assert.doesNotMatch(wallet, /scan_hint|payment-pass__hint/);
+
+	assert.match(stack, /visualPayments = \$derived\(\[\.\.\.processedPayments\]\.reverse\(\)\)/);
+	assert.match(stack, /introVisualIndex = \$derived\(visualPayments\.length\)/);
+	assert.match(stack, /expandedPassId = \$state<string \| null>\(null\)/);
+	assert.match(stack, /expandedPassId === paymentId \? null : paymentId/);
+	assert.match(stack, /if \(expandedPassId !== null\) expandedPassId = null/);
+	assert.match(
+		stack,
+		/paymentIndex = visualPayments\.findIndex\(\(payment\) => payment\.id === expandedPassId\)/
+	);
+	assert.match(stack, /visualIndex > activeVisualIndex/);
+	assert.match(stack, /--payment-card-z-index: \$\{visualIndex \+ 1\}/);
+	assert.match(stack, /height \+ tokens\.cardUnderlapHeight/);
+	assert.match(stack, /frontRailStart \+ \(visualIndex - activeVisualIndex - 1\)/);
+	assert.doesNotMatch(stack, /selected[^\n]*(?:z-index|zIndex)/i);
+	assert.match(stack, /innerContentWidth \* tokens\.qrWidthRatio/);
+	assert.match(stack, /innerContentHeight \* tokens\.qrHeightRatio/);
+	assert.match(stack, /qrSizeCompactMax/);
+	assert.match(stack, /color: \{ dark: '#000000', light: '#ffffff' \}/);
+	assert.match(stack, /margin: 4/);
+	assert.match(stack, /width: 960/);
 	assert.match(page, /pay\.states\.load_error/);
-	assert.match(wallet, /<StatusState[\s\S]*layout="viewport"/);
-	assert.match(pass, /pay\.states\.qr_error/);
-	assert.match(theme, /--payment-content-max-width: 460px/);
-	assert.match(theme, /--payment-desktop-list-width: 340px/);
-	assert.match(theme, /--payment-desktop-detail-width: 420px/);
-	assert.match(theme, /--payment-workspace-gap: 20px/);
-	assert.match(
-		theme,
-		/@media \(min-width: 1024px\)[\s\S]*--payment-content-max-width: calc\([\s\S]*--payment-desktop-list-width[\s\S]*--payment-desktop-detail-width/
-	);
-	assert.match(
-		wallet,
-		/grid-template-columns:[\s\S]*--payment-desktop-list-width[\s\S]*--payment-desktop-detail-width/
-	);
-	assert.doesNotMatch(paymentSources, /auto-fit|auto-fill|repeat\(/);
 
-	assert.match(pass, /WalletPassMode = 'mobile-stack' \| 'desktop-summary' \| 'desktop-detail'/);
-	assert.match(pass, /rounded-2xl bg-\[var\(--payment-color\)\]/);
-	assert.match(pass, /aria-expanded=\{expanded\}/);
-	assert.match(pass, /aria-controls=\{`payment-panel-\$\{index\}`\}/);
-	assert.match(pass, /h-\[68px\][^\n]*min-h-11/);
-	assert.match(pass, /size-10[\s\S]*<IconComponent size=\{22\}/);
-	assert.match(pass, /flex min-w-0 flex-1 flex-col items-start text-left/);
-	assert.match(
-		pass,
-		/wallet-summary-button--selected[\s\S]*brightness\(1\.07\)[\s\S]*scale\(1\.012\)/
-	);
-	assert.match(pass, /grid-template-rows: 68px minmax\(0, 1fr\)/);
-	assert.match(pass, /grid-template-rows: auto minmax\(0, 1fr\) 48px/);
-	assert.match(pass, /padding: 12px/);
-	assert.match(pass, /qr-scan-zone[\s\S]*rounded-\[12px\] bg-white/);
-	assert.match(pass, /h-12 w-full[\s\S]*rounded-xl/);
-	assert.match(pass, /transform 300ms[\s\S]*height 300ms/);
-	assert.match(pass, /prefers-reduced-motion: reduce/);
-	assert.match(pass, /background: var\(--payment-icon-surface\)/);
-	assert.match(pass, /max-width: 359px[\s\S]*max-height: 620px[\s\S]*grid-template-columns: 152px/);
-	assert.match(wallet, /max-width: 359px[\s\S]*max-height: 620px[\s\S]*--wallet-qr-size: 128px/);
-	assert.match(wallet, /min-width: 1024px[\s\S]*clamp\(180px, min\(22vw, 28dvh\), 220px\)/);
-	assert.match(pass, /orientation: landscape[\s\S]*max-height: 600px/);
-	assert.match(
-		wallet,
-		/orientation: landscape[\s\S]*--wallet-qr-size: clamp\(128px, 26vw, 160px\)/
-	);
+	for (const token of [
+		'--payment-card-max-width: 460px',
+		'--payment-card-radius: 26px',
+		'--payment-card-header-height: 68px',
+		'--payment-stack-step: 68px',
+		'--payment-front-rail-step: 68px',
+		'--payment-card-content-inline: 12px',
+		'--payment-action-height: 48px',
+		'--payment-qr-size-min: 160px',
+		'--payment-qr-size-compact-min: 112px',
+		'--payment-qr-size-compact-max: 180px',
+		'--payment-qr-size-max: 320px',
+		'--payment-qr-width-ratio: 0.74',
+		'--payment-qr-height-ratio: 0.76',
+		'--payment-card-underlap-height'
+	]) {
+		assert.match(theme, new RegExp(token));
+	}
+	assert.match(theme, /@media \(min-width: 768px\)[\s\S]*--payment-dock-height: 0px/);
+
+	assert.equal(zh.pay.card.support_title, '支持本站');
+	assert.equal(zh.pay.card.support_description, '内容创作与网站维护');
+	assert.equal(zh.pay.card.support_lead, '让内容持续更新，让网站稳定运行');
+	assert.equal(zh.pay.card.support_thanks, '感谢你对本站的支持');
+	assert.equal(en.pay.card.support_title, 'Support This Site');
+	assert.equal(en.pay.card.support_description, 'Content and site maintenance');
+	assert.equal(en.pay.card.support_lead, 'Keep the content growing and the site running');
+	assert.equal(en.pay.card.support_thanks, 'Thank you for supporting this site');
+	assert.equal(zh.pay.ticket.scan_hint, undefined);
+	assert.equal(en.pay.ticket.scan_hint, undefined);
 
 	assert.doesNotMatch(
 		paymentSources,
-		/scrollIntoView|scrollTo\(|overflow-[xy]-(?:auto|scroll)|margin-inline|width:\s*calc\(100%/
+		/scrollIntoView|scrollTo\(|overflow-[xy]-(?:auto|scroll)|margin-inline|width:\s*calc\(100%|LiquidGlass/
 	);
-	assert.doesNotMatch(paymentSources, /rounded-\[24px\]|--payment-card-radius:\s*24px/);
 	const payBlock = config.match(/i18nKey: 'nav\.pay'[\s\S]*?\n\t\},/)?.[0] ?? '';
 	assert.match(payBlock, /contentScrollable: false/);
 });

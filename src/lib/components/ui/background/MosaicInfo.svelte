@@ -18,9 +18,7 @@
 	/* 根据 size 生成样式 */
 	let iconClass = $derived(size === 'sm' ? 'size-2.5' : 'size-3.5');
 	let zhClass = $derived(size === 'sm' ? 'text-[10px] font-semibold' : 'text-[12px] font-semibold');
-	let enClass = $derived(
-		size === 'sm' ? 'text-[10px] opacity-70' : 'text-[11px] text-muted-foreground'
-	);
+	let enClass = $derived(size === 'sm' ? 'text-[10px]' : 'text-[11px]');
 	let stationLabel = $derived(
 		mosaicState.currentStation
 			? `${mosaicState.currentStation.nameZh} ${mosaicState.currentStation.nameEn}`

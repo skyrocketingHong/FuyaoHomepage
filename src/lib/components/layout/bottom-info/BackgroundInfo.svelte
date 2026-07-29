@@ -43,7 +43,7 @@
 		</div>
 	{:else}
 		<!-- 桌面端/垂直布局：来源组件独占整行，左对齐 -->
-		<div class="flex w-full min-w-0 items-center justify-start text-foreground/65">
+		<div class="flex w-full min-w-0 items-center justify-start">
 			<Crossfade key={infoKey} class="w-full">
 				<InfoComponent {...infoComponentProps} />
 			</Crossfade>

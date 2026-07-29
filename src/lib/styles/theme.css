@@ -48,13 +48,31 @@
 	--header-content-gap: 12px;
 	/* 普通页面唯一水平外边距：由 MainContent 与固定底部 Dock 共同引用 */
 	--content-inline-inset: 8px;
-	/* 固定视口状态与支付页尺寸：页面和组件只引用 token，不重复建立水平边界 */
+	/* 固定视口状态与支付页尺寸：页面和组件只引用 token，不重复建立尺寸常量 */
 	--layout-sidebar-width: 0px;
 	--viewport-state-bottom-clearance: var(--mobile-dock-clearance);
-	--payment-content-max-width: 460px;
-	--payment-desktop-list-width: 340px;
-	--payment-desktop-detail-width: 420px;
-	--payment-workspace-gap: 20px;
+	--payment-card-max-width: 460px;
+	--payment-card-radius: 26px;
+	--payment-card-header-height: 68px;
+	--payment-card-icon-size: 42px;
+	--payment-stack-step: 68px;
+	--payment-front-rail-step: 68px;
+	--payment-active-bottom-gap: 8px;
+	--payment-card-content-inline: 12px;
+	--payment-card-content-block-min: 4px;
+	--payment-card-content-block-max: 12px;
+	--payment-card-content-block: var(--payment-card-content-block-max);
+	--payment-qr-size-preferred-min: 240px;
+	--payment-qr-size-min: 160px;
+	--payment-qr-size-compact-min: 112px;
+	--payment-qr-size-compact-max: 180px;
+	--payment-qr-size-max: 320px;
+	--payment-qr-width-ratio: 0.74;
+	--payment-qr-height-ratio: 0.76;
+	--payment-action-height: 48px;
+	--payment-card-border-color: rgb(255 255 255 / 0.22);
+	--payment-card-divider-color: rgb(255 255 255 / 0.24);
+	--payment-card-shadow: inset 0 1px 0 rgb(255 255 255 / 0.24), 0 10px 24px rgb(15 23 42 / 0.18);
 	/* 移动端悬浮导航胶囊 token：尺寸与间距集中定义，页面禁止各自硬编码避让值 */
 	--mobile-nav-height: 64px;
 	--mobile-dock-capsule-radius: 28px;
@@ -72,6 +90,14 @@
 		var(--mobile-dock-bottom-inset) + var(--mobile-bottom-info-height) + var(--mobile-dock-gap) +
 			var(--mobile-nav-height) + var(--mobile-nav-content-gap)
 	);
+	/* 支付页以 Dock 顶边限制交互内容，卡片表面继续下穿 Dock 并额外延伸 24px 至视口外。 */
+	--payment-dock-height: calc(
+		var(--mobile-dock-bottom-inset) + var(--mobile-bottom-info-height) + var(--mobile-dock-gap) +
+			var(--mobile-nav-height)
+	);
+	--payment-card-underlap-height: calc(var(--payment-dock-height) + 24px);
+	/* 底部信息区唯一静态前景色：移动与桌面布局、来源、状态及版权统一继承。 */
+	--bottom-info-foreground: color-mix(in oklab, var(--foreground) 60%, transparent);
 	/* Dock 两个独立胶囊共用的边界与投影；主体表面统一引用 --glass-surface */
 	--mobile-dock-capsule-edge: oklch(1 0 0 / 0.4);
 	--mobile-dock-capsule-shadow: oklch(0 0 0 / 0.18);
@@ -195,6 +221,7 @@
 	--sidebar-border: oklch(1 0 0 / 10%);
 	--sidebar-ring: oklch(0.551 0.027 264.364);
 	--theme-color: #ff8800;
+	--payment-card-shadow: inset 0 1px 0 rgb(255 255 255 / 0.2), 0 10px 24px rgb(0 0 0 / 0.28);
 	--wallpaper-readability-overlay: oklch(0.12 0.005 265 / 0.47);
 	/* 夜间唯一玻璃基准材质：沿用当前夜间 Sidebar panel 表面 */
 	--glass-surface-opacity: 0.4;
@@ -301,6 +328,9 @@
 		--edge-fade-size: 2.5rem;
 		--layout-sidebar-width: 248px;
 		--viewport-state-bottom-clearance: 0px;
+		--payment-dock-height: 0px;
+		--payment-card-underlap-height: 0px;
+		--payment-qr-size-max: 300px;
 	}
 }
 
@@ -310,10 +340,6 @@
 		--header-height: 64px;
 		--header-content-gap: 16px;
 		--layout-sidebar-width: 256px;
-		--payment-content-max-width: calc(
-			var(--payment-desktop-list-width) + var(--payment-workspace-gap) +
-				var(--payment-desktop-detail-width)
-		);
 	}
 }
 

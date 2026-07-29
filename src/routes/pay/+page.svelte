@@ -2,13 +2,12 @@
 	/**
 	 * 支付页面。
 	 *
-	 * 统一外层控制说明卡与 Wallet 工作区的最大宽度和水平边界。手机与平板使用
-	 * 固定视口 Wallet 堆叠，宽屏使用支付方式列表与当前详情双栏；页面及内部组件
-	 * 均不创建滚动容器。
+	 * 使用 Header 下方的完整内容视口承载统一 Wallet 卡栈，移动端卡片背景可继续
+	 * 延伸到固定底部 Dock 后方。说明卡由 QRCodeCard 编排为最后一个视觉索引；页面不创建
+	 * 滚动容器、独立背景或额外水平留白。
 	 */
 	import { onMount } from 'svelte';
 	import QRCodeCard from '$lib/components/pay/QRCodeCard.svelte';
-	import PaymentIntro from '$lib/components/pay/PaymentIntro.svelte';
 	import StatusState from '$lib/components/ui/feedback/StatusState.svelte';
 	import { loadYaml } from '$lib/utils/network/loading';
 	import { t, locale } from '$lib/i18n/store';
@@ -25,7 +24,6 @@
 	let payments = $state<Payment[]>([]);
 	let loading = $state(true);
 	let error = $state('');
-	let cardReady = $state(false);
 
 	onMount(async () => {
 		try {
@@ -68,14 +66,11 @@
 	/>
 {:else}
 	<div
-		class="payment-page mx-auto flex h-[calc(100%-var(--mobile-dock-clearance))] min-h-0 w-full max-w-[var(--payment-content-max-width)] flex-col items-center gap-3 md:h-full md:gap-4"
+		data-payment-page
+		class="payment-page flex h-full min-h-0 w-full items-center justify-center overflow-visible md:mx-auto md:max-w-[var(--payment-card-max-width)]"
 	>
-		{#if cardReady}
-			<PaymentIntro />
-		{/if}
-
-		<div class="flex min-h-0 w-full flex-1 justify-center">
-			<QRCodeCard {payments} onready={() => (cardReady = true)} />
+		<div class="size-full min-h-0 min-w-0 overflow-visible">
+			<QRCodeCard {payments} />
 		</div>
 	</div>
 {/if}

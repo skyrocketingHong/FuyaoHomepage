@@ -1,19 +1,19 @@
 <script lang="ts">
 	/**
-	 * 响应式 Wallet 主从布局控制器。
+	 * Apple Wallet 式纵向 Pass 卡栈控制器。
 	 *
-	 * 统一校验支付配置、在浏览器本地生成二维码，并以同一个 `selectedIndex`
-	 * 驱动手机／平板的 Wallet 展开态和宽屏当前详情。小于 1024px 时渲染单列
-	 * Wallet 栈；宽屏渲染固定支付方式列表与单张详情卡，不创建滚动区域。
+	 * 支付配置反向映射为视觉序列，“支持本站”固定追加为最前层。每张完整 Pass 保持
+	 * 默认 Y 坐标和固定 z-index；选中卡片后，只把其前方卡片下移到底部轨道。
+	 * ResizeObserver 按实际视口、Dock、前方卡片数量和设计 token 计算安全交互高度、
+	 * 内容间距、二维码尺寸及紧凑布局。具体 Pass 不参与堆叠或 Dock 计算。
 	 *
-	 * @prop payments - 支付方式配置数组。
-	 * @prop onready - 二维码处理结束后的回调。
+	 * @prop payments - 按业务优先级排列的支付方式配置数组。
 	 */
 	import { onMount } from 'svelte';
 	import QRCode from 'qrcode';
+	import PaymentIntro from '$lib/components/pay/PaymentIntro.svelte';
 	import WalletPass from '$lib/components/pay/WalletPass.svelte';
 	import type { WalletPayment } from '$lib/components/pay/WalletPass.svelte';
-	import Crossfade from '$lib/components/ui/effect/Crossfade.svelte';
 	import StatusState from '$lib/components/ui/feedback/StatusState.svelte';
 	import { t, locale } from '$lib/i18n/store';
 	import { LoaderCircle, WalletCards } from 'lucide-svelte';
@@ -25,23 +25,67 @@
 		icon: string;
 	}
 
-	interface Props {
-		payments: PaymentConfig[];
-		onready?: () => void;
+	interface PaymentLayoutTokens {
+		headerHeight: number;
+		stackStep: number;
+		frontRailStep: number;
+		activeBottomGap: number;
+		qrSizePreferredMin: number;
+		qrSizeMin: number;
+		qrSizeCompactMin: number;
+		qrSizeCompactMax: number;
+		qrSizeMax: number;
+		qrWidthRatio: number;
+		qrHeightRatio: number;
+		contentPaddingInline: number;
+		contentPaddingBlockMin: number;
+		contentPaddingBlockMax: number;
+		actionHeight: number;
+		dockHeight: number;
+		cardUnderlapHeight: number;
 	}
 
-	let { payments = [], onready }: Props = $props();
+	interface PaymentLayout {
+		visualCardHeight: number;
+		interactiveCardHeight: number;
+		frontRailStart: number;
+		frontRailStep: number;
+		contentPaddingBlock: number;
+		qrSize: number;
+		compact: boolean;
+	}
+
+	interface Props {
+		payments: PaymentConfig[];
+	}
+
+	let { payments = [] }: Props = $props();
 
 	let processedPayments = $state<WalletPayment[]>([]);
 	let processing = $state(true);
-	let selectedIndex = $state<number | null>(null);
+	let expandedPassId = $state<string | null>(null);
+	let stackElement = $state<HTMLDivElement>();
+	let dockRulerElement = $state<HTMLSpanElement>();
+	let underlapRulerElement = $state<HTMLSpanElement>();
+	let measuredLayout = $state<PaymentLayout | null>(null);
 
-	let defaultIndex = $derived.by(() => {
-		const availableIndex = processedPayments.findIndex((payment) => payment.linkAvailable);
-		return availableIndex >= 0 ? availableIndex : 0;
+	let visualPayments = $derived([...processedPayments].reverse());
+	let introVisualIndex = $derived(visualPayments.length);
+	let visualCardCount = $derived(visualPayments.length + 1);
+	let activeVisualIndex = $derived.by(() => {
+		if (expandedPassId === null) return introVisualIndex;
+		const paymentIndex = visualPayments.findIndex((payment) => payment.id === expandedPassId);
+		return paymentIndex >= 0 ? paymentIndex : introVisualIndex;
 	});
-	let activeIndex = $derived(selectedIndex ?? defaultIndex);
-	let activePayment = $derived(processedPayments[activeIndex]);
+	let stackStyle = $derived.by(() => {
+		if (!measuredLayout) return '';
+		return [
+			`--payment-card-visual-height: ${measuredLayout.visualCardHeight}px`,
+			`--payment-interactive-card-height: ${measuredLayout.interactiveCardHeight}px`,
+			`--payment-card-content-block: ${measuredLayout.contentPaddingBlock}px`,
+			`--payment-qr-size: ${measuredLayout.qrSize}px`
+		].join('; ');
+	});
 
 	const brandColorMap: Record<string, string> = {
 		alipay: '#1677ff',
@@ -79,30 +123,164 @@
 		return url;
 	}
 
-	/** 手机／平板再次选择已展开 Pass 时收起，其他情况展开当前 Pass。 */
-	function togglePayment(index: number) {
-		selectedIndex = selectedIndex === index ? null : index;
-	}
-
-	/** 宽屏选择仅替换右侧详情，不改变布局或页面滚动位置。 */
-	function selectPayment(index: number) {
-		selectedIndex = index;
-	}
-
-	/** 返回未选中 Pass 在顶部摘要栈中的连续位置。 */
-	function getStackPosition(index: number): number {
-		if (selectedIndex === null || index < selectedIndex) return index;
-		if (index > selectedIndex) return index - 1;
-		return processedPayments.length - 1;
-	}
-
-	/** Escape 关闭移动展开态；宽屏自动回到第一个可用支付方式。 */
-	function handleEscape(event: KeyboardEvent) {
-		if (event.key === 'Escape' && selectedIndex !== null) {
-			event.preventDefault();
-			selectedIndex = null;
+	/** 由支付配置内容生成不受排序影响的稳定卡片 ID。 */
+	function createPaymentId(payment: PaymentConfig): string {
+		const identity = `${payment.icon}\u0000${payment.name}\u0000${payment.url}`;
+		let hash = 2166136261;
+		for (let index = 0; index < identity.length; index += 1) {
+			hash ^= identity.charCodeAt(index);
+			hash = Math.imul(hash, 16777619);
 		}
+		const prefix = payment.icon.toLowerCase().replace(/[^a-z0-9]+/g, '-') || 'payment';
+		return `${prefix}-${(hash >>> 0).toString(36)}`;
 	}
+
+	function readPixelToken(styles: CSSStyleDeclaration, name: string): number {
+		const value = Number.parseFloat(styles.getPropertyValue(name));
+		return Number.isFinite(value) ? value : 0;
+	}
+
+	function readLayoutTokens(
+		element: HTMLElement,
+		dockHeight: number,
+		cardUnderlapHeight: number
+	): PaymentLayoutTokens {
+		const styles = getComputedStyle(element);
+		return {
+			headerHeight: readPixelToken(styles, '--payment-card-header-height'),
+			stackStep: readPixelToken(styles, '--payment-stack-step'),
+			frontRailStep: readPixelToken(styles, '--payment-front-rail-step'),
+			activeBottomGap: readPixelToken(styles, '--payment-active-bottom-gap'),
+			qrSizePreferredMin: readPixelToken(styles, '--payment-qr-size-preferred-min'),
+			qrSizeMin: readPixelToken(styles, '--payment-qr-size-min'),
+			qrSizeCompactMin: readPixelToken(styles, '--payment-qr-size-compact-min'),
+			qrSizeCompactMax: readPixelToken(styles, '--payment-qr-size-compact-max'),
+			qrSizeMax: readPixelToken(styles, '--payment-qr-size-max'),
+			qrWidthRatio: readPixelToken(styles, '--payment-qr-width-ratio'),
+			qrHeightRatio: readPixelToken(styles, '--payment-qr-height-ratio'),
+			contentPaddingInline: readPixelToken(styles, '--payment-card-content-inline'),
+			contentPaddingBlockMin: readPixelToken(styles, '--payment-card-content-block-min'),
+			contentPaddingBlockMax: readPixelToken(styles, '--payment-card-content-block-max'),
+			actionHeight: readPixelToken(styles, '--payment-action-height'),
+			dockHeight,
+			cardUnderlapHeight
+		};
+	}
+
+	function clamp(value: number, minimum: number, maximum: number): number {
+		return Math.min(Math.max(value, minimum), maximum);
+	}
+
+	/**
+	 * 计算卡片视觉高度、底部身份轨道和所选卡片的安全内容区。
+	 * 二维码先压缩内容区垂直内边距，再按可见宽高比例缩放，空间不足时切换紧凑尺寸。
+	 */
+	function calculateLayout(
+		width: number,
+		height: number,
+		count: number,
+		selectedIndex: number,
+		tokens: PaymentLayoutTokens
+	): PaymentLayout {
+		const selectedTop = selectedIndex * tokens.stackStep;
+		const frontCount = Math.max(0, count - selectedIndex - 1);
+		const dockTop = Math.max(0, height - clamp(tokens.dockHeight, 0, height));
+		const preferredRailStart =
+			dockTop - tokens.headerHeight - Math.max(0, frontCount - 1) * tokens.frontRailStep;
+		const frontRailStart = frontCount > 0 ? Math.max(0, preferredRailStart) : dockTop;
+		const interactiveBottom = (frontCount > 0 ? frontRailStart : dockTop) - tokens.activeBottomGap;
+		const interactiveCardHeight = Math.max(tokens.headerHeight, interactiveBottom - selectedTop);
+
+		const contentHeight = Math.max(
+			0,
+			interactiveCardHeight - tokens.headerHeight - tokens.actionHeight - 1
+		);
+		const paddingBudget = (contentHeight - tokens.qrSizePreferredMin) / 2;
+		const contentPaddingBlock = clamp(
+			paddingBudget,
+			tokens.contentPaddingBlockMin,
+			tokens.contentPaddingBlockMax
+		);
+		const innerContentHeight = Math.max(0, contentHeight - contentPaddingBlock * 2);
+		const innerContentWidth = Math.max(0, width - tokens.contentPaddingInline * 2);
+		const regularTarget = Math.min(
+			innerContentWidth * tokens.qrWidthRatio,
+			innerContentHeight * tokens.qrHeightRatio,
+			tokens.qrSizeMax
+		);
+		const compact = regularTarget < tokens.qrSizeMin;
+		const modeMaximum = compact ? tokens.qrSizeCompactMax : tokens.qrSizeMax;
+		const modeMinimum = compact ? tokens.qrSizeCompactMin : tokens.qrSizeMin;
+		const geometricCapacity = Math.min(innerContentWidth, innerContentHeight, modeMaximum);
+		const proportionalTarget = Math.min(
+			innerContentWidth * tokens.qrWidthRatio,
+			innerContentHeight * tokens.qrHeightRatio,
+			modeMaximum
+		);
+		const qrSize = Math.floor(
+			Math.min(geometricCapacity, Math.max(proportionalTarget, modeMinimum))
+		);
+
+		return {
+			visualCardHeight: height + tokens.cardUnderlapHeight,
+			interactiveCardHeight,
+			frontRailStart,
+			frontRailStep: tokens.frontRailStep,
+			contentPaddingBlock,
+			qrSize: Math.max(0, qrSize),
+			compact
+		};
+	}
+
+	/** 展开未选中的支付卡片；再次选择当前卡片时恢复默认堆叠。 */
+	function togglePaymentPass(paymentId: string) {
+		expandedPassId = expandedPassId === paymentId ? null : paymentId;
+	}
+
+	/** “支持本站”代表默认状态，重复选择默认状态不会触发状态更新。 */
+	function restoreDefaultStack() {
+		if (expandedPassId !== null) expandedPassId = null;
+	}
+
+	/** 将固定视觉层级和当前 Y 轴目标映射为卡片局部 CSS 变量。 */
+	function getCardStyle(visualIndex: number): string {
+		const layout = measuredLayout;
+		const shouldDock = visualIndex > activeVisualIndex && layout;
+		const translateY = shouldDock
+			? `${layout.frontRailStart + (visualIndex - activeVisualIndex - 1) * layout.frontRailStep}px`
+			: `calc(var(--payment-stack-step) * ${visualIndex})`;
+		return `--payment-card-translate-y: ${translateY}; --payment-card-z-index: ${visualIndex + 1};`;
+	}
+
+	$effect(() => {
+		const element = stackElement;
+		const dockRuler = dockRulerElement;
+		const underlapRuler = underlapRulerElement;
+		const count = visualCardCount;
+		const selectedIndex = activeVisualIndex;
+		if (!element || !dockRuler || !underlapRuler || count === 0) return;
+
+		const updateLayout = () => {
+			const { width, height } = element.getBoundingClientRect();
+			if (width <= 0 || height <= 0) return;
+			const dockHeight = dockRuler.getBoundingClientRect().height;
+			const cardUnderlapHeight = underlapRuler.getBoundingClientRect().height;
+			measuredLayout = calculateLayout(
+				width,
+				height,
+				count,
+				selectedIndex,
+				readLayoutTokens(element, dockHeight, cardUnderlapHeight)
+			);
+		};
+
+		updateLayout();
+		const observer = new ResizeObserver(updateLayout);
+		observer.observe(element);
+		observer.observe(dockRuler);
+		observer.observe(underlapRuler);
+		return () => observer.disconnect();
+	});
 
 	onMount(() => {
 		let active = true;
@@ -110,7 +288,6 @@
 		async function processPayments() {
 			if (payments.length === 0) {
 				processing = false;
-				onready?.();
 				return;
 			}
 
@@ -120,6 +297,7 @@
 					const foregroundColor = getForegroundColor(brandColor);
 					const paymentUrl = normalizePaymentUrl(payment.url);
 					const base: WalletPayment = {
+						id: createPaymentId(payment),
 						name: payment.name,
 						url: paymentUrl,
 						icon: payment.icon,
@@ -134,8 +312,8 @@
 
 					try {
 						const qrCodeDataUrl = await QRCode.toDataURL(paymentUrl, {
-							margin: 0,
-							width: 320,
+							margin: 4,
+							width: 960,
 							errorCorrectionLevel: 'M',
 							color: { dark: '#000000', light: '#ffffff' }
 						});
@@ -149,9 +327,8 @@
 
 			if (!active) return;
 			processedPayments = nextPayments;
-			selectedIndex = null;
+			expandedPassId = null;
 			processing = false;
-			onready?.();
 		}
 
 		void processPayments();
@@ -160,8 +337,6 @@
 		};
 	});
 </script>
-
-<svelte:window onkeydown={handleEscape} />
 
 {#if processing}
 	<StatusState
@@ -182,92 +357,83 @@
 		layout="viewport"
 	/>
 {:else}
-	<div class="wallet-responsive-root h-full min-h-0 w-full">
-		<div class="wallet-pass-stack relative mx-auto h-full min-h-0 w-full max-w-[460px] lg:hidden">
-			{#each processedPayments as payment, index (`${payment.name}-${index}`)}
-				{@const stackPosition = getStackPosition(index)}
+	<div
+		bind:this={stackElement}
+		class="wallet-pass-stack z-content relative h-full min-h-0 w-full overflow-visible"
+		class:wallet-pass-stack--compact={measuredLayout?.compact}
+		style={stackStyle}
+		role="list"
+		aria-label={$t('pay.card.stack_label')}
+	>
+		<span bind:this={dockRulerElement} class="payment-dock-ruler" aria-hidden="true"></span>
+		<span bind:this={underlapRulerElement} class="payment-underlap-ruler" aria-hidden="true"></span>
+
+		{#each visualPayments as payment, visualIndex (payment.id)}
+			<div
+				class="wallet-stack-item absolute inset-x-0 top-0"
+				style={getCardStyle(visualIndex)}
+				data-wallet-visual-index={visualIndex}
+				data-wallet-region={visualIndex > activeVisualIndex ? 'dock' : 'stack'}
+				role="listitem"
+			>
 				<WalletPass
-					mode="mobile-stack"
 					{payment}
-					{index}
-					expanded={selectedIndex === index}
-					{stackPosition}
-					selectedPosition={processedPayments.length - 1}
-					stackZIndex={stackPosition + 1}
-					ontoggle={() => togglePayment(index)}
+					selected={expandedPassId === payment.id}
+					onselect={() => togglePaymentPass(payment.id)}
 				/>
-			{/each}
-		</div>
-
-		<div class="wallet-desktop-workspace hidden h-full min-h-0 w-full lg:grid">
-			<div class="wallet-method-list flex min-h-0 flex-col gap-3" role="list">
-				{#each processedPayments as payment, index (`summary-${payment.name}-${index}`)}
-					<div role="listitem">
-						<WalletPass
-							mode="desktop-summary"
-							{payment}
-							{index}
-							expanded={activeIndex === index}
-							ontoggle={() => selectPayment(index)}
-						/>
-					</div>
-				{/each}
 			</div>
+		{/each}
 
-			<div class="wallet-detail-shell min-h-0 min-w-0">
-				{#if activePayment}
-					<Crossfade key={activeIndex} duration={180} class="h-full">
-						<WalletPass
-							mode="desktop-detail"
-							payment={activePayment}
-							index={activeIndex}
-							expanded={true}
-							ontoggle={() => selectPayment(activeIndex)}
-						/>
-					</Crossfade>
-				{/if}
-			</div>
+		<div
+			class="wallet-stack-item absolute inset-x-0 top-0"
+			style={getCardStyle(introVisualIndex)}
+			data-wallet-visual-index={introVisualIndex}
+			data-wallet-region={introVisualIndex > activeVisualIndex ? 'dock' : 'stack'}
+			role="listitem"
+		>
+			<PaymentIntro selected={expandedPassId === null} onselect={restoreDefaultStack} />
 		</div>
 	</div>
 {/if}
 
 <style>
-	.wallet-responsive-root {
-		--wallet-summary-height: 68px;
-		--wallet-stack-step: clamp(44px, 7dvh, 52px);
-		--wallet-qr-size: clamp(128px, min(54vw, 32dvh), 220px);
-		--wallet-expanded-height: min(100%, 420px);
+	.wallet-pass-stack {
+		--payment-card-visual-height: calc(100% + var(--payment-card-underlap-height));
+		--payment-interactive-card-height: calc(
+			100% - var(--payment-dock-height) - var(--payment-active-bottom-gap)
+		);
+		--payment-card-content-block: var(--payment-card-content-block-max);
+		--payment-qr-size: var(--payment-qr-size-min);
 	}
 
-	.wallet-desktop-workspace {
-		grid-template-columns:
-			var(--payment-desktop-list-width)
-			var(--payment-desktop-detail-width);
-		gap: var(--payment-workspace-gap);
-		align-content: start;
-		justify-content: center;
+	.payment-dock-ruler,
+	.payment-underlap-ruler {
+		position: absolute;
+		width: 0;
+		visibility: hidden;
+		pointer-events: none;
 	}
 
-	.wallet-detail-shell {
-		width: var(--payment-desktop-detail-width);
-		height: min(100%, 420px);
+	.payment-dock-ruler {
+		height: var(--payment-dock-height);
 	}
 
-	@media (min-width: 1024px) {
-		.wallet-responsive-root {
-			--wallet-qr-size: clamp(180px, min(22vw, 28dvh), 220px);
-		}
+	.payment-underlap-ruler {
+		height: var(--payment-card-underlap-height);
 	}
 
-	@media (max-width: 359px) and (max-height: 620px) and (orientation: portrait) {
-		.wallet-responsive-root {
-			--wallet-qr-size: 128px;
-		}
+	.wallet-stack-item {
+		height: var(--payment-card-visual-height);
+		transform: translate3d(0, var(--payment-card-translate-y), 0);
+		z-index: var(--payment-card-z-index);
+		transition: transform 300ms cubic-bezier(0.22, 1, 0.36, 1);
+		will-change: transform;
 	}
 
-	@media (orientation: landscape) and (max-height: 600px) {
-		.wallet-responsive-root {
-			--wallet-qr-size: clamp(128px, 26vw, 160px);
+	@media (prefers-reduced-motion: reduce) {
+		.wallet-stack-item {
+			transition-duration: 0ms;
+			will-change: auto;
 		}
 	}
 </style>

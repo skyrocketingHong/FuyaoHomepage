@@ -47,7 +47,7 @@
 			href={repoConfig.url}
 			target="_blank"
 			rel="noopener noreferrer"
-			class="inline-flex h-full min-w-0 items-center justify-end gap-1 overflow-hidden text-right transition-colors hover:text-foreground focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary/60"
+			class="inline-flex h-full min-w-0 items-center justify-end gap-1 overflow-hidden text-right transition-colors hover:text-foreground focus-visible:rounded-sm focus-visible:text-foreground focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary/60"
 			title={repoConfig.name}
 			aria-label={repoConfig.name}
 		>
@@ -59,7 +59,7 @@
 		<span class="shrink-0">{__APP_VERSION_DISPLAY__}</span>
 	</div>
 {:else}
-	<span class="block w-full text-foreground/45 {textAlignmentClass}"
+	<span class="block w-full {textAlignmentClass}"
 		>© {$t('common.copyright', {
 			startYear: String(startYear),
 			currentYear: String(currentYear),
@@ -67,13 +67,13 @@
 		})}</span
 	>
 	<span
-		class="inline-flex w-full min-w-0 items-center gap-1 overflow-hidden whitespace-nowrap text-foreground/45 {metadataAlignmentClass}"
+		class="inline-flex w-full min-w-0 items-center gap-1 overflow-hidden whitespace-nowrap {metadataAlignmentClass}"
 	>
 		<a
 			href={repoConfig.url}
 			target="_blank"
 			rel="noopener noreferrer"
-			class="inline-flex min-w-0 items-center gap-1 overflow-hidden transition-colors hover:text-foreground"
+			class="inline-flex min-w-0 items-center gap-1 overflow-hidden transition-colors hover:text-foreground focus-visible:rounded-sm focus-visible:text-foreground focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary/60"
 		>
 			<span class="size-3 shrink-0 [&>svg]:size-full">
 				<SiGithub />

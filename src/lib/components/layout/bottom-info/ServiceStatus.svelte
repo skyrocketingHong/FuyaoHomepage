@@ -36,7 +36,7 @@
 		href={statusUrl}
 		target="_blank"
 		rel="noopener noreferrer"
-		class="inline-flex shrink-0 items-center gap-1 transition-colors hover:text-foreground focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary/60"
+		class="inline-flex shrink-0 items-center gap-1 transition-colors hover:text-foreground focus-visible:rounded-sm focus-visible:text-foreground focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary/60"
 	>
 		<span class="{iconClass} shrink-0 [&>svg]:size-full">
 			<SiBetterstack />
@@ -45,7 +45,7 @@
 			<span class="shrink-0 whitespace-nowrap">{$t('layout.bottom_info.service_status')}</span>
 		</Crossfade>
 	</a>
-	<span class="shrink-0 opacity-40">·</span>
+	<span class="shrink-0">·</span>
 	<span class="inline-flex shrink-0 items-center gap-1">
 		<span class="{iconClass} shrink-0 [&>svg]:size-full">
 			<SiAlibabacloud />
@@ -66,7 +66,7 @@
 			href={statusUrl}
 			target="_blank"
 			rel="noopener noreferrer"
-			class="inline-flex min-w-0 items-center gap-1 overflow-hidden transition-colors hover:text-foreground focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary/60"
+			class="inline-flex min-w-0 items-center gap-1 overflow-hidden transition-colors hover:text-foreground focus-visible:rounded-sm focus-visible:text-foreground focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary/60"
 			aria-label={$t('layout.bottom_info.service_status')}
 		>
 			<span class="size-2.5 shrink-0 [&>svg]:size-full" aria-hidden="true">
@@ -76,7 +76,7 @@
 				<span class="truncate">{$t('layout.bottom_info.service_status')}</span>
 			</Crossfade>
 		</a>
-		<span class="shrink-0 opacity-40" aria-hidden="true">·</span>
+		<span class="shrink-0" aria-hidden="true">·</span>
 		<span class="inline-flex min-w-0 items-center gap-1 overflow-hidden">
 			<span class="size-2.5 shrink-0 [&>svg]:size-full" aria-hidden="true">
 				<SiAlibabacloud />
@@ -88,7 +88,7 @@
 	</div>
 {:else}
 	<div
-		class="flex w-full min-w-0 items-center gap-1 overflow-hidden whitespace-nowrap text-foreground/55 {alignmentClass}"
+		class="flex w-full min-w-0 items-center gap-1 overflow-hidden whitespace-nowrap {alignmentClass}"
 	>
 		{@render statusContent('size-3')}
 	</div>

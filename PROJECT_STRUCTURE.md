@@ -168,10 +168,10 @@
 │   │   │   │   ├── background/   # 背景组件
 │   │   │   │   │   └── BackgroundLayer.svelte # 通用背景层包裹（Bing 响应式壁纸与两级故障回退）
 │   │   │   │   ├── bottom-info/  # 底部信息组件
-│   │   │   │   │   ├── BottomInfo.svelte       # 底部信息容器 (桌面侧栏/移动端居中紧凑两列四条静态单行)
-│   │   │   │   │   ├── BackgroundInfo.svelte   # 背景地点单行展示、完整语义与静态省略
-│   │   │   │   │   ├── CopyrightText.svelte    # 左对齐静态两行版权、仓库与版本信息
-│   │   │   │   │   └── ServiceStatus.svelte    # 紧凑服务状态与部署平台静态单行信息
+│   │   │   │   │   ├── BottomInfo.svelte       # 底部信息容器 (统一前景色、桌面侧栏/移动端紧凑两列四条静态单行)
+│   │   │   │   │   ├── BackgroundInfo.svelte   # 统一颜色的背景地点单行展示、完整语义与静态省略
+│   │   │   │   │   ├── CopyrightText.svelte    # 统一颜色的版权、仓库与版本信息
+│   │   │   │   │   └── ServiceStatus.svelte    # 统一颜色的服务状态与部署平台静态单行信息
 │   │   │   │   ├── content/      # 内容区域组件
 │   │   │   │   │   └── MainContent.svelte    # 主内容区域容器 (统一水平边距、滚动行为与 viewport 状态声明式居中)
 │   │   │   │   ├── header/       # 头部组件
@@ -194,9 +194,14 @@
 │   │   │   │       ├── SidebarTree.svelte    # 递归导航树
 │   │   │   │       └── Item.svelte           # 导航项/菜单项
 │   │   │   ├── pay/          # 支付/赞赏组件
-│   │   │   │   ├── PaymentIntro.svelte       # 与友链信息卡同层级的水平支付说明卡
-│   │   │   │   ├── QRCodeCard.svelte         # 二维码生成及响应式 Wallet 主从布局控制器
-│   │   │   │   └── WalletPass.svelte         # 支持移动堆叠、桌面摘要和详情三种模式的品牌 Pass
+│   │   │   │   ├── pass/                       # 通用三段式 Pass 原子组件
+│   │   │   │   │   ├── PassCard.svelte        # 卡片表面、圆角裁切、阴影与三段布局外壳
+│   │   │   │   │   ├── PassIdentityBar.svelte # 图标、标题、描述与 aria-expanded 展开控制器
+│   │   │   │   │   ├── PassContentArea.svelte # start/center/fill 可伸缩无滚动内容区
+│   │   │   │   │   └── PassActionArea.svelte  # text/link/status 固定高度操作区
+│   │   │   │   ├── PaymentIntro.svelte       # 纯白“支持本站”说明、用途与隐私信息 Pass
+│   │   │   │   ├── QRCodeCard.svelte         # 稳定 ID 展开状态、固定层级、底部轨道与可见空间尺寸控制器
+│   │   │   │   └── WalletPass.svelte         # 无扫描提示、动态高分辨率二维码的品牌支付 Pass
 │   │   │   ├── seo/          # SEO 组件
 │   │   │   │   └── SeoHead.svelte            # HTML Meta 管理
 │   │   │   └── ui/           # 基础 UI 原子组件

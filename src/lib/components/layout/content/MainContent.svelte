@@ -11,6 +11,8 @@
 	 * 顶部渐隐、共享 FadeEdge/ScrollContainer 默认行为及其他实例均不受影响。
 	 * 当后代包含 StatusState viewport 数据标记时，使用 :has() 声明式关闭本实例滚动、
 	 * 移除渐隐并隐藏布局底部占位，不恢复页面生命周期维护全局滚动状态的旧方案。
+	 * 固定视口支付页通过 data-payment-page 仅放开垂直视觉溢出，使 Pass 表面可延伸到
+	 * 固定 Dock 后方；最外层应用框架继续裁定视口边界，因此不会产生页面滚动。
 	 *
 	 * @prop children - Svelte Snippet 页面内容
 	 * @prop pathname - 当前页面路径 (用于触发切换动画的 key)
@@ -157,6 +159,12 @@
 
 	:global(.main-content:has([data-status-layout='viewport']) [data-main-content-spacer]) {
 		display: none !important;
+	}
+
+	:global(.main-content:has([data-payment-page])) {
+		overflow: visible !important;
+		mask-image: none !important;
+		-webkit-mask-image: none !important;
 	}
 
 	@media (min-width: 1024px) {

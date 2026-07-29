@@ -65,16 +65,16 @@
 
 ```json
 {
-  "data": [
-    {
-      "range": { "date": "2026-07-28", "text": "Today" },
-      "grand_total": { "hours": 1, "minutes": 30, "total_seconds": 5400, "text": "1 hr 30 mins" },
-      "languages": [
-        { "name": "Svelte", "total_seconds": 3600, "percent": 66.67, "color": "#ff3e00" },
-        { "name": "TypeScript", "total_seconds": 1800, "percent": 33.33, "color": "#3178c6" }
-      ]
-    }
-  ]
+	"data": [
+		{
+			"range": { "date": "2026-07-28", "text": "Today" },
+			"grand_total": { "hours": 1, "minutes": 30, "total_seconds": 5400, "text": "1 hr 30 mins" },
+			"languages": [
+				{ "name": "Svelte", "total_seconds": 3600, "percent": 66.67, "color": "#ff3e00" },
+				{ "name": "TypeScript", "total_seconds": 1800, "percent": 33.33, "color": "#3178c6" }
+			]
+		}
+	]
 }
 ```
 
@@ -231,12 +231,12 @@ npm run audit:history
 
 ## 10. 版本与 Build Train
 
-`version.json` 是唯一人工维护入口。27.1 使用 SemVer 存储值 `27.1.0`，页面显示为 `27.1`；Build Train 独立设为 `4B`，构建序号 96 显示为 `4B96`。构建标识直接拼接 Build Train 与构建序号，不补前导零。
+`version.json` 是唯一人工维护入口。版本使用合法 SemVer；补丁号为 `0` 时页面省略补丁号，否则显示完整版本。当前版本 `27.1.1`、Build Train `4B` 和构建序号 `116` 的页面显示为 `27.1.1 (4B116)`。构建标识直接拼接 Build Train 与构建序号，不补前导零。
 
 ```bash
 npm run version:show
-npm run version:set -- 27.1.0 4B
-npm run build:set -- 96
+npm run version:set -- 27.2.0 4C
+npm run build:set -- 117
 npm run build:bump
 npm run train:set -- 4C
 ```

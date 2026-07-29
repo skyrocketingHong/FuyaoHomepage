@@ -5,7 +5,7 @@
 	 * 依次编排三个子组件：来源信息、服务状态、版权文本。
 	 * 替代原 Copyright.svelte，提供垂直/水平/自适应三种布局。
 	 * 桌面垂直模式为低优先级元数据区：一条顶部细分界线 + 连续左对齐元数据列表，
-	 * 无类别小标题，通过图标、字号、字重和透明度区分层级。
+	 * 无类别小标题，全部元数据与图标继承统一的底部信息前景色 token。
 	 * 垂直节奏统一由本容器控制：分割线上方 8px、下方 8px，信息行间距 4px，
 	 * 行高 16px，图标 12px，图标与文字间距 4px；子组件不再自带 margin/gap。
 	 * 左侧起点使用 --sidebar-icon-start 与导航图标列对齐。
@@ -50,7 +50,7 @@
 {#if direction === 'horizontal'}
 	<!-- 移动端固定 Dock 元数据区：全宽等分两列，每列两行，不绘制第二层玻璃边界。 -->
 	<div
-		class="bottom-info-container flex h-full w-full min-w-0 items-center justify-center overflow-hidden text-[10px] leading-[13px] text-foreground/60"
+		class="bottom-info-container flex h-full w-full min-w-0 items-center justify-center overflow-hidden text-[10px] leading-[13px]"
 	>
 		<div class="bottom-info-compact-grid grid min-w-0">
 			<!-- 左列：背景地点、服务状态与部署平台。 -->
@@ -86,7 +86,7 @@
 	</div>
 {:else}
 	<!-- 桌面端/垂直布局：分割线独立于信息列表，节奏由容器统一控制 -->
-	<div class="bottom-info-container w-full flex-none text-[11px] leading-4 text-foreground/50">
+	<div class="bottom-info-container w-full flex-none text-[11px] leading-4">
 		<Crossfade key={$locale} class="flex w-full flex-col {verticalContainerClass}">
 			<!-- 顶部唯一细分界线：上下各 8px -->
 			<div
@@ -123,5 +123,9 @@
 		grid-template-columns: repeat(2, minmax(0, 1fr));
 		column-gap: 14px;
 		padding-inline: 8px;
+	}
+
+	.bottom-info-container {
+		color: var(--bottom-info-foreground);
 	}
 </style>

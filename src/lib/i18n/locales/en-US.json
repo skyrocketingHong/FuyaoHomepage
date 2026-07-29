@@ -106,17 +106,27 @@
 	"pay": {
 		"title": "Donate",
 		"card": {
-			"ready": "Ready",
+			"ready": "Ready to receive",
 			"unavailable": "Unavailable",
 			"status": "Status",
-			"purpose": "Support this site",
-			"local_qr": "The QR code is generated only in your browser. The payment link is never uploaded. Choose a payment method, then scan it with the corresponding app.",
+			"support_title": "Support This Site",
+			"support_description": "Content and site maintenance",
+			"support_lead": "Keep the content growing and the site running",
+			"support_body": "If this site has been useful, you can choose any payment method behind this pass. Your support helps with content, feature updates, and ongoing site maintenance.",
+			"support_uses": "How support is used",
+			"support_content_title": "Content and features",
+			"support_content_description": "Organize existing content and keep improving pages and features.",
+			"support_maintenance_title": "Operations and maintenance",
+			"support_maintenance_description": "Support deployment, service operations, and routine maintenance.",
+			"support_privacy": "Payment QR codes are generated only in this browser. Payment links and payment information are not uploaded.",
+			"support_thanks": "Thank you for supporting this site",
+			"support_restore": "Restore the default Support This Site pass",
+			"support_active": "Support This Site pass is expanded",
+			"stack_label": "Site support and payment method passes",
 			"expand": "Expand the {{method}} payment card",
-			"collapse": "Collapse the {{method}} payment card",
-			"select": "Select {{method}} as the payment method"
+			"collapse": "Close the {{method}} payment card"
 		},
 		"ticket": {
-			"scan_hint": "Scan with the corresponding payment app",
 			"qr_alt": "{{method}} payment QR code",
 			"open_app": "Open Payment App",
 			"open_in": "Open in {{method}}"
