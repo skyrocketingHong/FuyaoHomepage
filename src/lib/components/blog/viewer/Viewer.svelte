@@ -146,9 +146,7 @@
 
 			if (window.location.hash !== `#${id}`) {
 				replaceState(
-					resolve(
-						`${window.location.pathname}${window.location.search}#${id}` as Pathname
-					),
+					resolve(`${window.location.pathname}${window.location.search}#${id}` as Pathname),
 					page.state
 				);
 			}
