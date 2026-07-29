@@ -1,224 +1,226 @@
-# 更新日志
+English | [简体中文](./CHANGELOG_ZH.md)
 
-格式基于 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.0.0/)
+# Changelog
+
+Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## 27.1.1 (2026-07-29)
 
-### 新增
+### Added
 
-- 增加可复用的三段式 Pass 组件，统一卡片表面、身份条、内容区和操作区语义
-- 增加“支持本站”说明 Pass，补充支持用途、本地生成收款二维码的隐私说明及中英文文案
+- Added reusable three-part Pass components that standardize card surfaces, identity bars, content areas, and action-area semantics.
+- Added a “Support This Site” information Pass with usage details, privacy notes for locally generated payment QR codes, and bilingual copy.
 
-### 优化
+### Changed
 
-- 将支付页统一为全视口纵向 Wallet 卡栈，按稳定支付 ID 管理展开状态，并依据可见空间动态调整卡片间距、紧凑布局和高分辨率二维码尺寸
-- 统一桌面侧栏与移动端底部信息区的文字、图标和分隔符颜色，链接仅在悬停或键盘聚焦时提升对比度
-- 完善支付卡片的展开状态、受控区域和停用内容语义，减少未选中卡片对键盘与辅助技术的干扰
+- Reworked the support page into a full-viewport vertical Wallet stack, keyed expansion state by stable payment IDs, and adjusted card spacing, compact layout, and high-resolution QR sizing to available space.
+- Unified text, icon, and separator colors across the desktop sidebar and mobile information dock; links now increase contrast only on hover or keyboard focus.
+- Improved expanded-state, controlled-region, and disabled-content semantics for payment cards, reducing interference from unselected cards for keyboards and assistive technology.
 
-### 修复
+### Fixed
 
-- 修复支付卡片默认顺序与层级反转、移动端重复水平留白及卡片表面无法延伸到固定底部 Dock 后方的问题
-- 修复不同视口高度下二维码与操作区空间分配不稳定的问题
+- Fixed reversed default payment-card order and stacking, duplicate mobile horizontal spacing, and card surfaces failing to extend behind the fixed bottom dock.
+- Fixed unstable QR-code and action-area allocation across different viewport heights.
 
 ## 27.1 (2026-07-28)
 
-### 新增
+### Added
 
-- 增加移动端六项等宽直达 Tab Bar 与固定底部 Dock
-- 增加带 Bing 品牌图标的每日壁纸来源信息，仅在接口图片成功显示后注入桌面侧栏与移动端底部信息区
-- 增加编程统计每日语言明细契约、真实语言堆叠柱和无明细中性回退
+- Added a six-item equal-width mobile Tab Bar and fixed bottom dock.
+- Added Bing-branded daily-wallpaper attribution, injected into the desktop sidebar and mobile information dock only after the endpoint image displays successfully.
+- Added a daily coding-language detail contract, real language-stacked bars, and a neutral fallback when details are unavailable.
 
-### 优化
+### Changed
 
-- 将图片背景切换为 Bing 每日壁纸，按移动竖屏与其他视口加载对应尺寸，并提供默认壁纸与主题纯色两级故障回退
-- 统一透明 Liquid Glass 表面的蓝灰染色、通透度和背景可读性遮罩
-- 重构移动端 Header、导航与底部信息区，统一实时模糊、响应式间距、安全区和紧凑单行布局
-- 重构支付页面为移动端 Wallet 堆叠、平板居中单列和宽屏主从布局，统一普通内容卡圆角层级
-- 统一错误、空数据、无筛选结果和支付配置状态卡的布局，按 Header 与固定底部 Dock 之间的可用区域居中
-- 将生产 favicon 纳入外部持久化资产，统一公开构建输入与 release 的读取权限，并扩展部署健康检查
+- Replaced the image background with Bing daily wallpaper, selecting the portrait-mobile or default size by viewport and adding fallback wallpaper and theme-solid recovery layers.
+- Unified blue-gray tint, translucency, and background-legibility masks across transparent Liquid Glass surfaces.
+- Refactored the mobile header, navigation, and information dock with consistent live blur, responsive spacing, safe-area handling, and compact single-line layouts.
+- Refactored the support page into a mobile Wallet stack, centered tablet column, and wide-screen master-detail layout with consistent content-card radii.
+- Unified layouts for error, empty-data, no-filter-results, and payment-configuration status cards, centering them within the available area between the header and fixed dock.
+- Moved production favicons into external persistent assets, standardized readable permissions for public build inputs and releases, and expanded deployment health checks.
 
-### 修复
+### Fixed
 
-- 修复移动端语言按钮被压缩、导航材质饱和度过高及足迹控件未避让固定 Dock 的问题
-- 修复支付卡片和移动端 Tab Bar 的重复水平内边距，以及底部信息换行导致的固定区高度跳变
-- 修复编程统计日柱颜色硬编码且无法表达真实语言组成的问题
+- Fixed mobile locale-button compression, oversaturated navigation material, and footprint controls overlapping the fixed dock.
+- Fixed duplicate horizontal padding in payment cards and the mobile Tab Bar, plus fixed-area height jumps caused by wrapped footer text.
+- Fixed hard-coded coding-activity bar colors that could not represent real language composition.
 
 ## 27.0.0 (2026-07-27)
 
-### 新增
+### Added
 
-- 增加相册模块，支持响应式照片网格、照片深层链接、全屏灯箱、EXIF 信息以及按日期和设备筛选
-- 增加相册索引与响应式 WebP 缩略图生成流程，支持公开索引隐去精确位置字段
-- 增加版本化 YAML 站点配置和内容目录 Schema，并提供公开演示配置与内容 fixture
-- 增加只读构建输入快照、严格生产校验、最终产物泄漏扫描和 Git 隐私审计
-- 增加外部内容迁移、独立 release 部署、原子切换、健康检查和失败回滚流程
-- 增加 systemd、Caddy 部署模板以及 GitHub Actions 持续集成
-- 增加博客分类、文章和标签页面的完整预渲染清单
-- 足迹地图增加高德 JS API 2.0 `MarkerCluster` 点聚合
-- 增加 3.0.0 配置、博客和足迹数据迁移至 27.0 的操作手册
+- Added albums with responsive photo grids, deep links, a full-screen lightbox, EXIF information, and date/device filtering.
+- Added album-index and responsive WebP-thumbnail generation, including public indexes that omit precise location fields.
+- Added versioned YAML schemas for site configuration and content paths, plus public demonstration configuration and fixtures.
+- Added read-only build-input snapshots, strict production validation, final-artifact exposure scans, and Git privacy audits.
+- Added external-content migration, independent release deployment, atomic switching, health checks, and failure rollback.
+- Added systemd and Caddy deployment templates and GitHub Actions continuous integration.
+- Added a complete prerender list for blog categories, articles, and tag pages.
+- Added AMap JS API 2.0 `MarkerCluster` aggregation to the footprint map.
+- Added a guide for migrating 3.0.0 configuration, articles, and footprint data to 27.0.
 
-### 优化
+### Changed
 
-- 将 3.0.0 的 `.env` 公开字段迁移至 YAML，将 `static/` 内容迁移至外部内容源与公开 fixture，移除运行时双重数据源
-- 将浏览器可见配置收敛为构建时白名单，隔离服务端路径、生产密钥和个人内容
-- 将博客索引、搜索索引、RSS、Sitemap 和相册元数据统一改为从冻结的内容快照生成
-- 将开发与 CI 构建统一使用公开演示输入，生产构建缺少有效外部配置或内容时直接失败
-- 重构博客路由和服务端数据加载，改善分类、标签、搜索、文章详情、RSS、Sitemap 与 SEO 的一致性
-- 重构 Markdown 渲染流程，增强原始 HTML 净化、媒体加载、外链处理、代码复制、表格语义和横向滚动体验
-- 重构 Liquid Glass 材质体系，引入共享 WebGL2 合成器、尺寸感知折射、分级模糊回退和统一玻璃边界
-- 优化背景切换和马赛克画布加载事务，减少尺寸变化期间的重复绘制和视觉闪烁
-- 优化博客首页、文章阅读页、足迹地图和照片灯箱的布局、视觉层级及日间／夜间模式表现
-- 完善相册日期、EXIF 字段和空状态的国际化显示
-- 统一由 `version.json` 管理营销版本、Build Train 和构建序号，版本更新改为显式发布操作
+- Migrated public 3.0.0 `.env` fields to YAML and `static/` content to external sources and public fixtures, removing the runtime dual-source model.
+- Reduced browser-visible configuration to a build-time allowlist, isolating server paths, production secrets, and personal content.
+- Unified blog indexes, search indexes, RSS, Sitemap, and album metadata generation around frozen content snapshots.
+- Standardized development and CI on public demonstration inputs; production builds now fail when valid external configuration or content is missing.
+- Refactored blog routing and server data loading for consistent categories, tags, search, article pages, RSS, Sitemap, and SEO.
+- Refactored Markdown rendering with stronger raw-HTML sanitization, media loading, external-link handling, code copying, table semantics, and horizontal scrolling.
+- Refactored Liquid Glass around a shared WebGL2 compositor, size-aware refraction, tiered blur fallback, and consistent glass boundaries.
+- Optimized background switching and mosaic-canvas loading transactions to reduce repeated drawing and flashes during resize.
+- Improved layout, visual hierarchy, and light/dark presentation across the blog home, article reader, footprint map, and photo lightbox.
+- Completed localized album dates, EXIF fields, and empty states.
+- Centralized marketing version, Build Train, and build sequence in `version.json`; version changes now require explicit release operations.
 
-### 修复
+### Fixed
 
-- 修复首页社交链接卡片名称换行后未保持右对齐的问题
-- 修复空相册离开时以空 ID 清除新页面 Header 插槽的竞态，统一采用严格注册所有权清理
-- 修复统一博客 catch-all 路由下文章类型误判导致阅读页继续显示马赛克背景的问题
-- 修复博客详情首屏依赖客户端请求、分类页缺少服务端正文、搜索服务端请求无效 URL 及非法路径状态错误
-- 修复 RSS、Sitemap 同时存在动态路由与静态产物造成的重复实现
-- 修复相册深层链接校验、灯箱历史记录、页面标题残留、回调清理和信息面板滚动问题
-- 修复相册缺失数据被空状态掩盖、日期时区口径不一致及网格直接加载原图的问题
-- 修复 Markdown 链接预览误判、KaTeX 公式重复显示以及 GFM 表格对齐、列宽和滚动交互问题
-- 修复马赛克画布重建时的黑帧、过期绘制提前结束加载状态及异常导致加载永久阻塞的问题
-- 修复移动端顶部和底部玻璃层实时模糊、内容安全间距及末尾内容遮挡问题
-- 修复普通页面底部内容被渐隐遮罩淡化、足迹地图出现边缘遮罩和白色边框的问题
-- 修复按钮内容偏移、无效 HTML 嵌套和语言切换时部分状态文案突变的问题
+- Fixed homepage social-link card names losing right alignment after wrapping.
+- Fixed a race where leaving an empty album cleared a new page's Header slot with an empty ID; cleanup now uses strict registration ownership.
+- Fixed article pages retaining the mosaic background after article type was misidentified under the unified blog catch-all route.
+- Fixed article first render depending on client requests, missing server content on category pages, invalid search-server request URLs, and incorrect states for illegal paths.
+- Removed duplicate dynamic and static implementations of RSS and Sitemap.
+- Fixed album deep-link validation, lightbox history, stale page titles, callback cleanup, and information-panel scrolling.
+- Fixed missing album data being hidden by an empty state, inconsistent date timezone handling, and grids loading original images directly.
+- Fixed incorrect Markdown link previews, duplicated KaTeX formulas, and GFM table alignment, width, and scrolling behavior.
+- Fixed black frames during mosaic-canvas rebuild, stale renders ending loading early, and exceptions leaving loading permanently blocked.
+- Fixed live blur, content safe spacing, and final-content obstruction around the mobile top and bottom glass layers.
+- Fixed ordinary page endings fading under masks and footprint maps showing edge masks and white borders.
+- Fixed button-content offsets, invalid HTML nesting, and abrupt state-copy changes during locale switching.
 
 ## 3.0.0 (2026-02-10)
 
-完成了足迹地图的重构与上线和 CSS 架构的模块化，大幅增强了足迹地图的交互与功能体验。
+Rebuilt and launched the footprint map, modularized the CSS architecture, and expanded footprint interactions and tooling.
 
-### 新增
+### Added
 
-- 字体展示测试文档 (`static/posts/example-category/font-test.md`)
-- 模块化 CSS 架构 (`src/lib/styles/` 下的 `fonts.css`, `theme.css`, `base.css` 等)
-- 足迹功能相关组件与工具 (`FootprintActions.svelte`, `GeneratorModal.svelte`, `footprintYaml.ts` 等)
-- Svelte 5 状态管理 Store (`mosaic.svelte.ts`)
+- Font demonstration article at `static/posts/example-category/font-test.md`.
+- Modular style architecture under `src/lib/styles/`, including `fonts.css`, `theme.css`, and `base.css`.
+- Footprint components and utilities including `FootprintActions.svelte`, `GeneratorModal.svelte`, and `footprintYaml.ts`.
+- Svelte 5 state store in `mosaic.svelte.ts`.
 
-### 优化
+### Changed
 
-- **样式架构重构**：将大型 CSS 文件拆分为高内聚的模块化文件
-- **注释规范**：统一注释
-- **地图功能**：优化 AMap 组件的类型安全与交互逻辑
-- **目录结构**：整合 `utils` 目录，提升代码组织质量
+- **Style architecture**: split the large stylesheet into cohesive modules.
+- **Comments**: standardized source comments.
+- **Map behavior**: improved AMap type safety and interaction logic.
+- **Project layout**: consolidated utility directories.
 
-### 修复
+### Fixed
 
-- **类型安全**：修正 AMap 相关的接口和类型定义
-- **网络请求**：通过添加时间戳解决文件加载的缓存问题
-- **界面细节**：修复侧边栏及地图版权信息的样式同步问题
+- **Type safety**: corrected AMap interfaces and types.
+- **Network loading**: added timestamps to avoid stale file caches.
+- **UI details**: synchronized sidebar and map-attribution styling.
 
 ## 2.2.0 (2026-02-04)
 
-全站国际化支持，实施分支策略与数据分离，重构友链页面与博客索引，持续优化视觉体验与 SEO
+Added site-wide internationalization, introduced branch-based data separation, refactored friend links and blog indexes, and continued visual and SEO improvements.
 
-### 新增
+### Added
 
-- **国际化**: 全站文本提取与 i18n 支持，新增语言切换功能
-- **分支策略**: 实施数据分离，`main` 分支仅保留测试与预览数据，个人数据独立维护
-- **友链系统**: 重构友链数据结构，支持“可访问”与“无法访问”状态分类
-- **博客索引**: 引入全新博客索引生成机制，提升文章列表加载效率
-- **分类别名**: 为博客分类引入 slug 字段，优化 URL 语义化
+- **Internationalization**: extracted site text, added i18n, and introduced locale switching.
+- **Branch strategy**: kept only test and preview data on `main` while maintaining personal data separately.
+- **Friend links**: redesigned the data model with reachable and unavailable states.
+- **Blog indexes**: introduced a new article-index generation system.
+- **Category aliases**: added category slugs for semantic URLs.
 
-### 优化
+### Changed
 
-- **视觉体验**:
-  - 优化 Header 按钮悬停交互，增强顶部导航动态效果
-  - 调整 GitHub 项目卡片内边距，移除多余留白
-  - 优化 TimeCapsule 组件在英文模式下的排版布局
-  - 统一 Blockquote 引用块字体大小，防止嵌套时字号失控
-  - 优化 Header 导航栏居中布局与 MainContent 顶部间距适配
-- **阅读排版**: 规范化文章正文、标题与代码块的垂直间距 (`reader.css`)
-- **SEO**: 优化 Sitemap 生成策略，集成博客文章数据并处理旧站点 301 重定向
+- **Visual experience**:
+  - Improved Header button hover behavior and top-navigation motion.
+  - Adjusted GitHub project-card padding and removed excess whitespace.
+  - Improved the English layout of `TimeCapsule`.
+  - Standardized blockquote font sizes and prevented nested scaling.
+  - Improved Header navigation centering and `MainContent` top spacing.
+- **Reader typography**: standardized vertical rhythm for article text, headings, and code blocks in `reader.css`.
+- **SEO**: improved Sitemap generation, integrated blog article data, and handled legacy-site 301 redirects.
 
-### 修复
+### Fixed
 
-- **交互逻辑**: 修复足迹地图 (Footprint) 因层级问题导致的不可交互 bug
-- **路由导航**:
-  - 修复多级分类路径匹配失效的问题
-  - 解决博客导航过程中的异步消息通道关闭错误
-- **系统稳定性**:
-  - 修复 SSR 环境下壁纸 API 请求导致的 DNS 解析异常
-  - 修正 Markdown 文章文件名与 slug 不一致的问题
-  - 修复组件状态捕获导致的编译器警告
+- **Interaction**: fixed a z-index issue that made the footprint map unresponsive.
+- **Routing**:
+  - Fixed matching for nested category paths.
+  - Fixed asynchronous message-channel closure errors during blog navigation.
+- **Stability**:
+  - Fixed wallpaper API requests causing DNS failures during SSR.
+  - Corrected mismatches between Markdown filenames and slugs.
+  - Fixed compiler warnings caused by captured component state.
 
 ## 2.1.0 (2026-02-02)
 
-优化博客架构，新增 RSS 支持，改善侧边栏交互与 SEO
+Improved blog architecture, added RSS, and refined sidebar behavior and SEO.
 
-### 新增
+### Added
 
-- **RSS 支持**: 生成全站 RSS XML 订阅源 (`/blog/rss.xml/`)
-- **视图切换**: 在年份归档与标签归档间切换，引入 `SegmentedControl` 组件
-- **路由匹配**: 支持多分类路径匹配、标签过滤及 URL 尾部斜杠规范化
-- **色彩方案**: 为 MTR 车站引入更真实的马赛克色彩方案
+- **RSS**: generated a site-wide RSS XML feed at `/blog/rss.xml/`.
+- **View switching**: added `SegmentedControl` for year and tag archives.
+- **Route matching**: supported nested category paths, tag filtering, and trailing-slash normalization.
+- **Color system**: introduced more authentic MTR mosaic station colors.
 
-### 优化
+### Changed
 
-- **系统架构**: 重构博客组件，拆分为 `BlogHome`、`BlogViewer`、`Sidebar` 等子模块
-- **数据管理**: 采用统一的 `all.json` 数据源，提升加载一致性
-- **SEO 增强**: 完善 JSON-LD 结构化数据，优化分类与标签页面的元描述
-- **状态管理**: 增强 `SidebarState` 与 `HeaderState` 的响应式联动
+- **Architecture**: split blog components into `BlogHome`, `BlogViewer`, `Sidebar`, and related modules.
+- **Data**: adopted a unified `all.json` source.
+- **SEO**: completed JSON-LD structured data and improved category and tag descriptions.
+- **State**: strengthened reactive coordination between `SidebarState` and `HeaderState`.
 
-### 修复
+### Fixed
 
-- 修复深层链接下博客分类路径匹配失效的问题
-- 修复路由快速切换时侧边栏状态丢失的问题
-- 修复 `LiquidGlass` 在特定模式下的重绘问题
+- Fixed nested blog-category route matching.
+- Fixed sidebar state loss during rapid route changes.
+- Fixed `LiquidGlass` redraw behavior in specific modes.
 
 ## 2.0.0 (2026-01-31)
 
-全面重构系统架构，引入自动化内容管理，优化性能与 SEO
+Rebuilt the application architecture, introduced automated content management, and improved performance and SEO.
 
-### 新增
+### Added
 
-- **自动化博客**: 引入 Markdown 驱动工作流新增 `vite-plugin-blog-watcher` 插件与 `generate-blog-index.js` 脚本
-- **模块化重构**: 按功能拆分 `src/lib`
-- **站点地图**: 动态生成 `sitemap.xml`
-- **特性增强**: `LiquidGlass` 新增不透明模式；`MosaicInfo` 支持 MTR 图标
+- **Automated blog**: added a Markdown workflow with `vite-plugin-blog-watcher` and `generate-blog-index.js`.
+- **Modular architecture**: split `src/lib` by responsibility.
+- **Sitemap**: generated `sitemap.xml` dynamically.
+- **UI features**: added an opaque `LiquidGlass` mode and MTR icons to `MosaicInfo`.
 
-### 优化
+### Changed
 
-- **渲染性能**:
-  - 使用 HTML5 Canvas 重构 Mosaic 核心
-  - 为 `LiquidGlass` 引入 `lazyBlur` 延迟模糊技术
-- **交互体验**:
-  - 优化 `MainContent` 间距切换动画
-  - 改进移动端页眉/页脚遮罩算法
-- **代码规范**: 完成全量简体中文注释与 JSDoc 标准化
-- **资源同步**: 优化字体加载；同步足迹、友链、支付等配置文件
+- **Rendering performance**:
+  - Rebuilt the mosaic core with HTML5 Canvas.
+  - Added deferred `lazyBlur` rendering to `LiquidGlass`.
+- **Interaction**:
+  - Improved `MainContent` spacing transitions.
+  - Improved mobile header and footer mask behavior.
+- **Code quality**: standardized Simplified Chinese comments and JSDoc.
+- **Resources**: optimized font loading and synchronized footprint, friend, and payment files.
 
-### 修复
+### Fixed
 
-- 修复 `Copyright` 组件背景显示故障
-- 修复移动端导航菜单适配问题
-- 解决窄屏下按钮自动换行导致的布局抖动
+- Fixed background rendering in the `Copyright` component.
+- Fixed mobile navigation adaptation.
+- Fixed layout jitter caused by buttons wrapping on narrow screens.
 
 ## 1.1.0 (2026-01-25)
 
-重构核心组件，优化移动端导航，完善文档
+Refactored core components, improved mobile navigation, and expanded documentation.
 
-### 新增
+### Added
 
-- **UI 组件**: 统一头部按钮样式的 `HeaderActionButton`；支持多种特效的 `TextEffect`；支持自动滚动的 `AutoScroll`
-- **字体优化**: 整合 `MiSans` 字体定义
-- **管理工具**: 新增脚本目录与版本管理工具
+- **UI components**: added `HeaderActionButton`, multi-effect `TextEffect`, and auto-scrolling `AutoScroll`.
+- **Fonts**: integrated MiSans definitions.
+- **Tooling**: added script and version-management directories.
 
-### 优化
+### Changed
 
-- **视觉性能**: 重构 `LiquidGlass`，强制开启硬件加速
-- **布局调整**: 优化 `MobileNav` 路由分布算法
-- **代码复用**: 抽离 `HeaderActions` 通用逻辑
-- **文档完善**: 补充中文注释与目录结构说明
+- **Visual performance**: refactored `LiquidGlass` and forced hardware acceleration.
+- **Layout**: improved the `MobileNav` route-distribution algorithm.
+- **Reuse**: extracted shared `HeaderActions` logic.
+- **Documentation**: expanded Chinese comments and project-structure documentation.
 
-### 修复
+### Fixed
 
-- 修复 `Copyright` 样式细节
-- 修复模块导入路径与类型定义
-- 修复 PC 版文章加载时的锚点定位问题
+- Fixed `Copyright` styling details.
+- Fixed module import paths and type definitions.
+- Fixed initial anchor positioning while loading desktop articles.
 
 ## 1.0.0 (2026-01-25)
 
-项目初始化，建立核心架构与多语言支持
+Initialized the project with its core architecture and multilingual support.

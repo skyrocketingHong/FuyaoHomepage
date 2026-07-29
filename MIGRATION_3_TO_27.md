@@ -1,237 +1,228 @@
-# 3.0.0 至 27.0 配置与内容迁移
+English | [简体中文](./MIGRATION_3_TO_27_ZH.md)
 
-本文档迁移 3.0.0 的 `.env` 站点配置、部署配置、博客源文件和足迹数据。不迁移生成索引，不修改 3.0.0 源目录，也不覆盖 27.0 已存在的不同内容。
+# Migrating from 3.0.0 to 27.0
 
-## 1. 迁移边界
+This guide migrates public site configuration and private `static/` content from 3.0.0 to 27.0. It does not modify the old site tree or copy indexes that 27.0 can regenerate.
 
-| 数据       | 3.0.0 来源                    | 27.0 目标                                        | 处理方式                                   |
-| :--------- | :---------------------------- | :----------------------------------------------- | :----------------------------------------- |
-| 站点配置   | `.env` 中公开的 `VITE_*`      | `/srv/fuyao/shared/config/site.yaml`             | 按字段映射为版本化 YAML                    |
-| 内容映射   | `static/` 固定目录约定        | `/srv/fuyao/shared/config/content.yaml`          | 使用相对路径声明内容目录                   |
-| 部署参数   | 无统一来源                    | 部署进程环境或 systemd `EnvironmentFile`         | 使用 `FUYAO_*` 服务端变量                  |
-| 服务端密钥 | 不应存在于前端 `.env`         | `/srv/fuyao/shared/secrets/secrets.env`          | 轮换后写入，仅服务端读取                   |
-| 博客文章   | `static/posts/`               | `/srv/fuyao/shared/content/posts/`               | 复制 Markdown、分类 `_index.md` 和文章附件 |
-| 博客生成物 | `static/posts/all.json` 等    | 不迁移                                           | 由 27.0 构建流程重新生成                   |
-| 足迹数据   | `static/data/footprints.yaml` | `/srv/fuyao/shared/content/data/footprints.yaml` | 原样复制并校验 SHA-256                     |
+## 1. Understand `/srv/fuyao/shared/config/`
 
-以下博客生成物必须排除：`all.json`、`categories.json`、`search.json`、`map.json`、`rss.xml`。根目录旧 `static/sitemap.xml` 同样不得迁移。
+`/srv/fuyao/shared/config/` is not a directory inherited from 3.0.0, and no installer creates it automatically. It is the **example production path** used by the 27.0 deployment templates. A server administrator must create it.
 
-足迹 YAML 的 `cities`、`places`、`name.zh`、`name.en`、`coordinates`、`visitDate`、`description`、`type` 和 `adcode` 字段与 27.0 兼容，不需要原地改写。生产内容中的经纬度属于个人内容，不得放回公开源码仓库。
+27.0 separates data into two categories:
 
-## 2. 迁移配置
+- `releases/`: replaceable and rollback-safe output from each deployment.
+- `shared/`: persistent configuration, articles, footprints, albums, and other data that must survive releases.
 
-### 2.1 建立配置目录
-
-在服务器建立外部持久化目录，不要在源码仓库中创建真实 `site.yaml`、`content.yaml` 或 `secrets.env`：
-
-```bash
-sudo install -d -m 0750 /srv/fuyao/shared/config
-sudo install -d -m 0700 /srv/fuyao/shared/secrets
-sudo install -d -m 0750 /srv/fuyao/shared/content
-sudoedit /srv/fuyao/shared/config/site.yaml
-sudoedit /srv/fuyao/shared/config/content.yaml
-sudoedit /srv/fuyao/shared/secrets/secrets.env
-sudo chmod 0640 /srv/fuyao/shared/config/site.yaml /srv/fuyao/shared/config/content.yaml
-sudo chmod 0600 /srv/fuyao/shared/secrets/secrets.env
-```
-
-### 2.2 `.env` 到 `site.yaml` 字段映射
-
-| 3.0.0 环境变量                 | 27.0 YAML 字段                     | 迁移规则                                       |
-| :----------------------------- | :--------------------------------- | :--------------------------------------------- |
-| `VITE_SITE_NAME`               | `site.name`                        | 原值迁移                                       |
-| `VITE_SITE_URL`                | `site.url`                         | 使用完整 `https://` URL，不保留末尾斜杠        |
-| `VITE_SITE_START_DATE`         | `site.startDate`                   | 转为 `YYYY-MM-DD`                              |
-| `VITE_SITE_START_YEAR`         | `site.startYear`                   | 转为 YAML 整数                                 |
-| 无                             | `site.defaultLocale`               | 新增，填写 `zh-CN` 或 `en-US`                  |
-| `VITE_SEO_AUTHOR`              | `profile.name`、`seo.author`       | 3.0.0 将作者名同时用于个人资料和 SEO           |
-| `VITE_USER_BIRTH_DATE`         | `profile.birthDate`                | 转为 `YYYY-MM-DD`                              |
-| `VITE_AVATAR_URL`              | `profile.avatarUrl`                | 必须是完整 URL；旧值为空时填写实际公开头像 URL |
-| `VITE_USER_ROLE_ZH`            | `profile.roles.zh-CN`              | 原值迁移                                       |
-| `VITE_USER_ROLE_EN`            | `profile.roles.en-US`              | 原值迁移                                       |
-| `VITE_USER_QUOTE_ZH`           | `profile.quotes.zh-CN`             | 原值迁移                                       |
-| `VITE_USER_QUOTE_EN`           | `profile.quotes.en-US`             | 原值迁移                                       |
-| `VITE_REPO_NAME`               | `repository.name`                  | 原值迁移                                       |
-| `VITE_REPO_URL`                | `repository.url`                   | 使用完整仓库 URL                               |
-| `VITE_GITHUB_USERNAME`         | `repository.owner`                 | 只填写公开用户名，不拼接 URL                   |
-| `VITE_SEO_DESCRIPTION`         | `seo.description`                  | 原值迁移                                       |
-| `VITE_SEO_KEYWORDS`            | `seo.keywords`                     | 将逗号分隔字符串拆为 YAML 字符串数组           |
-| `VITE_TWITTER_ID`              | `seo.twitterId`                    | 可选；为空时删除该字段                         |
-| `VITE_WALLPAPER_API`           | `services.wallpaper.apiUrl`        | 可选公开端点；另行补充必填的 `defaultUrl`      |
-| `VITE_AMAP_KEY`                | `services.amap.browserKey`         | 浏览器公开 Key，必须设置域名白名单和最小权限   |
-| `VITE_AMAP_SECURITY_CODE`      | `services.amap.securityCode`       | 浏览器公开安全码，不作为服务端秘密             |
-| `VITE_AMAP_SERVICE_HOST`       | `services.amap.serviceHost`        | 可选完整 URL；为空时删除该字段                 |
-| `VITE_CF_ANALYTICS_WORKER_URL` | `services.analyticsProxyUrl`       | 只迁移不含秘密的代理 URL                       |
-| `VITE_WAKATIME_EMBED_URL`      | `services.codingActivityProxyUrl`  | URL 含令牌时禁止原样迁移，改为服务器代理 URL   |
-| `VITE_WAKATIME_LANGUAGES_URL`  | `services.codingLanguagesProxyUrl` | URL 含令牌时禁止原样迁移，改为服务器代理 URL   |
-| `VITE_BLOG_URL`                | 不迁移                             | 27.0 使用站内固定路由 `/blog/`，删除旧变量     |
-
-`profile.email` 是 27.0 新增可选字段，3.0.0 没有对应变量；需要公开邮箱时手工添加，不需要时删除。
-
-生产 `site.yaml` 结构如下。尖括号内容必须替换为 3.0.0 的实际公开值，不能保留示例域名或占位 Key：
-
-```yaml
-schemaVersion: 1
-site:
-  name: '<VITE_SITE_NAME>'
-  url: '<VITE_SITE_URL>'
-  startDate: '<YYYY-MM-DD>'
-  startYear: 2024
-  defaultLocale: zh-CN
-profile:
-  name: '<VITE_SEO_AUTHOR>'
-  birthDate: '<YYYY-MM-DD>'
-  avatarUrl: '<VITE_AVATAR_URL 或实际公开头像 URL>'
-  roles:
-    zh-CN: '<VITE_USER_ROLE_ZH>'
-    en-US: '<VITE_USER_ROLE_EN>'
-  quotes:
-    zh-CN: '<VITE_USER_QUOTE_ZH>'
-    en-US: '<VITE_USER_QUOTE_EN>'
-repository:
-  name: '<VITE_REPO_NAME>'
-  url: '<VITE_REPO_URL>'
-  owner: '<VITE_GITHUB_USERNAME>'
-seo:
-  author: '<VITE_SEO_AUTHOR>'
-  description: '<VITE_SEO_DESCRIPTION>'
-  keywords:
-    - '<关键词一>'
-    - '<关键词二>'
-services:
-  wallpaper:
-    defaultUrl: '<稳定的默认壁纸 URL>'
-    apiUrl: '<VITE_WALLPAPER_API>'
-  amap:
-    browserKey: '<VITE_AMAP_KEY>'
-    securityCode: '<VITE_AMAP_SECURITY_CODE>'
-    serviceHost: '<VITE_AMAP_SERVICE_HOST>'
-  analyticsProxyUrl: '<VITE_CF_ANALYTICS_WORKER_URL>'
-  codingActivityProxyUrl: '<不含秘密的编程活动代理 URL>'
-  codingLanguagesProxyUrl: '<不含秘密的语言统计代理 URL>'
-```
-
-可选字段没有值时应整行删除，不能填写空字符串。`site.yaml` 只能包含 Schema 允许的字段，未知字段会阻止生产构建。
-
-### 2.3 创建 `content.yaml`
-
-3.0.0 没有内容映射文件。27.0 使用下列固定相对路径：
-
-```yaml
-schemaVersion: 1
-paths:
-  posts: posts
-  data: data
-  albumPhotos: albums/photos
-  albumThumbnails: albums/thumbnails
-  albumMetadata: albums/metadata
-media:
-  albumPublicBase: /media/albums
-  mode: external
-```
-
-所有 `paths` 均相对于 `FUYAO_CONTENT_ROOT`，禁止填写 `/srv/fuyao/` 绝对路径。即使当前没有相册，也要保留三个相册目录映射，并创建对应空目录。
-
-### 2.4 配置部署变量
-
-以下变量不是从旧 `VITE_*` 重命名而来，而是只供 27.0 构建与部署进程读取：
-
-```dotenv
-FUYAO_CONFIG_ROOT=/srv/fuyao/shared/config
-FUYAO_CONTENT_ROOT=/srv/fuyao/shared/content
-FUYAO_SHARED_ROOT=/srv/fuyao/shared
-FUYAO_RELEASE_ROOT=/srv/fuyao/releases
-FUYAO_CURRENT_LINK=/srv/fuyao/current
-FUYAO_DEPLOY_LOCK=/srv/fuyao/deploy.lock
-FUYAO_SECRETS_FILE=/srv/fuyao/shared/secrets/secrets.env
-FUYAO_REPOSITORY_URL=<公开 main 仓库 URL>
-FUYAO_RELEASE_KEEP=5
-FUYAO_HEALTHCHECK_URL=<部署后健康检查 URL>
-```
-
-将这些值写入 systemd `EnvironmentFile` 或部署账户的受控环境，不要创建仓库内 `.env.production`。
-
-### 2.5 处理服务端密钥
-
-3.0.0 的所有 `VITE_*` 都已经进入浏览器，不能视为秘密。迁移时执行以下处理：
-
-- 高德浏览器 Key 和安全码可迁入 `site.yaml`，但必须限制允许域名和权限。
-- Cloudflare API Token、Zone ID、GitHub Token、Webhook Secret、部署令牌、私钥和密码不得写入 `site.yaml`。
-- WakaTime 或统计 URL 中若含令牌，先轮换旧令牌，再由独立服务器代理持有新令牌；`site.yaml` 只保存代理 URL。
-- `secrets.env` 只保存服务器进程实际需要的秘密，使用 `KEY=value` 格式，不提交到 Git，不复制到 release。
-
-### 2.6 配置预检
-
-完成配置后先只验证生产输入：
-
-```bash
-export FUYAO_CONFIG_ROOT=/srv/fuyao/shared/config
-export FUYAO_CONTENT_ROOT=/srv/fuyao/shared/content
-export FUYAO_SECRETS_FILE=/srv/fuyao/shared/secrets/secrets.env
-npm run inputs:prepare:production
-```
-
-该命令会拒绝示例域名、占位 Key、未知字段、重复字段、错误日期、错误 URL、秘密字段和越界内容路径。
-
-## 3. 内容迁移前准备
-
-1. 保留一份只读的 3.0.0 文件树，例如 `/srv/fuyao/migration-source/3.0.0/`。
-2. 备份现有 `/srv/fuyao/shared/content/`，确认备份可读取。
-3. 停止内容发布任务，避免迁移期间发生并发写入。
-4. 从 27.0 源码目录执行本页命令，不在 3.0.0 线上目录直接升级或构建。
-
-3.0.0 源目录至少应包含：
+The default example layout is:
 
 ```text
-/srv/fuyao/migration-source/3.0.0/
+/srv/fuyao/                         # Example deployment root used by this guide
+├── migration-source/3.0.0/        # Read-only 3.0.0 copy, used only during migration
+├── shared/                        # Persistent data; back up independently
+│   ├── config/                    # site.yaml and content.yaml
+│   ├── content/                   # Articles, footprints, friends, payments, and albums
+│   ├── legacy/root-assets/favicon/# Production favicons
+│   ├── secrets/                   # Server-side secrets
+│   └── backups/                   # Migration manifests and content backups
+├── releases/                      # Build artifacts for 27.0 and later
+└── current -> releases/<release-id>
+```
+
+`/srv/fuyao` is not required. An existing `/opt/my-site`, `/var/www/example`, or another root is valid as long as every `FUYAO_*` variable and systemd path points to the actual location. This guide uses `/srv/fuyao` because the templates under `deploy/systemd/` use the same example.
+
+## 2. Migration Matrix
+
+| 3.0.0 data                 | 3.0.0 source                       | 27.0 target                             | Method                         |
+| :------------------------- | :--------------------------------- | :-------------------------------------- | :----------------------------- |
+| Public site configuration  | `VITE_*` values in `.env`          | `shared/config/site.yaml`               | Convert fields to YAML         |
+| Content-path rules         | Fixed `static/` convention         | `shared/config/content.yaml`            | Create a mapping file          |
+| Blog articles and assets   | `static/posts/`                    | `shared/content/posts/`                 | Migration script               |
+| Footprints                 | `static/data/footprints.yaml`      | `shared/content/data/footprints.yaml`   | Migration script               |
+| Friend links               | `static/data/friends.yaml`         | `shared/content/data/friends.yaml`      | Optional migration-script type |
+| Payment data               | `static/data/payments.yaml`        | `shared/content/data/payments.yaml`     | Optional migration-script type |
+| Social links               | `static/data/social-links.yaml`    | `shared/content/data/social-links.yaml` | Optional migration-script type |
+| Albums                     | `static/albums/`                   | `shared/content/albums/`                | Optional migration-script type |
+| Favicons                   | `static/favicon/`                  | `shared/legacy/root-assets/favicon/`    | Manual copy                    |
+| Server secrets             | Must not come from frontend `.env` | `shared/secrets/secrets.env`            | Rotate and re-enter            |
+| Blog indexes, RSS, Sitemap | Generated 3.0.0 files              | Not migrated                            | Regenerated by 27.0            |
+
+The migration script excludes `all.json`, `categories.json`, `search.json`, `map.json`, and `rss.xml`. Do not copy the old root-level `static/sitemap.xml`.
+
+## 3. Prepare the Migration
+
+### 3.1 Identify Three Locations
+
+Confirm the following before making changes:
+
+1. **27.0 source directory**: checkout the 27.0 code and run `npm ci`. Run every later `npm run` command from this directory.
+2. **3.0.0 source directory**: keep a complete copy of the old site, including `.env` and every `static/` item to migrate.
+3. **27.0 persistent directory**: store long-lived production configuration and content outside the Git repository.
+
+This guide uses the following variables. They exist only in the current shell session:
+
+```bash
+export FUYAO_SERVER_ROOT=/srv/fuyao
+export FUYAO_LEGACY_ROOT="$FUYAO_SERVER_ROOT/migration-source/3.0.0"
+export FUYAO_SHARED_ROOT="$FUYAO_SERVER_ROOT/shared"
+export FUYAO_CONFIG_ROOT="$FUYAO_SHARED_ROOT/config"
+export FUYAO_CONTENT_ROOT="$FUYAO_SHARED_ROOT/content"
+export FUYAO_FAVICON_ROOT="$FUYAO_SHARED_ROOT/legacy/root-assets/favicon"
+export FUYAO_SECRETS_FILE="$FUYAO_SHARED_ROOT/secrets/secrets.env"
+```
+
+When using a root other than `/srv/fuyao`, change only the first line and avoid mixing paths from different layouts in later commands.
+
+### 3.2 Prepare a Read-Only 3.0.0 Copy
+
+Do not run the migration directly against a live 3.0.0 directory. Copy the old tree to `$FUYAO_LEGACY_ROOT`, or point `FUYAO_LEGACY_ROOT` to an existing read-only backup.
+
+For articles and footprints, the minimum source layout is:
+
+```text
+<FUYAO_LEGACY_ROOT>/
+├── .env
 └── static/
+    ├── favicon/
     ├── posts/
     │   ├── <category>/_index.md
     │   ├── <category>/<article>.md
     │   └── <article-assets>/
-    └── data/footprints.yaml
+    └── data/
+        └── footprints.yaml
 ```
 
-## 4. 生成内容迁移预检清单
+Before continuing:
+
+- Back up the existing `$FUYAO_CONTENT_ROOT` and verify that a sample file can be restored.
+- Stop old content-publishing or watcher tasks so the source cannot change during migration.
+- Keep the live 3.0.0 directory until 27.0 has passed acceptance testing.
+
+### 3.3 Create Persistent 27.0 Directories
+
+The repository's systemd examples use a `fuyao` user and group. Change these variables first if the real service account is different:
 
 ```bash
-export FUYAO_LEGACY_ROOT=/srv/fuyao/migration-source/3.0.0
-export FUYAO_CONTENT_ROOT=/srv/fuyao/shared/content
-export FUYAO_MIGRATION_TYPES=posts,footprints
-export FUYAO_MIGRATION_MANIFEST=/srv/fuyao/shared/backups/migration-3.0.0-to-27.0.json
-npm run content:migrate:plan
+export FUYAO_SERVICE_USER=fuyao
+export FUYAO_SERVICE_GROUP=fuyao
+
+sudo install -d -o "$FUYAO_SERVICE_USER" -g "$FUYAO_SERVICE_GROUP" -m 0750 \
+  "$FUYAO_CONFIG_ROOT" \
+  "$FUYAO_CONTENT_ROOT" \
+  "$FUYAO_CONTENT_ROOT/posts" \
+  "$FUYAO_CONTENT_ROOT/data" \
+  "$FUYAO_CONTENT_ROOT/albums/photos" \
+  "$FUYAO_CONTENT_ROOT/albums/thumbnails" \
+  "$FUYAO_CONTENT_ROOT/albums/metadata" \
+  "$FUYAO_FAVICON_ROOT"
+
+sudo install -d -o "$FUYAO_SERVICE_USER" -g "$FUYAO_SERVICE_GROUP" -m 0700 \
+  "$FUYAO_SHARED_ROOT/secrets" \
+  "$FUYAO_SHARED_ROOT/backups"
 ```
 
-预检只计算文件数量、总字节数和 SHA-256，不写入目标目录。若源目录错误、没有找到所选内容、存在符号链接或迁移类型无效，命令会直接失败。
+## 4. Migrate Site Configuration
 
-检查重点：
+### 4.1 Create the Two YAML Files
 
-- 博客清单只包含作者维护的 Markdown、分类文件和文章附件。
-- 清单不包含 `all.json`、`categories.json`、`search.json`、`map.json`、`rss.xml` 或 `sitemap.xml`。
-- 足迹清单只包含 `static/data/footprints.yaml`。
-- 目标路径仅位于 `posts/` 和 `data/footprints.yaml`。
+Run these commands from the 27.0 source directory.
 
-## 5. 执行内容迁移
-
-确认预检结果后执行：
+The commands create new files. If either target already exists, do not overwrite it until you have confirmed whether it is the active production configuration.
 
 ```bash
-npm run content:migrate:apply
+sudo install -o "$FUYAO_SERVICE_USER" -g "$FUYAO_SERVICE_GROUP" -m 0640 \
+  config/site.example.yaml "$FUYAO_CONFIG_ROOT/site.yaml"
+
+sudo install -o "$FUYAO_SERVICE_USER" -g "$FUYAO_SERVICE_GROUP" -m 0640 \
+  config/content.example.yaml "$FUYAO_CONFIG_ROOT/content.yaml"
 ```
 
-迁移脚本采用以下保护：
+Edit `site.yaml`:
 
-- 不删除 3.0.0 源文件。
-- 不覆盖目标中内容不同的同名文件。
-- 已存在且 SHA-256 相同的文件视为通过。
-- 每个新复制文件在写入后重新计算 SHA-256。
-- 迁移清单使用 `0600` 权限且拒绝覆盖同名清单。
+```bash
+sudoedit "$FUYAO_CONFIG_ROOT/site.yaml"
+```
 
-执行成功后，清单位于 `$FUYAO_MIGRATION_MANIFEST`，其中记录迁移类型、文件数、总大小和逐文件 SHA-256。
+`site.yaml` contains public configuration that may enter the browser. `content.yaml` describes content subdirectories. Both stay outside the repository and survive future code upgrades.
 
-## 6. 核对 27.0 内容目录
+### 4.2 Map the Old `.env` to `site.yaml`
 
-确认 `/srv/fuyao/shared/config/content.yaml` 与下列映射一致：
+Open `$FUYAO_LEGACY_ROOT/.env` and `$FUYAO_CONFIG_ROOT/site.yaml`, then apply this mapping:
+
+| 3.0.0 environment variable     | 27.0 YAML field                    | Rule                                                 |
+| :----------------------------- | :--------------------------------- | :--------------------------------------------------- |
+| `VITE_SITE_NAME`               | `site.name`                        | Copy the old value                                   |
+| `VITE_SITE_URL`                | `site.url`                         | Use a complete `https://` URL with no trailing slash |
+| `VITE_SITE_START_DATE`         | `site.startDate`                   | Convert to `YYYY-MM-DD`                              |
+| `VITE_SITE_START_YEAR`         | `site.startYear`                   | Use a YAML integer                                   |
+| None                           | `site.defaultLocale`               | New field: `zh-CN` or `en-US`                        |
+| `VITE_SEO_AUTHOR`              | `profile.name`, `seo.author`       | Write the same old value to both fields              |
+| `VITE_USER_BIRTH_DATE`         | `profile.birthDate`                | Convert to `YYYY-MM-DD`                              |
+| `VITE_AVATAR_URL`              | `profile.avatarUrl`                | Use a complete public URL                            |
+| `VITE_USER_ROLE_ZH`            | `profile.roles.zh-CN`              | Copy the old value                                   |
+| `VITE_USER_ROLE_EN`            | `profile.roles.en-US`              | Copy the old value                                   |
+| `VITE_USER_QUOTE_ZH`           | `profile.quotes.zh-CN`             | Copy the old value                                   |
+| `VITE_USER_QUOTE_EN`           | `profile.quotes.en-US`             | Copy the old value                                   |
+| `VITE_REPO_NAME`               | `repository.name`                  | Copy the old value                                   |
+| `VITE_REPO_URL`                | `repository.url`                   | Use the complete repository URL                      |
+| `VITE_GITHUB_USERNAME`         | `repository.owner`                 | Use the username only                                |
+| `VITE_SEO_DESCRIPTION`         | `seo.description`                  | Copy the old value                                   |
+| `VITE_SEO_KEYWORDS`            | `seo.keywords`                     | Split comma-separated text into a YAML array         |
+| `VITE_TWITTER_ID`              | `seo.twitterId`                    | Optional; remove the field when empty                |
+| `VITE_WALLPAPER_API`           | `services.wallpaper.apiUrl`        | Optional; also supply the required `defaultUrl`      |
+| `VITE_AMAP_KEY`                | `services.amap.browserKey`         | Public browser key; restrict origins and permissions |
+| `VITE_AMAP_SECURITY_CODE`      | `services.amap.securityCode`       | Public browser security code                         |
+| `VITE_AMAP_SERVICE_HOST`       | `services.amap.serviceHost`        | Optional; remove the field when empty                |
+| `VITE_CF_ANALYTICS_WORKER_URL` | `services.analyticsProxyUrl`       | Use only a proxy URL with no embedded secret         |
+| `VITE_WAKATIME_EMBED_URL`      | `services.codingActivityProxyUrl`  | Replace token-bearing URLs with a server proxy URL   |
+| `VITE_WAKATIME_LANGUAGES_URL`  | `services.codingLanguagesProxyUrl` | Replace token-bearing URLs with a server proxy URL   |
+| `VITE_BLOG_URL`                | Not migrated                       | 27.0 uses the fixed internal `/blog/` route          |
+
+`profile.email` is a new optional 27.0 field. Add it only when a public email address is required. Remove this and every other optional field when it has no value; do not use empty strings.
+
+Use this example to verify the YAML hierarchy:
+
+```yaml
+schemaVersion: 1
+site:
+  name: '<site name>'
+  url: '<https://site-domain>'
+  startDate: '<YYYY-MM-DD>'
+  startYear: 2024
+  defaultLocale: en-US
+profile:
+  name: '<public name>'
+  birthDate: '<YYYY-MM-DD>'
+  avatarUrl: '<public avatar URL>'
+  roles:
+    zh-CN: '<Chinese role>'
+    en-US: '<English role>'
+  quotes:
+    zh-CN: '<Chinese quote>'
+    en-US: '<English quote>'
+repository:
+  name: '<repository name>'
+  url: '<repository URL>'
+  owner: '<repository owner>'
+seo:
+  author: '<author>'
+  description: '<site description>'
+  keywords:
+    - '<keyword one>'
+    - '<keyword two>'
+services:
+  wallpaper:
+    defaultUrl: '<fallback wallpaper URL>'
+    apiUrl: '<wallpaper API URL>'
+  amap:
+    browserKey: '<AMap browser key>'
+    securityCode: '<AMap security code>'
+```
+
+Replace every angle-bracket placeholder. Production validation rejects example domains, placeholder keys, unknown fields, duplicate fields, invalid dates, and invalid URLs.
+
+### 4.3 Verify `content.yaml`
+
+Keep `content.yaml` as:
 
 ```yaml
 schemaVersion: 1
@@ -246,36 +237,153 @@ media:
   mode: external
 ```
 
-所有路径均相对于 `FUYAO_CONTENT_ROOT`。不得在 YAML 中填写 `/srv/fuyao/` 绝对路径。
+Every path is relative to `$FUYAO_CONTENT_ROOT`. For example, `posts: posts` resolves to `$FUYAO_CONTENT_ROOT/posts/`. Do not write `/srv/fuyao/...` absolute paths into YAML.
 
-## 7. 验证配置、博客和足迹
+### 4.4 Handle Favicons and Secrets
+
+The migration script does not copy favicons. If 3.0.0 uses `static/favicon/`, copy it into the new persistent directory:
 
 ```bash
-export FUYAO_CONFIG_ROOT=/srv/fuyao/shared/config
-export FUYAO_CONTENT_ROOT=/srv/fuyao/shared/content
+sudo rsync -a "$FUYAO_LEGACY_ROOT/static/favicon/" "$FUYAO_FAVICON_ROOT/"
+sudo chown -R "$FUYAO_SERVICE_USER:$FUYAO_SERVICE_GROUP" "$FUYAO_FAVICON_ROOT"
+```
+
+Every 3.0.0 `VITE_*` value entered the browser and must not be treated as a secret:
+
+- AMap browser keys and security codes may enter `site.yaml`, but restrict their allowed origins and permissions.
+- Cloudflare API tokens, Zone IDs, GitHub tokens, webhook secrets, private keys, and passwords must not enter `site.yaml`.
+- When WakaTime or analytics URLs contain tokens, rotate the old credentials and let a server proxy hold the replacement. The frontend receives only the proxy URL.
+
+Create a server secret file only when required:
+
+```bash
+sudoedit "$FUYAO_SECRETS_FILE"
+sudo chown "$FUYAO_SERVICE_USER:$FUYAO_SERVICE_GROUP" "$FUYAO_SECRETS_FILE"
+sudo chmod 0600 "$FUYAO_SECRETS_FILE"
+```
+
+Use `KEY=value` lines. Do not commit the file or copy it into a release.
+
+## 5. Migrate Content
+
+### 5.1 Select Content Types
+
+`FUYAO_MIGRATION_TYPES` supports:
+
+| Value          | Content                                                       |
+| :------------- | :------------------------------------------------------------ |
+| `posts`        | Blog Markdown, category `_index.md` files, and article assets |
+| `footprints`   | Footprint data                                                |
+| `friends`      | Friend-link data                                              |
+| `payments`     | Payment data                                                  |
+| `social-links` | Social-link data                                              |
+| `albums`       | Album originals, thumbnails, and existing JSON metadata       |
+
+Select only the required types. For articles and footprints:
+
+```bash
+export FUYAO_MIGRATION_TYPES=posts,footprints
+```
+
+Without this variable, the script attempts every supported type. Missing individual types are skipped, but the command fails if it finds no files for any selected type.
+
+### 5.2 Run the Read-Only Plan
+
+From the 27.0 source directory, run:
+
+```bash
+npm run content:migrate:plan
+```
+
+The plan reads `$FUYAO_LEGACY_ROOT`, calculates file count, total bytes, and SHA-256, and does not write to `$FUYAO_CONTENT_ROOT`.
+
+Verify that:
+
+- `FUYAO_LEGACY_ROOT` points to the 3.0.0 project root, not its `static/` child.
+- The blog plan contains only author-maintained Markdown, category files, and article assets.
+- It excludes `all.json`, `categories.json`, `search.json`, `map.json`, `rss.xml`, and `sitemap.xml`.
+- YAML targets such as footprints remain under `data/`, while article targets remain under `posts/`.
+- The source contains no symbolic links; the migration script rejects them.
+
+### 5.3 Apply the Copy
+
+Choose a manifest path that does not already exist:
+
+```bash
+export FUYAO_MIGRATION_MANIFEST="$FUYAO_SHARED_ROOT/backups/migration-3.0.0-to-27.0.json"
+npm run content:migrate:apply
+```
+
+The migration script:
+
+- Never deletes or modifies 3.0.0 source files.
+- Copies only when the target file does not exist.
+- Accepts an existing target when its SHA-256 is identical.
+- Stops on an existing target with different content and leaves that target unchanged.
+- Recalculates SHA-256 after each copy.
+- Writes a `0600` manifest and refuses to overwrite an existing manifest.
+
+The migration is not transactional across all files. Back up the target content before applying. If a conflict stops the process, inspect the error and manifest rather than deleting the entire target tree.
+
+## 6. Validate 27.0
+
+### 6.1 Validate Production Inputs and Build
+
+From the 27.0 source directory, run:
+
+```bash
+export FUYAO_DEPLOY_LOCK="$PWD/.fuyao/migration-build.lock"
 npm run inputs:prepare:production
-npm run check
-npm test
 npm run build:production
 ```
 
-验收结果应满足：
+The workspace-local lock avoids requiring write access to `/srv/fuyao/deploy.lock` during manual validation. Both commands read `$FUYAO_CONFIG_ROOT`, `$FUYAO_CONTENT_ROOT`, and `$FUYAO_FAVICON_ROOT`. Missing directories, sample values, invalid YAML fields, out-of-root content paths, and final artifacts containing server paths or secrets cause failure.
 
-- 博客索引、搜索索引、RSS 和 Sitemap 由迁移后的 Markdown 重新生成。
-- 页面站名、个人资料、仓库链接、SEO、壁纸、地图和统计代理均来自新 `site.yaml`。
-- 每篇非草稿文章具有可解析的 Front Matter；`title`、`date`、`slug`、`categories` 和 `tags` 保持原值。
-- `_index.md` 继续提供分类标题，不作为普通文章发布。
-- 足迹页面能够读取全部城市和地点，名称、访问日期、描述与坐标未变化。
-- 最终构建产物不包含 `/srv/fuyao/` 路径、迁移清单或服务端密钥。
-
-完成构建后先部署为独立 release 并执行健康检查，再原子切换 `/srv/fuyao/current`。不得使用覆盖式 `git pull` 或 `rsync --delete` 操作持久化内容。
-
-## 8. 回滚
-
-迁移脚本本身不删除源文件。验证失败时不要切换 `current`，修正外部内容后重新构建。已经切换 27.0 且需要回退代码时，执行：
+To validate the source independently, also run:
 
 ```bash
-node scripts/deploy.js --rollback=<3.0.0-release-id>
+npm run check
+npm test
 ```
 
-代码回滚不会修改 `/srv/fuyao/shared/content/`。如需恢复内容，使用迁移前备份恢复 `shared/content`，并保留失败清单用于差异核对。
+`check` and `test` use public repository fixtures. Use `inputs:prepare:production` and `build:production` to determine whether production data can build successfully.
+
+### 6.2 Manual Acceptance
+
+Verify at least the following:
+
+- Site name, profile, repository link, SEO, wallpaper, map, and analytics proxies match the expected old-site behavior.
+- Every non-draft article has valid `title`, `date`, `slug`, `categories`, and `tags` fields with unchanged values.
+- `_index.md` still provides category metadata and does not appear as a regular article.
+- Blog indexes, search indexes, RSS, and Sitemap have been regenerated from Markdown.
+- Footprint cities, places, dates, descriptions, and coordinates remain unchanged.
+- Favicons are accessible, and the final build contains no `/srv/fuyao/` path, migration manifest, or server-side secret.
+
+After validation, install or update systemd, Caddy, and the release workflow according to [Configuration and Deployment](./CONFIGURATION.md). When the deployment root is not `/srv/fuyao`, update the paths in `deploy/systemd/` as well.
+
+## 7. Rollback
+
+The migration script never deletes the 3.0.0 source. If validation fails:
+
+1. Do not switch `current` to 27.0.
+2. Correct the external configuration or content, then create a new production build.
+3. Restore `$FUYAO_CONTENT_ROOT` from the pre-migration backup when content must be reverted.
+
+If 27.0 is already active and the old version exists under the configured `FUYAO_RELEASE_ROOT`, run this command with the complete production deployment environment:
+
+```bash
+node scripts/deploy.js --rollback=<release-id>
+```
+
+The command switches only the code release referenced by `current`; it does not restore configuration or content under `shared/`. If 3.0.0 was never stored in the 27.0 release layout, this command cannot return to 3.0.0. Restore the old web-server configuration and site directory instead.
+
+## 8. Completion Criteria
+
+The migration is complete only when:
+
+- The 3.0.0 source and pre-migration backup remain available.
+- `site.yaml`, `content.yaml`, content directories, and favicons all live outside the repository.
+- Server-side credentials have been rotated and remain server-side only.
+- Production-input validation and the production build both pass.
+- Pages, articles, footprints, and static assets pass manual sample verification.
+- systemd, Caddy, and backup tasks all point to the persistent directories actually in use.
