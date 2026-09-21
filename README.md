@@ -249,3 +249,9 @@ See [PROJECT_STRUCTURE.md](./PROJECT_STRUCTURE.md) for the complete tree and mod
 ## License
 
 Fuyao Homepage is licensed under the [GNU Affero General Public License v3.0](./LICENSE). Operators who make modified versions available over a network must comply with the corresponding-source obligations of AGPL-3.0.
+
+## AI-Assisted Development
+
+Generative AI was used to assist with coding during the development of this project.
+
+[![Vibe PR](https://raw.githubusercontent.com/fenxer/llm-things/main/stickers/vibe-pr.svg)](https://github.com/fenxer/llm-things/blob/main/stickers/vibe-pr.svg)

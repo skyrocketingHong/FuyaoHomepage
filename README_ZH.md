@@ -249,3 +249,9 @@ tests/                     自动化测试和构建验收
 ## 许可证
 
 本项目使用 [GNU Affero General Public License v3.0](./LICENSE)。通过网络向用户提供修改后的版本时，应遵守 AGPL-3.0 对应源代码提供义务。
+
+## AI 辅助开发
+
+本项目在开发过程中使用生成式 AI 协助编码。
+
+[![Vibe PR](https://raw.githubusercontent.com/fenxer/llm-things/main/stickers/vibe-pr.svg)](https://github.com/fenxer/llm-things/blob/main/stickers/vibe-pr.svg)
