@@ -157,3 +157,38 @@ test('马赛克尺寸失败保留有效画面，并清理观察器、帧和计�
 	assert.match(mosaic, /clearTimeout\(resizeFallbackTimer\)/);
 	assert.doesNotMatch(mosaic, /fetch\(/);
 });
+
+test('玻璃合成器滚动仅探测几何变化，强制失效不会被合并覆盖', () => {
+	const compositor = read('src/lib/utils/effect/glassCompositor.svelte.ts');
+	const scrollStart = compositor.indexOf('private handleScroll');
+	const scheduleStart = compositor.indexOf('private scheduleRender');
+	const renderStart = compositor.indexOf('private render(force');
+
+	assert.match(compositor.slice(scrollStart, scheduleStart), /this\.scheduleRender\(false\)/);
+	assert.match(compositor, /this\.renderForced = this\.renderForced \|\| force/);
+	assert.match(compositor, /region\.lastVisible !== visible/);
+	assert.match(
+		compositor.slice(renderStart),
+		/!force && !this\.sourceDirty && !this\.hasRegionGeometryChanged\(geometry\)/
+	);
+	assert.match(compositor.slice(renderStart), /region\.lastRect = rect/);
+	assert.match(compositor.slice(renderStart), /region\.lastVisible = visible/);
+});
+
+test('玻璃合成器裁剪区域绘制并复用同尺寸源纹理', () => {
+	const compositor = read('src/lib/utils/effect/glassCompositor.svelte.ts');
+	const renderStart = compositor.indexOf('private render(force');
+	const renderBody = compositor.slice(renderStart);
+	const scissorStart = renderBody.indexOf('gl.enable(gl.SCISSOR_TEST)');
+	const scissor = renderBody.indexOf('gl.scissor(', scissorStart);
+	const regionDraw = renderBody.indexOf('gl.drawArrays(gl.TRIANGLES, 0, 3)', scissor);
+	const scissorEnd = renderBody.indexOf('gl.disable(gl.SCISSOR_TEST)', regionDraw);
+
+	assert(scissorStart >= 0);
+	assert(scissor > scissorStart);
+	assert(regionDraw > scissor);
+	assert(scissorEnd > regionDraw);
+	assert.match(compositor, /source\.width !== this\.sourceWidth/);
+	assert.match(compositor, /source\.height !== this\.sourceHeight/);
+	assert.match(compositor, /gl\.texSubImage2D\(/);
+});

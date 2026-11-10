@@ -2,12 +2,12 @@
  * 共享玻璃合成器 (WebGL2)
  *
  * 全页面唯一的 GPU 合成器，负责为玻璃组件绘制模糊背景：
- * 1. 将马赛克背景 Canvas 上传为纹理 (texImage2D，无 readPixels 往返)；
+ * 1. 将马赛克背景 Canvas 上传为纹理 (同尺寸复用分配，无 readPixels 往返)；
  * 2. 降采样到 1/4 分辨率并执行两级高斯模糊 (第二级两倍步长，等效更大半径)，缓存模糊纹理；
  * 3. 先绘制清晰背景，再按注册的玻璃矩形叠加圆角模糊区域 (仅背景模糊，不叠加白色材质)；
  * 4. DOM 玻璃组件仅保留染色、边缘高光、边框与内容。
  *
- * 渲染按需触发 (背景帧、矩形变化、滚动、尺寸变化)，静止时无 GPU 渲染循环；
+ * 渲染按需触发 (背景帧、矩形变化、区域实际移动的滚动、尺寸变化)，静止时无 GPU 渲染循环；
  * 页面不可见时停止合成器更新。
  * WebGL2 不可用或 prefers-reduced-transparency 时保持 inactive，
  * LiquidGlass 自动回退到 CSS backdrop-filter。
@@ -80,10 +80,25 @@ void main() {
 	outColor = vec4(col, alpha);
 }`;
 
+interface RegionRect {
+	left: number;
+	top: number;
+	width: number;
+	height: number;
+}
+
 interface GlassRegion {
 	el: HTMLElement;
 	/** CSS 像素圆角 */
 	radius: number;
+	lastRect: RegionRect | null;
+	lastVisible: boolean;
+}
+
+interface RegionGeometry {
+	region: GlassRegion;
+	rect: RegionRect | null;
+	visible: boolean;
 }
 
 interface ShaderProgram {
@@ -158,6 +173,8 @@ class GlassCompositor {
 	private gl: WebGL2RenderingContext | null = null;
 	private source: HTMLCanvasElement | null = null;
 	private sourceDirty = true;
+	private sourceWidth = 0;
+	private sourceHeight = 0;
 
 	private blit: ShaderProgram | null = null;
 	private blur: ShaderProgram | null = null;
@@ -180,6 +197,7 @@ class GlassCompositor {
 	private nextRegionId = 1;
 	private observer: ResizeObserver | null = null;
 	private renderScheduled = false;
+	private renderForced = false;
 	private contextLost = false;
 
 	/**
@@ -281,11 +299,14 @@ class GlassCompositor {
 		this.regionIds = new WeakMap();
 		this.hasFrame = false;
 		this.sourceDirty = true;
+		this.sourceWidth = 0;
+		this.sourceHeight = 0;
+		this.renderForced = false;
 	}
 
 	/**
 	 * 设置背景纹理来源 (马赛克 Canvas)。
-	 * 来源 Canvas 无需可见，texImage2D 直接读取其后备存储。
+	 * 来源 Canvas 无需可见，纹理上传直接读取其后备存储。
 	 */
 	setSource(canvas: HTMLCanvasElement | null) {
 		if (this.source === canvas) return;
@@ -313,7 +334,7 @@ class GlassCompositor {
 		if (existing !== undefined && this.regions.has(existing)) return existing;
 
 		const id = this.nextRegionId++;
-		this.regions.set(id, { el, radius: 0 });
+		this.regions.set(id, { el, radius: 0, lastRect: null, lastVisible: false });
 		this.regionIds.set(el, id);
 		this.updateRegionRadius(el);
 		this.observer?.observe(el);
@@ -350,13 +371,15 @@ class GlassCompositor {
 	private handleContextRestored = () => {
 		this.contextLost = false;
 		this.sourceDirty = true;
+		this.sourceWidth = 0;
+		this.sourceHeight = 0;
 		this.active = true;
 		this.scheduleRender();
 	};
 
 	private handleScroll = () => {
-		// 滚动只改变玻璃矩形位置，不重新计算背景模糊
-		this.scheduleRender();
+		// 滚动只探测玻璃矩形变化，不重新计算背景模糊
+		this.scheduleRender(false);
 	};
 
 	private handleVisibility = () => {
@@ -376,14 +399,17 @@ class GlassCompositor {
 		}
 	}
 
-	/** 合并连续的渲染请求，每帧最多渲染一次。 */
-	private scheduleRender() {
-		if (!this.gl || !this.active || this.renderScheduled || this.contextLost) return;
-		if (document.hidden) return;
+	/** 合并连续的渲染请求，每帧最多处理一次；强制失效不会被滚动探测覆盖。 */
+	private scheduleRender(force = true) {
+		if (!this.gl || !this.active || this.contextLost) return;
+		this.renderForced = this.renderForced || force;
+		if (this.renderScheduled || document.hidden) return;
 		this.renderScheduled = true;
 		requestAnimationFrame(() => {
 			this.renderScheduled = false;
-			this.render();
+			const forced = this.renderForced;
+			this.renderForced = false;
+			this.render(forced);
 		});
 	}
 
@@ -393,7 +419,13 @@ class GlassCompositor {
 		if (!gl || !source || !srcTex || source.width < 1 || source.height < 1) return;
 
 		gl.bindTexture(gl.TEXTURE_2D, srcTex);
-		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, source);
+		if (source.width !== this.sourceWidth || source.height !== this.sourceHeight) {
+			gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, source);
+			this.sourceWidth = source.width;
+			this.sourceHeight = source.height;
+		} else {
+			gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, gl.RGBA, gl.UNSIGNED_BYTE, source);
+		}
 		this.hasFrame = true;
 
 		// 降采样到 1/4 分辨率
@@ -452,12 +484,60 @@ class GlassCompositor {
 		this.sourceDirty = false;
 	}
 
-	private render() {
+	private readRegionGeometry(): RegionGeometry[] {
+		const viewportWidth = window.innerWidth;
+		const viewportHeight = window.innerHeight;
+		const geometry: RegionGeometry[] = [];
+
+		for (const region of this.regions.values()) {
+			if (!region.el.isConnected) {
+				geometry.push({ region, rect: null, visible: false });
+				continue;
+			}
+			const bounds = region.el.getBoundingClientRect();
+			const rect = {
+				left: bounds.left,
+				top: bounds.top,
+				width: bounds.width,
+				height: bounds.height
+			};
+			const visible =
+				rect.width >= 1 &&
+				rect.height >= 1 &&
+				bounds.right >= 0 &&
+				bounds.bottom >= 0 &&
+				rect.left <= viewportWidth &&
+				rect.top <= viewportHeight;
+			geometry.push({ region, rect, visible });
+		}
+		return geometry;
+	}
+
+	private hasRegionGeometryChanged(geometry: RegionGeometry[]): boolean {
+		return geometry.some(({ region, rect, visible }) => {
+			if (region.lastVisible !== visible) return true;
+			if (!visible || !rect) return false;
+			const previous = region.lastRect;
+			return (
+				!previous ||
+				previous.left !== rect.left ||
+				previous.top !== rect.top ||
+				previous.width !== rect.width ||
+				previous.height !== rect.height
+			);
+		});
+	}
+
+	private render(force: boolean) {
 		const { gl, canvas } = this;
 		if (!gl || !canvas || this.contextLost) return;
 		if (!this.active) return;
 		// 页面不可见时停止合成器更新 (scheduleRender 已拦截，此处兜底)
 		if (document.hidden) return;
+
+		const geometry = this.readRegionGeometry();
+		// 固定区域在内容滚动时无需重绘；背景新帧和其他强制失效仍正常处理
+		if (!force && !this.sourceDirty && !this.hasRegionGeometryChanged(geometry)) return;
 
 		if (this.sourceDirty) this.updateBackground();
 		if (!this.hasFrame) return;
@@ -481,29 +561,32 @@ class GlassCompositor {
 			const dpr = canvas.width / Math.max(1, canvas.clientWidth);
 			const uRect = this.region.uniforms['uRect'];
 			const uRadius = this.region.uniforms['uRadius'];
+			gl.enable(gl.SCISSOR_TEST);
 
-			for (const { el, radius } of this.regions.values()) {
-				if (!el.isConnected) continue;
-				const rect = el.getBoundingClientRect();
-				if (rect.width < 1 || rect.height < 1) continue;
-				// 视口外裁剪
-				if (
-					rect.right < 0 ||
-					rect.bottom < 0 ||
-					rect.left > window.innerWidth ||
-					rect.top > window.innerHeight
-				) {
-					continue;
-				}
+			for (const { region, rect, visible } of geometry) {
+				if (!visible || !rect) continue;
 				const x = rect.left * dpr;
 				const w = rect.width * dpr;
 				const h = rect.height * dpr;
 				// GL 坐标系原点在左下角
 				const y = canvas.height - (rect.top + rect.height) * dpr;
+				const clipLeft = Math.max(0, Math.floor(x));
+				const clipBottom = Math.max(0, Math.floor(y));
+				const clipRight = Math.min(canvas.width, Math.ceil(x + w));
+				const clipTop = Math.min(canvas.height, Math.ceil(y + h));
+				if (clipRight <= clipLeft || clipTop <= clipBottom) continue;
+
+				gl.scissor(clipLeft, clipBottom, clipRight - clipLeft, clipTop - clipBottom);
 				gl.uniform4f(uRect, x, y, w, h);
-				gl.uniform1f(uRadius, radius * dpr);
+				gl.uniform1f(uRadius, region.radius * dpr);
 				gl.drawArrays(gl.TRIANGLES, 0, 3);
 			}
+			gl.disable(gl.SCISSOR_TEST);
+		}
+
+		for (const { region, rect, visible } of geometry) {
+			region.lastRect = rect;
+			region.lastVisible = visible;
 		}
 
 		// 首帧合成结果校验：成功则标记 ready (允许隐藏源 Canvas)，
