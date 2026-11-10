@@ -41,6 +41,7 @@ export interface PublicSiteConfig {
 		wallpaper: {
 			defaultUrl: string;
 			apiUrl?: string;
+			metadataApiUrl?: string;
 		};
 		amap: {
 			browserKey?: string;
@@ -242,7 +243,7 @@ export function parsePublicSiteConfig(
 		issues
 	);
 	const wallpaper = recordAt(services.wallpaper, 'services.wallpaper', issues);
-	exactKeys(wallpaper, ['defaultUrl', 'apiUrl'], 'services.wallpaper', issues);
+	exactKeys(wallpaper, ['defaultUrl', 'apiUrl', 'metadataApiUrl'], 'services.wallpaper', issues);
 	const amap = recordAt(services.amap, 'services.amap', issues);
 	exactKeys(amap, ['browserKey', 'securityCode', 'serviceHost'], 'services.amap', issues);
 
@@ -289,7 +290,13 @@ export function parsePublicSiteConfig(
 				apiUrl: optionalString(wallpaper.apiUrl, 'services.wallpaper.apiUrl', issues, {
 					url: true,
 					production
-				})
+				}),
+				metadataApiUrl: optionalString(
+					wallpaper.metadataApiUrl,
+					'services.wallpaper.metadataApiUrl',
+					issues,
+					{ url: true, production }
+				)
 			},
 			amap: {
 				browserKey: optionalString(amap.browserKey, 'services.amap.browserKey', issues, {

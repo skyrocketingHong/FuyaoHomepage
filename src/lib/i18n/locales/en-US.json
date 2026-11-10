@@ -55,6 +55,31 @@
 			}
 		}
 	},
+	"background": {
+		"title": "Background Information",
+		"view_details": "View background information",
+		"current_station": "Current Station",
+		"all_mtr_backgrounds": "All MTR Backgrounds",
+		"station_count": "{{count}} stations",
+		"lines": "Lines",
+		"previous_station": "Previous Station",
+		"next_station": "Next Station",
+		"no_adjacent": "No adjacent-station information",
+		"select_station": "Switch to the {{station}} background",
+		"selected": "Current background",
+		"expand_line": "Expand the {{line}} station list",
+		"collapse_line": "Collapse the {{line}} station list",
+		"original_wallpaper": "Original Wallpaper",
+		"open_original": "Open Original Wallpaper",
+		"image_unavailable": "Wallpaper temporarily unavailable",
+		"image_unavailable_hint": "Try again later or open the original wallpaper link.",
+		"additional_info": "Wallpaper Information",
+		"no_metadata": "The current wallpaper endpoint does not provide additional information",
+		"metadata_load_error": "Wallpaper information is temporarily unavailable; the original image is unaffected",
+		"date": "Date",
+		"copyright": "Copyright and Source",
+		"more_info": "Learn More"
+	},
 	"home": {
 		"hero": {
 			"profile": {

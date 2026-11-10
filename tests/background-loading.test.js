@@ -106,8 +106,9 @@ test('Bing 来源仅在 API 图片成功后按所有权注入并提供完整国�
 	assert.match(info, /viewBox="0 0 24 24"/);
 	assert.match(info, /fill="currentColor"/);
 	assert.doesNotMatch(info, /lucide-svelte|ImageIcon/);
-	assert.match(info, /title=\{label\}/);
-	assert.match(info, /aria-label=\{label\}/);
+	assert.match(info, /title=\{detailLabel\}/);
+	assert.match(info, /aria-label=\{detailLabel\}/);
+	assert.match(info, /backgroundInfoState\.open\('bing'\)/);
 	assert.match(info, /text-\[10px\]/);
 	assert.match(info, /text-\[12px\]/);
 	assert.match(info, /truncate/);

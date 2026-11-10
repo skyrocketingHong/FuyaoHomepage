@@ -268,26 +268,28 @@
 	function pickRandomPreset() {
 		const dayPresets = MTR_PRESETS_DAY;
 		const nightPresets = MTR_PRESETS_NIGHT;
-		const allPresets = [...dayPresets, ...nightPresets];
+		const themedPresets = themeState.isDark ? nightPresets : dayPresets;
+		const allPresets = [...themedPresets, ...(themeState.isDark ? dayPresets : nightPresets)];
+		const requestedStation = fixedStation || mosaicState.selectedStationName;
 
 		let selectedPreset: MtrStation;
 
-		// 如果指定了固定车站，优先使用
-		if (fixedStation) {
-			const found = allPresets.find((p) => p.name === fixedStation);
+		// 显式 prop 优先，其次使用全屏背景视图中的用户选择。
+		if (requestedStation) {
+			const found = allPresets.find((p) => p.name === requestedStation);
 			if (found) {
 				selectedPreset = found;
 			} else {
-				console.warn(`[MosaicBackground] fixedStation "${fixedStation}" not found, using random`);
-				const presets = themeState.isDark ? nightPresets : dayPresets;
-				selectedPreset = presets[Math.floor(Math.random() * presets.length)];
+				console.warn(
+					`[MosaicBackground] fixedStation "${requestedStation}" not found, using random`
+				);
+				selectedPreset = themedPresets[Math.floor(Math.random() * themedPresets.length)];
 			}
 		} else {
-			const presets = themeState.isDark ? nightPresets : dayPresets;
-			selectedPreset = presets[Math.floor(Math.random() * presets.length)];
+			selectedPreset = themedPresets[Math.floor(Math.random() * themedPresets.length)];
 		}
 
-		mosaicState.setStation(selectedPreset.nameZh, selectedPreset.name);
+		mosaicState.setStation(selectedPreset);
 
 		if (selectedPreset.isRainbow) {
 			isRainbowMode = true;
@@ -817,6 +819,22 @@
 				}
 			}
 		}, 0);
+	});
+
+	// 全屏背景视图选择新站时只重建当前画布，页面与布局保持挂载。
+	$effect(() => {
+		const requestedStation = fixedStation || mosaicState.selectedStationName;
+		if (!canvas || !requestedStation || mosaicState.currentStation?.name === requestedStation)
+			return;
+
+		if (isStaticRender()) {
+			initGrid(true, false);
+			renderStatic();
+		} else {
+			initGrid(true, true);
+			entranceStartTime = performance.now();
+			startLoop();
+		}
 	});
 
 	// 侧边栏信息注入

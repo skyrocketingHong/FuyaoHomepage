@@ -55,6 +55,31 @@
 			}
 		}
 	},
+	"background": {
+		"title": "背景信息",
+		"view_details": "查看背景信息",
+		"current_station": "当前车站",
+		"all_mtr_backgrounds": "全部港铁背景",
+		"station_count": "{{count}} 个车站",
+		"lines": "所属线路",
+		"previous_station": "上一站",
+		"next_station": "下一站",
+		"no_adjacent": "暂无邻站信息",
+		"select_station": "切换到{{station}}背景",
+		"selected": "当前背景",
+		"expand_line": "展开{{line}}车站列表",
+		"collapse_line": "收起{{line}}车站列表",
+		"original_wallpaper": "原始壁纸",
+		"open_original": "打开原始壁纸",
+		"image_unavailable": "壁纸暂时无法加载",
+		"image_unavailable_hint": "请稍后重试或打开原始壁纸链接。",
+		"additional_info": "壁纸信息",
+		"no_metadata": "当前壁纸接口未提供额外信息",
+		"metadata_load_error": "壁纸信息暂时无法加载，原图不受影响",
+		"date": "日期",
+		"copyright": "版权与来源",
+		"more_info": "了解更多"
+	},
 	"home": {
 		"hero": {
 			"profile": {

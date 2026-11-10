@@ -83,15 +83,16 @@ The public repository contains only source code, `config/*.example.yaml` migrate
 │   │   │   ├── schema.ts     # Site/content schemas, types, and allowlist validation
 │   │   │   ├── public.ts     # Single browser-visible configuration entry point
 │   │   │   ├── server.ts     # YAML, realpath, and build-side configuration loader
-│   │   │   └── mosaic.ts     # Mosaic background configuration
+│   │   │   └── mosaic.ts     # MTR color presets, line sections, and adjacency queries
 │   │   ├── plugins/          # Vite plugins
 │   │   │   └── vite-plugin-blog-watcher.ts # Development blog-file watcher
 │   │   ├── hooks/            # Svelte composable hooks
 │   │   │   └── useBlogState.svelte.ts # Blog state-management hook
 │   │   ├── stores/           # Global state management
 │   │   │   ├── app.svelte.ts     # App state with reentrant background transactions and strict Header slots
+│   │   │   ├── backgroundInfo.svelte.ts # Full-screen background-information visibility and source
 │   │   │   ├── lightbox.svelte.ts# Lightbox state using Svelte 5 Runes
-│   │   │   ├── mosaic.svelte.ts  # Mosaic background state
+│   │   │   ├── mosaic.svelte.ts  # Current and user-selected MTR station state
 │   │   │   └── search.svelte.ts  # Search state
 │   │   ├── styles/           # Global styles
 │   │   │   ├── app.css       # Global style entry point
@@ -179,6 +180,7 @@ The public repository contains only source code, `config/*.example.yaml` migrate
 │   │   │   │       └── SearchButton.svelte   # Search button
 │   │   │   ├── layout/       # Layout components
 │   │   │   │   ├── background/   # Background components
+│   │   │   │   │   ├── BackgroundInfoOverlay.svelte # Sequenced full-screen MTR browser and Bing original view
 │   │   │   │   │   └── BackgroundLayer.svelte # Responsive Bing wallpaper with two-stage fallback
 │   │   │   │   ├── bottom-info/  # Footer information components
 │   │   │   │   │   ├── BottomInfo.svelte       # Unified desktop/mobile information container
@@ -220,10 +222,10 @@ The public repository contains only source code, `config/*.example.yaml` migrate
 │   │   │   │   └── SeoHead.svelte            # HTML metadata management
 │   │   │   └── ui/           # Shared UI atoms
 │   │   │       ├── background/   # Background effects and attribution
-│   │   │       │   ├── BingWallpaperInfo.svelte # Single-line Bing daily-wallpaper attribution
+│   │   │       │   ├── BingWallpaperInfo.svelte # Bing attribution and full-screen original-view entry
 │   │   │       │   ├── FlowingBackground.svelte # Flowing gradient
-│   │   │       │   ├── MosaicBackground.svelte  # Debounced mosaic drawing and failure fallback
-│   │   │       │   ├── MosaicInfo.svelte        # Mosaic station attribution
+│   │   │       │   ├── MosaicBackground.svelte  # Mosaic drawing, fixed-station selection, and failure fallback
+│   │   │       │   ├── MosaicInfo.svelte        # Crossfading station attribution and background-browser entry
 │   │   │       │   └── SolidBackground.svelte   # Solid and base background
 │   │   │       ├── display/      # Display components
 │   │   │       │   ├── Avatar.svelte         # Avatar
@@ -264,7 +266,8 @@ The public repository contains only source code, `config/*.example.yaml` migrate
 │   │       │   ├── loader.ts         # Data loaders
 │   │       │   ├── map.ts            # Map links and GCJ-02/WGS-84 conversion
 │   │       │   ├── markdown.ts       # Markdown AST parsing, sanitization, and enhancement
-│   │       │   └── nav.ts            # Navigation utilities
+│   │       │   ├── nav.ts            # Navigation utilities
+│   │       │   └── wallpaper.ts      # Bing metadata validation, normalization, and locale URLs
 │   │       ├── effect/       # Visual-effect utilities
 │   │       │   ├── appearanceTransition.svelte.ts # View Transition detection and Crossfade fallback
 │   │       │   ├── glassCompositor.svelte.ts # Shared on-demand two-level WebGL2 Gaussian blur
@@ -310,6 +313,7 @@ The public repository contains only source code, `config/*.example.yaml` migrate
 │   └── robots.txt            # Search-engine directives
 ├── tests/                    # Node.js project-integrity tests
 │   ├── amap-loader.test.js # SDK loading, deduplication, failure recovery, and proxy configuration
+│   ├── background-info.test.js # MTR topology, station selection, sequenced overlay, and Bing metadata
 │   ├── background-loading.test.js # Footer alignment, background transactions, and rebuilds
 │   ├── config-boundary.test.js # Configuration, placeholders, duplicates, and path escapes
 │   ├── content-deploy.test.js # Content release replacement, hard-link reuse, and atomic switching

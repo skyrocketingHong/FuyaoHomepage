@@ -10,12 +10,14 @@
 	import type { BackgroundMode } from '$lib/config/index';
 	import { page, navigating } from '$app/state';
 	import { backgroundState, layoutState } from '$lib/stores/app.svelte';
+	import { backgroundInfoState } from '$lib/stores/backgroundInfo.svelte';
 	import { t } from '$lib/i18n/store';
 	import { onMount } from 'svelte';
 	import { fade } from 'svelte/transition';
 
 	// 引入新的模块化组件
 	import BackgroundLayer from '$lib/components/layout/background/BackgroundLayer.svelte';
+	import BackgroundInfoOverlay from '$lib/components/layout/background/BackgroundInfoOverlay.svelte';
 	import GlobalLoader from '$lib/components/layout/loader/GlobalLoader.svelte';
 	import {
 		hasSpaFallbackLoader,
@@ -153,12 +155,15 @@
 <BackgroundLayer spotlightUrl={data.appConfig?.wallpaper?.default ?? ''} mode={backgroundMode} />
 
 <div
-	class="pointer-events-none min-h-screen font-sans transition-colors duration-300 {backgroundState.component ||
+	class="background-ui-shell pointer-events-none min-h-screen font-sans transition-[color,opacity] duration-200 {backgroundState.component ||
 	backgroundMode === 'image'
 		? backgroundState.uiTheme === 'light'
 			? 'text-black'
 			: 'text-white'
-		: 'text-foreground'}"
+		: 'text-foreground'} {backgroundInfoState.isOpen ? 'opacity-0' : 'opacity-100'}"
+	style:transition-delay={backgroundInfoState.isOpen ? '0ms' : '180ms'}
+	inert={backgroundInfoState.isOpen}
+	aria-hidden={backgroundInfoState.isOpen ? 'true' : undefined}
 >
 	<!-- 移动端：固定底部 Dock (Tab Bar + 底部信息区)，灯箱打开时整体卸载 -->
 	{#if !lightboxState.isOpen}
@@ -206,7 +211,7 @@
 </div>
 
 <!-- 全局加载指示：仅无底色 spinner，不覆盖内容、不绘制半透明背景层 -->
-{#if navigating.to}
+{#if navigating.to && !backgroundInfoState.isOpen}
 	<div
 		class="z-mask pointer-events-none fixed inset-0 flex size-full items-center justify-center"
 		transition:fade={{ duration: 300 }}
@@ -216,7 +221,9 @@
 {/if}
 
 <!-- 全局移动端抽屉 -->
-<MobileDrawer />
+{#if !backgroundInfoState.isOpen}
+	<MobileDrawer />
+{/if}
 
 <!-- 灯箱：在布局层级渲染，避免被侧边栏 stacking context 遮挡 -->
 <Crossfade key={lightboxState.isOpen ? 'open' : 'closed'} inDuration={0} outDuration={250}>
@@ -229,3 +236,15 @@
 		/>
 	{/if}
 </Crossfade>
+
+{#if backgroundInfoState.isOpen}
+	<BackgroundInfoOverlay />
+{/if}
+
+<style>
+	@media (prefers-reduced-motion: reduce) {
+		.background-ui-shell {
+			transition: none !important;
+		}
+	}
+</style>

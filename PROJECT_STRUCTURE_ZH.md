@@ -83,15 +83,16 @@
 │   │   │   ├── schema.ts     # site/content Schema、类型与白名单校验
 │   │   │   ├── public.ts     # 浏览器可见配置单一入口
 │   │   │   ├── server.ts     # YAML、realpath 与构建端配置读取
-│   │   │   └── mosaic.ts     # 马赛克背景配置
+│   │   │   └── mosaic.ts     # 港铁颜色预设、线路区段与邻站查询
 │   │   ├── plugins/          # Vite 插件
 │   │   │   └── vite-plugin-blog-watcher.ts # 博客文件监听插件
 │   │   ├── hooks/            # Svelte Composable Hooks
 │   │   │   └── useBlogState.svelte.ts # 博客状态管理 Hook
 │   │   ├── stores/           # 全局状态管理
 │   │   │   ├── app.svelte.ts     # 应用级状态（含可重入背景加载事务与 Header 严格所有权插槽）
+│   │   │   ├── backgroundInfo.svelte.ts # 全屏背景信息可见性与来源状态
 │   │   │   ├── lightbox.svelte.ts# 灯箱全局状态 (Svelte 5 runes)
-│   │   │   ├── mosaic.svelte.ts  # 马赛克背景状态
+│   │   │   ├── mosaic.svelte.ts  # 当前港铁站与用户选定车站状态
 │   │   │   └── search.svelte.ts  # 搜索状态
 │   │   ├── styles/           # 全局样式
 │   │   │   ├── app.css       # 全局样式入口
@@ -179,6 +180,7 @@
 │   │   │   │       └── SearchButton.svelte   # 搜索按钮
 │   │   │   ├── layout/       # 布局组件
 │   │   │   │   ├── background/   # 背景组件
+│   │   │   │   │   ├── BackgroundInfoOverlay.svelte # 顺序渐隐的全屏港铁背景浏览器与 Bing 原图信息
 │   │   │   │   │   └── BackgroundLayer.svelte # 通用背景层包裹（Bing 响应式壁纸与两级故障回退）
 │   │   │   │   ├── bottom-info/  # 底部信息组件
 │   │   │   │   │   ├── BottomInfo.svelte       # 底部信息容器 (统一前景色、桌面侧栏/移动端紧凑两列四条静态单行)
@@ -220,10 +222,10 @@
 │   │   │   │   └── SeoHead.svelte            # HTML Meta 管理
 │   │   │   └── ui/           # 基础 UI 原子组件
 │   │   │       ├── background/   # 背景特效与来源信息
-│   │   │       │   ├── BingWallpaperInfo.svelte # Bing 每日壁纸来源单行展示与静态省略
+│   │   │       │   ├── BingWallpaperInfo.svelte # Bing 来源与全屏原图信息入口
 │   │   │       │   ├── FlowingBackground.svelte # 流动渐变
-│   │   │       │   ├── MosaicBackground.svelte  # 马赛克动态背景（防抖尺寸事务、绘制提交与故障回退）
-│   │   │       │   ├── MosaicInfo.svelte        # 马赛克车站单行来源信息
+│   │   │       │   ├── MosaicBackground.svelte  # 马赛克绘制、固定车站切换与故障回退
+│   │   │       │   ├── MosaicInfo.svelte        # 交叉淡化的车站来源与全部背景浏览入口
 │   │   │       │   └── SolidBackground.svelte   # 纯色/基础背景
 │   │   │       ├── display/      # 内容展示
 │   │   │       │   ├── Avatar.svelte         # 头像
@@ -264,7 +266,8 @@
 │   │       │   ├── loader.ts         # 数据加载器
 │   │       │   ├── map.ts            # 地图链接工具 (GCJ-02/WGS-84 坐标转换)
 │   │       │   ├── markdown.ts       # Markdown AST 解析、HTML 净化与内容结构增强
-│   │       │   └── nav.ts            # 导航工具
+│   │       │   ├── nav.ts            # 导航工具
+│   │       │   └── wallpaper.ts      # Bing 元数据校验、规范化与语言市场 URL
 │   │       ├── effect/       # 视觉效果工具
 │   │       │   ├── appearanceTransition.svelte.ts # 外观过渡统一入口 (View Transition 能力检测 + Crossfade 回退, reduced-motion 直切)
 │   │       │   ├── glassCompositor.svelte.ts # 共享 WebGL2 玻璃合成器 (单例, 两级高斯模糊, 按需渲染)
@@ -310,6 +313,7 @@
 │   └── robots.txt            # 搜索引擎协议
 ├── tests/                    # Node.js 项目完整性测试
 │   ├── amap-loader.test.js # SDK 加载去重、失败恢复及代理配置
+│   ├── background-info.test.js # 港铁拓扑、车站切换、顺序全屏过渡与 Bing 元数据测试
 │   ├── background-loading.test.js # 底部信息对齐、背景加载事务与尺寸重建回归测试
 │   ├── config-boundary.test.js # 配置、占位值、重复字段与 realpath 越界测试
 │   ├── content-deploy.test.js # 内容 release 替换、硬链接复用与原子切换测试

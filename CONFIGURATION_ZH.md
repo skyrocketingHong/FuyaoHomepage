@@ -59,6 +59,7 @@
 - `repository`：公开仓库名称、URL 和所有者
 - `seo`：作者、描述、关键词和可选 Twitter ID
 - `services.wallpaper.apiUrl`：日常壁纸图片端点。默认使用 `https://api.imyan.ren/bing/wallpaper`，接口直接返回 `image/jpeg` 二进制，不返回图片 URL 文本，前端不得对响应执行文本解析。桌面端、平板及横屏使用默认 `1920×1080` 图片；宽度小于 `768px` 的移动竖屏通过 `URL.searchParams` 增加 `type=mini`，使用 `768×1366` 图片。
+- `services.wallpaper.metadataApiUrl`：可选 JSON 元数据端点，返回内容必须对应当前每日壁纸。背景信息视图保留既有查询参数，按界面语言设置 `mkt`，校验安全的 HTTP(S) 图片与版权链接，仅展示实际返回的标题、日期、版权和来源链接。默认图片接口不提供元数据，无法确认响应与当前壁纸一致时应保持未配置；元数据加载失败不阻塞原始壁纸。
 - `services.wallpaper.defaultUrl`：本地或外部默认壁纸，仅在 Bing 图片端点加载失败时作为备用图片，不作为日常主图片来源；备用图片也失败时回退全局主题纯色背景。
 - `services.amap`：浏览器 Key、安全码和代理地址；必须配置域名白名单与最小权限
 - `services.*ProxyUrl`：不含秘密的统计与编程活动代理地址

@@ -1,19 +1,27 @@
+import type { MtrStation } from '$lib/config/mosaic';
+
 /**
  * 马赛克背景状态管理
  *
- * 管理当前展示的港铁车站信息，供 MosaicBackground 和 MosaicInfo 组件消费。
+ * 管理当前车站和用户指定的车站，供背景、来源入口和全屏详情视图消费。
  */
 export class MosaicState {
 	/** 当前展示的车站信息 (null 表示无选中) */
-	currentStation = $state<{ name: string; nameEn: string; nameZh: string } | null>(null);
+	currentStation = $state<MtrStation | null>(null);
+	/** 用户从全部背景中选中的固定车站；空字符串表示随机预设。 */
+	selectedStationName = $state('');
 
 	/**
 	 * 设置当前车站
-	 * @param nameZh - 车站中文名称
-	 * @param nameEn - 车站英文名称
+	 * @param station - 完整车站预设
 	 */
-	setStation(nameZh: string, nameEn: string) {
-		this.currentStation = { name: nameZh, nameEn, nameZh };
+	setStation(station: MtrStation) {
+		this.currentStation = station;
+	}
+
+	/** 指定需要切换到的车站背景。 */
+	selectStation(name: string) {
+		this.selectedStationName = name;
 	}
 
 	/**
@@ -21,6 +29,7 @@ export class MosaicState {
 	 */
 	clear() {
 		this.currentStation = null;
+		this.selectedStationName = '';
 	}
 }
 

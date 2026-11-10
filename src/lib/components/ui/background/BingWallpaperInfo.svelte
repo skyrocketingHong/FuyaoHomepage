@@ -1,10 +1,10 @@
 <script lang="ts">
 	/**
-	 * Bing 每日壁纸来源信息组件
+	 * Bing 每日壁纸来源入口
 	 *
-	 * 仅展示已确认的 Bing 图片来源名称，不推断或显示标题、地点、作者及版权描述。
+	 * 展示已确认的 Bing 图片来源并打开全屏原图信息，不推断标题、地点、作者及版权描述。
 	 * 图标与文本始终保持单行左对齐，空间不足时静态省略文本，并通过 title 与
-	 * aria-label 保留当前语言下的完整来源名称。
+	 * aria-label 保留当前语言下的完整来源及详情语义。
 	 *
 	 * 使用 Simple Icons 的 Microsoft Bing 品牌路径；当前依赖版本已移除对应导出，
 	 * 因此在组件内保留同源 24×24 单路径 SVG，并与其他 Simple Icons 一样继承 currentColor。
@@ -12,6 +12,7 @@
 	 * @prop size - 尺寸：'md'（桌面端）或 'sm'（移动端紧凑布局）。
 	 */
 	import { t, locale } from '$lib/i18n/store';
+	import { backgroundInfoState } from '$lib/stores/backgroundInfo.svelte';
 	import Crossfade from '$lib/components/ui/effect/Crossfade.svelte';
 
 	let { size = 'md' } = $props<{
@@ -19,14 +20,18 @@
 	}>();
 
 	let label = $derived($t('layout.bottom_info.bing_wallpaper'));
+	let detailLabel = $derived(`${label} · ${$t('background.view_details')}`);
 	let iconClass = $derived(size === 'sm' ? 'size-2.5' : 'size-3.5');
 	let textClass = $derived(size === 'sm' ? 'text-[10px]' : 'text-[12px]');
 </script>
 
-<div
-	class="flex w-full min-w-0 items-center justify-start gap-1.5 overflow-hidden whitespace-nowrap"
-	title={label}
-	aria-label={label}
+<button
+	type="button"
+	onclick={() => backgroundInfoState.open('bing')}
+	class="flex w-full min-w-0 cursor-pointer items-center justify-start gap-1.5 overflow-hidden rounded-sm whitespace-nowrap transition-colors duration-200 hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary/60"
+	title={detailLabel}
+	aria-label={detailLabel}
+	aria-haspopup="dialog"
 >
 	<svg
 		class="{iconClass} shrink-0"
@@ -43,4 +48,4 @@
 	<Crossfade key={$locale} inline class="min-w-0 overflow-hidden">
 		<span class="block min-w-0 truncate {textClass}">{label}</span>
 	</Crossfade>
-</div>
+</button>

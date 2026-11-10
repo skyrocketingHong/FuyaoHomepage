@@ -1,7 +1,7 @@
 /**
  * 马赛克背景配置与数据
  *
- * 包含 MTR 车站列表和颜色预设。
+ * 包含 MTR 车站颜色预设、线路区段与邻站查询。
  */
 
 /**
@@ -211,3 +211,287 @@ export const RAINBOW_COLORS = [
 	'#6B3A74', // 紫色
 	'#4c717c' // 底部青绿色
 ];
+
+export interface MtrLine {
+	id: string;
+	name: string;
+	nameZh: string;
+	color: string;
+	/** 每条区段按实际行驶顺序排列；分支使用独立区段。 */
+	routes: string[][];
+}
+
+export interface MtrStationReference {
+	name: string;
+	nameZh: string;
+}
+
+export interface MtrLineDetails {
+	line: MtrLine;
+	previous: MtrStationReference[];
+	next: MtrStationReference[];
+}
+
+export interface MtrStationDetails {
+	station: MtrStation;
+	lines: MtrLineDetails[];
+}
+
+export const MTR_LINES: MtrLine[] = [
+	{
+		id: 'tsuen-wan',
+		name: 'Tsuen Wan Line',
+		nameZh: '荃灣綫',
+		color: '#E2231A',
+		routes: [
+			[
+				'Central',
+				'Admiralty',
+				'Tsim Sha Tsui',
+				'Jordan',
+				'Yau Ma Tei',
+				'Mong Kok',
+				'Prince Edward',
+				'Sham Shui Po',
+				'Cheung Sha Wan',
+				'Lai Chi Kok',
+				'Mei Foo',
+				'Lai King',
+				'Kwai Fong',
+				'Kwai Hing',
+				'Tai Wo Hau',
+				'Tsuen Wan'
+			]
+		]
+	},
+	{
+		id: 'kwun-tong',
+		name: 'Kwun Tong Line',
+		nameZh: '觀塘綫',
+		color: '#00AF41',
+		routes: [
+			[
+				'Whampoa',
+				'Ho Man Tin',
+				'Yau Ma Tei',
+				'Mong Kok',
+				'Prince Edward',
+				'Shek Kip Mei',
+				'Kowloon Tong',
+				'Lok Fu',
+				'Wong Tai Sin',
+				'Diamond Hill',
+				'Choi Hung',
+				'Kowloon Bay',
+				'Ngau Tau Kok',
+				'Kwun Tong',
+				'Lam Tin',
+				'Yau Tong',
+				'Tiu Keng Leng'
+			]
+		]
+	},
+	{
+		id: 'island',
+		name: 'Island Line',
+		nameZh: '港島綫',
+		color: '#0071CE',
+		routes: [
+			[
+				'Kennedy Town',
+				'HKU',
+				'Sai Ying Pun',
+				'Sheung Wan',
+				'Central',
+				'Admiralty',
+				'Wan Chai',
+				'Causeway Bay',
+				'Tin Hau',
+				'Fortress Hill',
+				'North Point',
+				'Quarry Bay',
+				'Tai Koo',
+				'Sai Wan Ho',
+				'Shau Kei Wan',
+				'Heng Fa Chuen',
+				'Chai Wan'
+			]
+		]
+	},
+	{
+		id: 'tseung-kwan-o',
+		name: 'Tseung Kwan O Line',
+		nameZh: '將軍澳綫',
+		color: '#6B208E',
+		routes: [
+			[
+				'North Point',
+				'Quarry Bay',
+				'Yau Tong',
+				'Tiu Keng Leng',
+				'Tseung Kwan O',
+				'Hang Hau',
+				'Po Lam'
+			],
+			['Tseung Kwan O', 'LOHAS Park']
+		]
+	},
+	{
+		id: 'tung-chung',
+		name: 'Tung Chung Line',
+		nameZh: '東涌綫',
+		color: '#F39800',
+		routes: [
+			[
+				'Hong Kong',
+				'Kowloon',
+				'Olympic',
+				'Nam Cheong',
+				'Lai King',
+				'Tsing Yi',
+				'Sunny Bay',
+				'Tung Chung'
+			]
+		]
+	},
+	{
+		id: 'airport-express',
+		name: 'Airport Express',
+		nameZh: '機場快綫',
+		color: '#007377',
+		routes: [['Hong Kong', 'Kowloon', 'Tsing Yi', 'Airport', 'AsiaWorld-Expo']]
+	},
+	{
+		id: 'disneyland-resort',
+		name: 'Disneyland Resort Line',
+		nameZh: '迪士尼綫',
+		color: '#F550A6',
+		routes: [['Sunny Bay', 'Disneyland Resort']]
+	},
+	{
+		id: 'east-rail',
+		name: 'East Rail Line',
+		nameZh: '東鐵綫',
+		color: '#53B7E8',
+		routes: [
+			[
+				'Admiralty',
+				'Exhibition Centre',
+				'Hung Hom',
+				'Mong Kok East',
+				'Kowloon Tong',
+				'Tai Wai',
+				'Sha Tin',
+				'Fo Tan',
+				'University',
+				'Tai Po Market',
+				'Tai Wo',
+				'Fanling',
+				'Sheung Shui',
+				'Lo Wu'
+			],
+			['Sheung Shui', 'Lok Ma Chau'],
+			['Sha Tin', 'Racecourse', 'University']
+		]
+	},
+	{
+		id: 'tuen-ma',
+		name: 'Tuen Ma Line',
+		nameZh: '屯馬綫',
+		color: '#9A3B26',
+		routes: [
+			[
+				'Wu Kai Sha',
+				'Ma On Shan',
+				'Heng On',
+				'Tai Shui Hang',
+				'Shek Mun',
+				'City One',
+				'Sha Tin Wai',
+				'Che Kung Temple',
+				'Tai Wai',
+				'Hin Keng',
+				'Diamond Hill',
+				'Kai Tak',
+				'Sung Wong Toi',
+				'To Kwa Wan',
+				'Ho Man Tin',
+				'Hung Hom',
+				'East Tsim Sha Tsui',
+				'Austin',
+				'Nam Cheong',
+				'Mei Foo',
+				'Tsuen Wan West',
+				'Kam Sheung Road',
+				'Yuen Long',
+				'Long Ping',
+				'Tin Shui Wai',
+				'Siu Hong',
+				'Tuen Mun'
+			]
+		]
+	},
+	{
+		id: 'south-island',
+		name: 'South Island Line',
+		nameZh: '南港島綫',
+		color: '#B5BD00',
+		routes: [['Admiralty', 'Ocean Park', 'Wong Chuk Hang', 'Lei Tung', 'South Horizons']]
+	},
+	{
+		id: 'express-rail',
+		name: 'Express Rail Link',
+		nameZh: '廣深港高速鐵路',
+		color: '#8E8E93',
+		routes: [['Hong Kong West Kowloon']]
+	}
+];
+
+/** 按英文站名查找车站；指定主题时优先使用该主题的站台颜色。 */
+export function findMtrStation(name: string, isDark?: boolean): MtrStation | undefined {
+	const presets =
+		isDark === undefined
+			? [...MTR_PRESETS_DAY, ...MTR_PRESETS_NIGHT]
+			: isDark
+				? [...MTR_PRESETS_NIGHT, ...MTR_PRESETS_DAY]
+				: [...MTR_PRESETS_DAY, ...MTR_PRESETS_NIGHT];
+	return presets.find((station) => station.name === name);
+}
+
+function toStationReference(name: string): MtrStationReference {
+	const station = findMtrStation(name);
+	if (!station) throw new Error(`Unknown station in MTR route data: ${name}`);
+	return { name: station.name, nameZh: station.nameZh };
+}
+
+/** 获取线路全部区段的去重车站，保留线路行驶顺序。 */
+export function getMtrLineStations(line: MtrLine): MtrStationReference[] {
+	return [...new Set(line.routes.flat())].map(toStationReference);
+}
+
+/** 查询车站所属线路及各线路方向上的相邻车站。 */
+export function getMtrStationDetails(name: string): MtrStationDetails | null {
+	const station = findMtrStation(name);
+	if (!station) return null;
+
+	const lines = MTR_LINES.filter((line) => line.routes.some((route) => route.includes(name))).map(
+		(line) => {
+			const previous = new Set<string>();
+			const next = new Set<string>();
+			for (const route of line.routes) {
+				for (let index = 0; index < route.length; index++) {
+					if (route[index] !== name) continue;
+					if (route[index - 1]) previous.add(route[index - 1]);
+					if (route[index + 1]) next.add(route[index + 1]);
+				}
+			}
+			return {
+				line,
+				previous: [...previous].map(toStationReference),
+				next: [...next].map(toStationReference)
+			};
+		}
+	);
+
+	return { station, lines };
+}

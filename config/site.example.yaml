@@ -32,6 +32,8 @@ services:
   wallpaper:
     defaultUrl: https://picsum.photos/seed/fuyao-homepage/1920/1080
     apiUrl: https://api.imyan.ren/bing/wallpaper
+    # Optional JSON endpoint for metadata belonging to the same daily image.
+    # metadataApiUrl: https://example.com/bing/metadata
   # Optional production endpoint: https://<site-domain>/api/github/repos
   # githubProxyUrl: https://example.com/api/github/repos
   amap:
