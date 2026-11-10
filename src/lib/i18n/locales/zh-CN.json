@@ -14,7 +14,8 @@
 			"offline": "离线"
 		},
 		"comma": "，",
-		"colon": "："
+		"colon": "：",
+		"retry": "重试"
 	},
 	"nav": {
 		"home": "首页",
@@ -70,7 +71,11 @@
 				"title": "开源项目",
 				"loading": "正在从 GitHub 获取数据...",
 				"no_description": "暂无描述。",
-				"language_default": "代码"
+				"language_default": "代码",
+				"load_error": "GitHub 项目暂时无法加载",
+				"empty": "暂无公开项目",
+				"open_profile": "查看 GitHub",
+				"retry": "重试"
 			},
 			"social_links": {
 				"title": "社交链接"
@@ -81,7 +86,9 @@
 				"unique_visitors": "独立访客",
 				"total_requests": "总请求",
 				"powered_by": "Powered by Cloudflare Analytics",
-				"past_days": "近 7 日"
+				"past_days": "近 7 日",
+				"not_configured": "未配置统计端点",
+				"load_error": "访问统计暂时无法加载"
 			},
 			"latest_posts": {
 				"title": "最新文章"

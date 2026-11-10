@@ -47,6 +47,7 @@ export interface PublicSiteConfig {
 			securityCode?: string;
 			serviceHost?: string;
 		};
+		githubProxyUrl?: string;
 		analyticsProxyUrl?: string;
 		codingActivityProxyUrl?: string;
 		codingLanguagesProxyUrl?: string;
@@ -229,7 +230,14 @@ export function parsePublicSiteConfig(
 	const services = recordAt(root.services, 'services', issues);
 	exactKeys(
 		services,
-		['wallpaper', 'amap', 'analyticsProxyUrl', 'codingActivityProxyUrl', 'codingLanguagesProxyUrl'],
+		[
+			'wallpaper',
+			'amap',
+			'githubProxyUrl',
+			'analyticsProxyUrl',
+			'codingActivityProxyUrl',
+			'codingLanguagesProxyUrl'
+		],
 		'services',
 		issues
 	);
@@ -295,6 +303,10 @@ export function parsePublicSiteConfig(
 					production
 				})
 			},
+			githubProxyUrl: optionalString(services.githubProxyUrl, 'services.githubProxyUrl', issues, {
+				url: true,
+				production
+			}),
 			analyticsProxyUrl: optionalString(
 				services.analyticsProxyUrl,
 				'services.analyticsProxyUrl',

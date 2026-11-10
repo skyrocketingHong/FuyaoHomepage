@@ -30,6 +30,7 @@
 │   ├── caddy/FuyaoHomepage.caddy.example
 │   └── systemd/
 │       ├── fuyao-deploy.service
+│       ├── fuyao-public-data.service # 使用私有配置凭据的本机数据缓存
 │       └── fuyao-content-watcher.service # 文章与照片统一监听及自动发布
 ├── fixtures/content/     # 开发与 CI 使用的公开演示内容
 │   ├── posts/            # 从旧 static 迁移的 Markdown 演示文章
@@ -54,6 +55,7 @@
 ├── scripts/              # 工具脚本及版本管理
 │   ├── lib/
 │   │   └── public-permissions.js # 公开构建及 release 权限归一化与校验
+│   ├── serve-public-data.py # 固定公开 JSON 端点与持久化成功响应缓存
 │   ├── generate-blog-index.js # 博客索引生成脚本 (支持 RSS/Sitemap)
 │   ├── generate-album-index.js# 相册 EXIF 索引及响应式缩略图生成脚本
 │   ├── prepare-build-inputs.js # 校验、复制外部 favicon/内容并冻结构建输入快照
@@ -249,6 +251,8 @@
 │   │       ├── domain/       # 业务逻辑
 │   │       │   ├── blog.ts           # 博客数据处理
 │   │       │   ├── blogRoute.ts      # 统一博客 catch-all 分类、标签与文章路径解析
+│   │       │   ├── github.ts         # 公开仓库校验与去重
+│   │       │   ├── statistics.ts     # 日期、语言与统计汇总规范化
 │   │       │   ├── exif.ts           # EXIF 参数格式化 (相册网格/灯箱共用)
 │   │       │   ├── footprintYaml.ts  # 足迹 YAML 生成
 │   │       │   ├── footprints.ts     # 足迹数据处理
@@ -264,6 +268,7 @@
 │   │       │   ├── number.ts         # 数字格式化
 │   │       │   └── slugify.ts        # Slug 规范化
 │   │       ├── network/      # 网络与加载
+│   │       │   ├── jsonResource.ts # 有界请求及最近成功结果的校验缓存
 │   │       │   ├── loading.ts        # 请求加载状态
 │   │       │   └── urlMetadata.ts    # URL 元数据获取
 │   │       ├── state/        # 状态所有权工具
@@ -304,6 +309,11 @@
 │   ├── config-boundary.test.js # 配置、占位值、重复字段与 realpath 越界测试
 │   ├── content-watcher.test.js # 内容监听、GPS 保留与部署约束回归测试
 │   ├── footprint-map.test.js # 原生相机、动画中断及重合地点
+│   ├── github-repositories.test.js # 仓库数据、链接与重复标识校验
+│   ├── json-resource.test.js # 超时、取消、重试及有效缓存回退
+│   ├── statistics.test.js # 重复记录、Other 分组及有效汇总
+│   ├── public-data-cache.test.js # 标准库缓存行为测试的 Node 入口
+│   ├── public_data_cache_test.py # 刷新合并、持久化、过期恢复及固定路由
 │   ├── home-components.test.js # 首页组件布局回归测试
 │   ├── markdown-rendering.test.js # Markdown HTML、链接、公式与表格回归测试
 │   ├── mobile-experience.test.js # Header、底部 Dock、Wallet 与编程统计回归测试

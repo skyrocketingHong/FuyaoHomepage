@@ -32,6 +32,8 @@ services:
   wallpaper:
     defaultUrl: https://picsum.photos/seed/fuyao-homepage/1920/1080
     apiUrl: https://api.imyan.ren/bing/wallpaper
+  # Optional production endpoint: https://<site-domain>/api/github/repos
+  # githubProxyUrl: https://example.com/api/github/repos
   amap:
     browserKey: your_amap_key_here
     securityCode: your_amap_security_code_here

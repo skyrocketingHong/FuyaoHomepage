@@ -2,7 +2,7 @@
 	/**
 	 * GitHub 项目展示组件
 	 *
-	 * 通过 GitHub API 动态获取并展示置顶 (Pinned) 或最近更新的开源项目。
+	 * 通过同源代理或 GitHub 官方 API 获取最近更新的公开项目。
 	 * 支持自动加载状态、骨架屏占位及响应式网格布局。
 	 */
 	import { onMount } from 'svelte';
@@ -12,111 +12,58 @@
 
 	import Crossfade from '$lib/components/ui/effect/Crossfade.svelte';
 	import Skeleton from '$lib/components/ui/feedback/Skeleton.svelte';
-	import { loadJson } from '$lib/utils/network/loading';
+	import { loadJsonResource } from '$lib/utils/network/jsonResource';
+	import { normalizeGithubRepos, type GithubRepo } from '$lib/utils/domain/github';
+	import { locale, t } from '$lib/i18n/store';
 	import { cn } from '$lib/utils/index';
 
 	import Marquee from '$lib/components/ui/display/Marquee.svelte';
 	import { publicConfig } from '$lib/config/public';
 
-	interface GithubRepo {
-		name: string;
-		description: string;
-		stars: number;
-		forks: number;
-		watchers: number;
-		language: string;
-		url: string;
-		updatedAt: string;
-	}
-
-	interface PinnedRepo {
-		repo: string;
-		description?: string;
-		stars?: number | string;
-		forks?: number | string;
-		language?: string;
-		link: string;
-	}
-
-	interface GithubApiRepo {
-		name: string;
-		description?: string;
-		stargazers_count: number;
-		forks_count: number;
-		watchers_count: number;
-		language?: string;
-		html_url: string;
-		updated_at: string;
-	}
-
 	/** GitHub 用户名来自经过白名单筛选的公开站点配置。 */
 	const GITHUB_USERNAME = publicConfig.repository.owner;
 
+	const GITHUB_ENDPOINT =
+		publicConfig.services.githubProxyUrl ??
+		`https://api.github.com/users/${encodeURIComponent(GITHUB_USERNAME)}/repos?sort=updated&direction=desc&per_page=6`;
+	const GITHUB_PROFILE = `https://github.com/${encodeURIComponent(GITHUB_USERNAME)}`;
+
 	let githubData = $state<GithubRepo[]>([]);
 	let loadingGithub = $state(true);
+	let githubError = $state(false);
+	let activeRequest: AbortController | null = null;
+	let requestVersion = 0;
+	let disposed = false;
 
-	/**
-	 * 获取 GitHub 仓库数据
-	 * 优先尝试获取 Pinned (置顶) 项目，如果失败或为空，则回退到获取最近更新的项目。
-	 */
 	async function fetchGithubData() {
+		activeRequest?.abort();
+		const controller = new AbortController();
+		activeRequest = controller;
+		const version = ++requestVersion;
+		loadingGithub = true;
+		githubError = false;
 		try {
-			// 1. 尝试获取 Pinned 项目 (通过第三方 API)
-			// 注意：官方 API 获取 Pinned 需要 GraphQL 和 Token，这里使用第三方开源服务无需 Token
-			const data = await loadJson<PinnedRepo[]>(
-				`https://gh-pinned-repos-tsj7ta5xfhep.deno.dev/?username=${GITHUB_USERNAME}`
-			);
-
-			if (Array.isArray(data) && data.length > 0) {
-				githubData = data.map((repo) => ({
-					name: repo.repo,
-					description: repo.description ?? '',
-					stars: Number(repo.stars) || 0,
-					forks: Number(repo.forks) || 0,
-					watchers: 0, // 置顶 API 不返回关注者数量
-					language: repo.language ?? '',
-					url: repo.link,
-					updatedAt: '' // 置顶 API 不返回更新时间
-				}));
-				return; // 成功获取置顶项目，直接返回
-			}
-
-			// 2. 如果 Pinned 获取失败或为空，回退到原来的逻辑 (最近更新)
-			const fallbackData = await loadJson<GithubApiRepo[]>(
-				`https://api.github.com/users/${GITHUB_USERNAME}/repos?sort=updated&per_page=6`
-			);
-			githubData = fallbackData.map((repo) => ({
-				name: repo.name,
-				description: repo.description ?? '',
-				stars: repo.stargazers_count,
-				forks: repo.forks_count,
-				watchers: repo.watchers_count,
-				language: repo.language ?? '',
-				url: repo.html_url,
-				updatedAt: repo.updated_at
-			}));
-		} catch (e) {
-			console.error('获取 GitHub 数据失败', e);
-			// API 请求失败时使用备用数据
-			githubData = [
-				{
-					name: 'LoadError',
-					description: 'Failed to load GitHub data, maybe rate limited',
-					stars: 114,
-					forks: 514,
-					watchers: 1919810,
-					language: 'LoadError',
-					url: `https://github.com/${GITHUB_USERNAME}/fuyao-homepage`,
-					updatedAt: new Date().toISOString()
-				}
-			];
+			const repositories = await loadJsonResource<GithubRepo[]>(GITHUB_ENDPOINT, {
+				signal: controller.signal,
+				validate: normalizeGithubRepos
+			});
+			if (!disposed && version === requestVersion) githubData = repositories;
+		} catch {
+			if (!disposed && !controller.signal.aborted && version === requestVersion) githubError = true;
 		} finally {
-			loadingGithub = false;
+			if (!disposed && version === requestVersion) {
+				loadingGithub = false;
+				activeRequest = null;
+			}
 		}
 	}
 
 	onMount(() => {
-		fetchGithubData();
+		void fetchGithubData();
+		return () => {
+			disposed = true;
+			activeRequest?.abort();
+		};
 	});
 </script>
 
@@ -134,6 +81,7 @@
 			this={loading ? 'div' : 'a'}
 			href={repo?.url}
 			target={repo?.url ? '_blank' : undefined}
+			rel={repo?.url ? 'noopener noreferrer' : undefined}
 			class={cn('block h-full w-full outline-none')}
 		>
 			<Crossfade key={loading ? 'loading' : 'loaded'} class="h-full w-full">
@@ -163,7 +111,7 @@
 							</h3>
 							<span
 								class="shrink-0 rounded-full border border-border bg-secondary/20 px-2 py-0.5 text-[10px] whitespace-nowrap text-muted-foreground"
-								>{repo.language || 'N/A'}</span
+								>{repo.language || $t('home.hero.github.language_default')}</span
 							>
 						</div>
 
@@ -206,8 +154,37 @@
 	<SectionHeader icon="github" titleKey="home.hero.github.title" />
 
 	<div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-		{#each loadingGithub ? Array(6).fill(null) : githubData as repo, index (repo?.url ?? index)}
-			{@render projectCard(repo, loadingGithub)}
-		{/each}
+		{#if !loadingGithub && (githubError || githubData.length === 0)}
+			<ContentCard class="flex min-h-[116px] flex-col justify-center gap-3 md:col-span-2" opaque>
+				<Crossfade key={`${$locale}-${githubError ? 'error' : 'empty'}`}>
+					<p class="text-sm text-muted-foreground">
+						{$t(githubError ? 'home.hero.github.load_error' : 'home.hero.github.empty')}
+					</p>
+					<div class="mt-3 flex flex-wrap items-center gap-4 text-sm">
+						{#if githubError}
+							<button
+								type="button"
+								class="underline underline-offset-4"
+								onclick={() => void fetchGithubData()}
+							>
+								{$t('home.hero.github.retry')}
+							</button>
+						{/if}
+						<a
+							href={GITHUB_PROFILE}
+							target="_blank"
+							rel="noopener noreferrer"
+							class="underline underline-offset-4"
+						>
+							{$t('home.hero.github.open_profile')}
+						</a>
+					</div>
+				</Crossfade>
+			</ContentCard>
+		{:else}
+			{#each loadingGithub ? Array(6).fill(null) : githubData as repo, index (repo?.id ?? `loading-${index}`)}
+				{@render projectCard(repo, loadingGithub)}
+			{/each}
+		{/if}
 	</div>
 </div>

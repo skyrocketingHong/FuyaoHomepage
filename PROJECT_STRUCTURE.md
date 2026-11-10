@@ -30,6 +30,7 @@ The public repository contains only source code, `config/*.example.yaml` migrate
 │   ├── caddy/FuyaoHomepage.caddy.example
 │   └── systemd/
 │       ├── fuyao-deploy.service
+│       ├── fuyao-public-data.service # Loopback data cache with private configuration credentials
 │       └── fuyao-content-watcher.service # Unified article and photo watcher
 ├── fixtures/content/     # Public demonstration content for development and CI
 │   ├── posts/            # Markdown demonstration articles migrated from static
@@ -54,6 +55,7 @@ The public repository contains only source code, `config/*.example.yaml` migrate
 ├── scripts/              # Tooling and version management
 │   ├── lib/
 │   │   └── public-permissions.js # Normalize and verify public build and release permissions
+│   ├── serve-public-data.py # Fixed public JSON endpoints and persistent successful-response caching
 │   ├── generate-blog-index.js # Generate blog indexes, RSS, and Sitemap
 │   ├── generate-album-index.js# Generate EXIF indexes and responsive thumbnails
 │   ├── prepare-build-inputs.js # Validate, copy, and freeze external favicon/content inputs
@@ -249,6 +251,8 @@ The public repository contains only source code, `config/*.example.yaml` migrate
 │   │       ├── domain/       # Domain logic
 │   │       │   ├── blog.ts           # Blog data processing
 │   │       │   ├── blogRoute.ts      # Catch-all category, tag, and article path parsing
+│   │       │   ├── github.ts         # Public repository validation and deduplication
+│   │       │   ├── statistics.ts     # Date, language, and aggregate-statistic normalization
 │   │       │   ├── exif.ts           # Shared album-grid/lightbox EXIF formatting
 │   │       │   ├── footprintYaml.ts  # Footprint YAML generation
 │   │       │   ├── footprints.ts     # Footprint data processing
@@ -264,6 +268,7 @@ The public repository contains only source code, `config/*.example.yaml` migrate
 │   │       │   ├── number.ts         # Number formatting
 │   │       │   └── slugify.ts        # Slug normalization
 │   │       ├── network/      # Network and loading
+│   │       │   ├── jsonResource.ts # Bounded requests and validated recent-success caching
 │   │       │   ├── loading.ts        # Request-loading state
 │   │       │   └── urlMetadata.ts    # URL metadata retrieval
 │   │       ├── state/        # State-ownership utilities
@@ -304,6 +309,11 @@ The public repository contains only source code, `config/*.example.yaml` migrate
 │   ├── config-boundary.test.js # Configuration, placeholders, duplicates, and path escapes
 │   ├── content-watcher.test.js # Content watching, GPS retention, and deployment constraints
 │   ├── footprint-map.test.js # Native camera motion, interruption, and overlapping places
+│   ├── github-repositories.test.js # Repository validation, safe links, and duplicate identities
+│   ├── json-resource.test.js # Timeouts, cancellation, retries, and validated cached fallbacks
+│   ├── statistics.test.js # Duplicate records, Other grouping, and valid totals
+│   ├── public-data-cache.test.js # Node entry for the stdlib cache behavior suite
+│   ├── public_data_cache_test.py # Refresh coalescing, persistence, stale recovery, and fixed routes
 │   ├── home-components.test.js # Homepage component layout regressions
 │   ├── markdown-rendering.test.js # Markdown HTML, links, math, and tables
 │   ├── mobile-experience.test.js # Header, bottom dock, Wallet, and coding activity

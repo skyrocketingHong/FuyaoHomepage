@@ -321,7 +321,7 @@ test('viewport 状态使用实际可用区域并声明式关闭 MainContent 滚�
 test('编程统计仅以真实每日明细绘制堆叠柱并提供中性回退', () => {
 	const coding = read('src/lib/components/home/content/CodingActivity.svelte');
 
-	assert.match(coding, /languages\?: DailyLanguageEntry\[\]/);
+	assert.match(read('src/lib/utils/domain/statistics.ts'), /languages\?: DailyLanguageEntry\[\]/);
 	assert.match(coding, /getLanguageSeconds\(language\)/);
 	assert.match(coding, /hasDailyLanguageData/);
 	assert.match(coding, /NEUTRAL_BAR_COLOR/);

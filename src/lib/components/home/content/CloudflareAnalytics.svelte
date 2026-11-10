@@ -16,46 +16,38 @@
 	import { formatDate } from '$lib/utils/datetime/date';
 	import { publicConfig } from '$lib/config/public';
 
-	/** 单日数据 */
-	interface DayData {
-		date: string;
-		pageViews: number;
-		requests: number;
-		uniques: number;
-	}
-
-	/** API 返回结构 */
-	interface AnalyticsData {
-		days: DayData[];
-		totals: {
-			pageViews: number;
-			requests: number;
-			uniques: number;
-		};
-	}
+	import { loadJsonResource } from '$lib/utils/network/jsonResource';
+	import { normalizeAnalytics, type AnalyticsData } from '$lib/utils/domain/statistics';
 
 	/** CF Worker 端点 URL；Worker 的 Token 与 Zone ID 仅保存在 Worker Secret。 */
 	const WORKER_URL = publicConfig.services.analyticsProxyUrl;
 
 	let data = $state<AnalyticsData | null>(null);
 	let loading = $state(true);
-	let error = $state('');
+	let errorKey = $state('');
+	let request: AbortController | null = null;
 
 	async function fetchAnalytics() {
+		request?.abort();
+		const current = new AbortController();
+		request = current;
+		loading = true;
 		if (!WORKER_URL) {
-			error = '未配置统计代理端点';
+			errorKey = 'home.hero.analytics.not_configured';
 			loading = false;
 			return;
 		}
+		errorKey = '';
 		try {
-			const res = await fetch(WORKER_URL);
-			if (!res.ok) throw new Error(`HTTP ${res.status}`);
-			data = await res.json();
-		} catch (e) {
-			console.error('获取 Cloudflare 统计失败', e);
-			error = 'Failed to load';
+			const result = await loadJsonResource<AnalyticsData>(WORKER_URL, {
+				signal: current.signal,
+				validate: normalizeAnalytics
+			});
+			if (!current.signal.aborted) data = result;
+		} catch {
+			if (!current.signal.aborted) errorKey = 'home.hero.analytics.load_error';
 		} finally {
-			loading = false;
+			if (!current.signal.aborted) loading = false;
 		}
 	}
 
@@ -117,7 +109,8 @@
 	}
 
 	onMount(() => {
-		fetchAnalytics();
+		void fetchAnalytics();
+		return () => request?.abort();
 	});
 </script>
 
@@ -139,8 +132,17 @@
 				</div>
 				<Skeleton class="h-[60px] w-full" />
 			</div>
-		{:else if error}
-			<p class="text-sm text-muted-foreground">{error}</p>
+		{:else if errorKey}
+			<div class="flex h-full items-center justify-between gap-3">
+				<p class="text-sm text-muted-foreground">
+					<Crossfade inline key={`${$locale}-${errorKey}`}>{$t(errorKey)}</Crossfade>
+				</p>
+				{#if WORKER_URL}
+					<button type="button" class="shrink-0 text-sm underline" onclick={fetchAnalytics}>
+						<Crossfade inline key={$locale}>{$t('common.retry')}</Crossfade>
+					</button>
+				{/if}
+			</div>
 		{:else if data}
 			<!-- 上下布局：上部统计数据，下部折线图 -->
 			<div class="flex h-full flex-col justify-between overflow-hidden">

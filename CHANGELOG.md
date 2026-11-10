@@ -8,10 +8,15 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Changed
 
+- Serve GitHub projects and analytics through same-origin cached endpoints, with bounded client requests and validated recent-success fallbacks.
+
 - Adopted AMap native markers, cluster styling, information-window chrome, and zoom controls; retained extracted attribution in the site layout.
 - Used interruptible SDK camera easing with reduced-motion support and retained selection of overlapping places.
 
 ### Fixed
+
+- Removed the defunct pinned-repository endpoint and fabricated fallback counts; fixed duplicate date/language keys and made activity independent of optional language summaries.
+- Fixed Web Manifest routing and MIME type, stopped Cloudflare beacon auto-injection with `no-transform`, and removed synthetic offline HTTP 408 responses from the Service Worker.
 
 - Fixed AMap proxy routing and documented domain allowlists; deduplicated SDK loading with timeout recovery and visible load failures.
 

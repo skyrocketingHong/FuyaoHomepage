@@ -14,7 +14,8 @@
 			"offline": "Offline"
 		},
 		"comma": ", ",
-		"colon": ": "
+		"colon": ": ",
+		"retry": "Retry"
 	},
 	"nav": {
 		"home": "Home",
@@ -70,7 +71,11 @@
 				"title": "Open Source",
 				"loading": "Getting data from GitHub...",
 				"no_description": "No description provided.",
-				"language_default": "Code"
+				"language_default": "Code",
+				"load_error": "GitHub projects are temporarily unavailable",
+				"empty": "No public projects",
+				"open_profile": "View GitHub profile",
+				"retry": "Retry"
 			},
 			"social_links": {
 				"title": "Social Links"
@@ -81,7 +86,9 @@
 				"unique_visitors": "Unique Visitors",
 				"total_requests": "Total Requests",
 				"powered_by": "Powered by Cloudflare Analytics",
-				"past_days": "Last 7 Days"
+				"past_days": "Last 7 Days",
+				"not_configured": "Analytics endpoint is not configured",
+				"load_error": "Analytics are temporarily unavailable"
 			},
 			"latest_posts": {
 				"title": "Latest Posts"

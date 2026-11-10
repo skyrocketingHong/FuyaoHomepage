@@ -91,6 +91,43 @@
 - `color` 仅接受合法十六进制颜色；缺失时前端使用内置语言颜色，仍无法识别时归入中性“其他”。
 - WakaTime API Key 只保存在代理服务的 Secret 中，两个浏览器端 URL 均不得包含密钥或签名参数。
 
+### 同源公开数据缓存
+
+将 `services.githubProxyUrl` 设为 `https://<站点域名>/api/github/repos`，通过 GitHub 官方 REST API 提供最多六个最近更新的公开仓库。开发环境未配置代理时直接使用官方 API，不再访问失效的第三方置顶仓库服务。其他公开地址统一使用本站的 `/api/stats/cloudflare`、`/api/stats/wakatime/activity` 和 `/api/stats/wakatime/languages`。
+
+独立 Python 标准库服务 `scripts/serve-public-data.py` 只监听 `127.0.0.1:3191`。创建权限为 `0600` 的 `/srv/fuyao/shared/config/public-data.json`，按以下结构填写真实上游地址：
+
+```json
+{
+	"routes": {
+		"/api/github/repos": "https://api.github.com/users/<owner>/repos?sort=updated&per_page=6",
+		"/api/stats/cloudflare": "https://<analytics-worker>/",
+		"/api/stats/wakatime/activity": "https://wakatime.com/<private-activity-path>",
+		"/api/stats/wakatime/languages": "https://wakatime.com/<private-languages-path>"
+	},
+	"ttlSeconds": 300,
+	"staleMaxSeconds": 86400,
+	"cooldownSeconds": 30
+}
+```
+
+私有上游地址通过 systemd `LoadCredential` 提供，`/srv/fuyao/cache/public-data` 只保存公开响应。服务校验响应，设置六秒上游网络超时及 2 MiB 响应上限，合并并发刷新，持久化成功结果，并在缓存过期时立即返回有效旧数据、同时后台刷新。失败时保留最近一次有效结果，最长 24 小时。`X-Data-Cache` 和 `X-Data-Updated-At` 分别标识缓存状态和获取时间。未知路径及客户端指定的上游地址均被拒绝。
+
+```bash
+sudo install -d -m 0755 /srv/fuyao/services/public-data
+sudo install -m 0644 scripts/serve-public-data.py /srv/fuyao/services/public-data/
+sudo install -d -o caddy -g caddy -m 0700 /srv/fuyao/cache/public-data
+sudo install -m 0644 deploy/systemd/fuyao-public-data.service /etc/systemd/system/
+sudo systemctl daemon-reload
+sudo systemctl enable --now fuyao-public-data.service
+sudo caddy validate --config /etc/caddy/Caddyfile
+sudo systemctl reload caddy
+```
+
+启用浏览器端地址前，先合并 Caddy 模板中的 API 路由。正常接口返回 JSON 及 `X-Data-Cache` 头；首次加载且上游失败时返回 503，不生成虚构数据。安装失败时检查 `systemctl status fuyao-public-data`，停用服务前先恢复原 Caddy 配置。浏览器侧另设八秒请求时限、一次临时故障重试、五分钟成功响应缓存和 24 小时回退上限。无效数据不覆盖成功缓存，可选语言汇总不阻塞每日活动。
+
+Caddy 将 `.webmanifest` 作为 `application/manifest+json` 返回，避免回退到 SPA HTML。默认 `Cache-Control: no-cache, no-transform` 按 [Cloudflare 官方说明](https://developers.cloudflare.com/web-analytics/faq/) 阻止自动注入 beacon，已有显式缓存策略继续保留。Service Worker 对页面导航和动态 API 直接放行，不再将网络故障改写为 HTTP 408。浏览器懒加载提示和扩展日志不属于应用故障。
+
 ## 4. 内容目录映射
 
 以 [config/content.example.yaml](./config/content.example.yaml) 为模板。所有 `paths` 均相对于 `FUYAO_CONTENT_ROOT`，不能填写绝对路径。构建端使用 `realpath` 验证每个目录仍位于内容根目录内，符号链接越界会阻止发布。

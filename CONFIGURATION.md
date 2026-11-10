@@ -91,6 +91,43 @@ Coding statistics use two optional public endpoints: `codingActivityProxyUrl` re
 - `color` accepts valid hexadecimal colors only. When it is missing, the frontend uses its built-in language color and then falls back to a neutral “Other” category.
 - Keep the WakaTime API key only in the proxy service's secret store. Neither browser URL may contain keys or signed parameters.
 
+### Same-origin public data cache
+
+Set `services.githubProxyUrl` to `https://<site-domain>/api/github/repos`; it serves up to six recently updated public repositories from the official GitHub REST API. Without a proxy, development uses the official API directly. The obsolete third-party pinned-repository service is not used. Keep the other public URLs at `/api/stats/cloudflare`, `/api/stats/wakatime/activity`, and `/api/stats/wakatime/languages` on the same site.
+
+The standalone Python standard-library service at `scripts/serve-public-data.py` listens only on `127.0.0.1:3191`. Create `/srv/fuyao/shared/config/public-data.json` with mode `0600`, using the real upstream URLs in this structure:
+
+```json
+{
+	"routes": {
+		"/api/github/repos": "https://api.github.com/users/<owner>/repos?sort=updated&per_page=6",
+		"/api/stats/cloudflare": "https://<analytics-worker>/",
+		"/api/stats/wakatime/activity": "https://wakatime.com/<private-activity-path>",
+		"/api/stats/wakatime/languages": "https://wakatime.com/<private-languages-path>"
+	},
+	"ttlSeconds": 300,
+	"staleMaxSeconds": 86400,
+	"cooldownSeconds": 30
+}
+```
+
+Private upstream URLs are supplied through systemd `LoadCredential`; only public payloads enter `/srv/fuyao/cache/public-data`. The service validates responses, uses a six-second upstream network timeout and a 2 MiB response limit, coalesces refreshes, persists successful responses, and serves valid stale data immediately while refreshing in the background. Failures preserve the last valid result for at most 24 hours. `X-Data-Cache` and `X-Data-Updated-At` identify cache state and acquisition time. Unknown paths and client-supplied upstream URLs are rejected.
+
+```bash
+sudo install -d -m 0755 /srv/fuyao/services/public-data
+sudo install -m 0644 scripts/serve-public-data.py /srv/fuyao/services/public-data/
+sudo install -d -o caddy -g caddy -m 0700 /srv/fuyao/cache/public-data
+sudo install -m 0644 deploy/systemd/fuyao-public-data.service /etc/systemd/system/
+sudo systemctl daemon-reload
+sudo systemctl enable --now fuyao-public-data.service
+sudo caddy validate --config /etc/caddy/Caddyfile
+sudo systemctl reload caddy
+```
+
+Merge the Caddy template's API handlers before enabling the browser URLs. A healthy API returns JSON and an `X-Data-Cache` header; a cold upstream failure returns 503 rather than fabricated data. On an installation failure, inspect `systemctl status fuyao-public-data` and restore the previous Caddy configuration before disabling the service. The browser additionally uses an eight-second request deadline, one retry for transient failures, five-minute successful-response caching, and a 24-hour fallback limit. Invalid data never replaces a successful cache; optional language summaries do not block daily activity.
+
+Caddy serves `.webmanifest` as `application/manifest+json` instead of SPA HTML. Its default `Cache-Control: no-cache, no-transform` prevents Cloudflare's automatic beacon injection, as described in the [Cloudflare FAQ](https://developers.cloudflare.com/web-analytics/faq/); existing explicit cache policies are preserved. Service Worker navigation and dynamic API requests pass directly to the browser, and network failures are not rewritten as HTTP 408. Browser lazy-loading notices and extension logs are not application failures.
+
 ## 4. Content-Path Mapping
 
 Use [config/content.example.yaml](./config/content.example.yaml) as the template. Every value under `paths` is relative to `FUYAO_CONTENT_ROOT`; absolute paths are not allowed. The build resolves each path with `realpath` and rejects symbolic links or paths that escape the content root.

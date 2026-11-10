@@ -1,0 +1,34 @@
+[Unit]
+Description=Fuyao public JSON data cache
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=caddy
+Group=caddy
+WorkingDirectory=/srv/fuyao/services/public-data
+LoadCredential=public-data.json:/srv/fuyao/shared/config/public-data.json
+Environment=FUYAO_PUBLIC_DATA_CONFIG=%d/public-data.json
+Environment=FUYAO_PUBLIC_DATA_CACHE=/srv/fuyao/cache/public-data
+Environment=FUYAO_PUBLIC_DATA_PORT=3191
+ExecStart=/usr/bin/env python3 /srv/fuyao/services/public-data/serve-public-data.py
+Restart=on-failure
+RestartSec=5
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectSystem=strict
+ProtectHome=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+ReadWritePaths=/srv/fuyao/cache/public-data
+InaccessiblePaths=/srv/fuyao/shared/secrets
+MemoryMax=128M
+TasksMax=64
+
+[Install]
+WantedBy=multi-user.target

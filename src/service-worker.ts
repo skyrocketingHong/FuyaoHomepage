@@ -66,6 +66,13 @@ self.addEventListener('fetch', (event) => {
 
 	// 跳过外部请求
 	if (url.origin !== location.origin) return;
+	// 页面导航与动态 API 由浏览器直接处理，避免网络故障被改写为合成 HTTP 408。
+	if (
+		event.request.mode === 'navigate' ||
+		url.pathname.startsWith('/api/') ||
+		url.pathname.startsWith('/_AMapService/')
+	)
+		return;
 
 	// 数据文件始终从网络获取，不走 SW
 	if (
@@ -97,12 +104,12 @@ self.addEventListener('fetch', (event) => {
 			}
 
 			return response;
-		} catch {
+		} catch (error) {
 			// 离线时回退到缓存
 			const cached = await cache.match(event.request);
 			if (cached) return cached;
 
-			return new Response('离线', { status: 408 });
+			throw error;
 		}
 	}
 

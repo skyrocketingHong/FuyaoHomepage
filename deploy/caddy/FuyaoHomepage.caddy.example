@@ -1,5 +1,18 @@
 example.com {
 	root * /srv/fuyao/current
+	header ?Cache-Control "no-cache, no-transform"
+	@web_manifest path *.webmanifest
+	header @web_manifest Content-Type "application/manifest+json"
+	handle @web_manifest {
+		file_server
+	}
+
+	handle /api/github/repos {
+		reverse_proxy 127.0.0.1:3191
+	}
+	handle /api/stats/* {
+		reverse_proxy 127.0.0.1:3191
+	}
 
 	# Set services.amap.serviceHost to https://example.com/_AMapService.
 	# Load FUYAO_AMAP_SECURITY_CODE into Caddy's service environment.

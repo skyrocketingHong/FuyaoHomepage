@@ -10,40 +10,21 @@
 	import SectionHeader from '$lib/components/home/content/common/SectionHeader.svelte';
 	import ContentCard from '$lib/components/home/content/common/ContentCard.svelte';
 	import Skeleton from '$lib/components/ui/feedback/Skeleton.svelte';
+	import Crossfade from '$lib/components/ui/effect/Crossfade.svelte';
 	import { locale, t } from '$lib/i18n/store';
 	import { dayjs, formatDuration, formatDate } from '$lib/utils/datetime/date';
 	import type { LocaleKey } from '$lib/i18n';
 	import { publicConfig } from '$lib/config/public';
 
-	interface DailyLanguageEntry {
-		name: string;
-		total_seconds?: number;
-		seconds?: number;
-		percent?: number;
-		color?: string | null;
-		text?: string;
-	}
-
-	interface DayEntry {
-		range: { date: string; text: string };
-		grand_total: {
-			hours: number;
-			minutes: number;
-			total_seconds: number;
-			text: string;
-		};
-		languages?: DailyLanguageEntry[];
-	}
-
-	interface LangEntry {
-		name: string;
-		percent: number;
-		color: string | null;
-	}
-
-	interface WakaResponse<T> {
-		data?: T[];
-	}
+	import { loadJsonResource } from '$lib/utils/network/jsonResource';
+	import {
+		normalizeCodingDays,
+		normalizeAggregateLanguages,
+		languageDisplayOrder,
+		type DailyLanguageEntry,
+		type CodingDayEntry as DayEntry,
+		type AggregateLanguageEntry as LangEntry
+	} from '$lib/utils/domain/statistics';
 
 	interface ChartLanguage {
 		name: string;
@@ -104,7 +85,7 @@
 	let primaryLanguageNames = $derived.by(() => {
 		if (!hasDailyLanguageData) {
 			return languages
-				.filter((language) => Number.isFinite(language.percent) && language.percent > 0)
+				.filter((language) => language.name !== OTHER_LANGUAGE && language.percent > 0)
 				.sort((a, b) => b.percent - a.percent)
 				.slice(0, 3)
 				.map((language) => language.name);
@@ -114,7 +95,7 @@
 		for (const day of days) {
 			for (const language of day.languages ?? []) {
 				const seconds = getLanguageSeconds(language);
-				if (seconds <= 0) continue;
+				if (seconds <= 0 || language.name === OTHER_LANGUAGE) continue;
 				totals[language.name] = (totals[language.name] ?? 0) + seconds;
 			}
 		}
@@ -155,7 +136,7 @@
 				};
 			}
 
-			const segmentOrder = [...primaryLanguageNames, OTHER_LANGUAGE];
+			const segmentOrder = languageDisplayOrder(primaryLanguageNames);
 			const segments = segmentOrder.flatMap((name) => {
 				const language = grouped[name];
 				if (!language || language.seconds <= 0) return [];
@@ -176,21 +157,24 @@
 	let legendLanguages = $derived.by<ChartLanguage[]>(() => {
 		if (!hasDailyLanguageData) {
 			const topLanguages = languages
-				.filter((language) => Number.isFinite(language.percent) && language.percent > 0)
+				.filter((language) => language.name !== OTHER_LANGUAGE && language.percent > 0)
 				.sort((a, b) => b.percent - a.percent)
 				.slice(0, 3);
-			const topPercent = topLanguages.reduce((sum, language) => sum + language.percent, 0);
+			const topNames = new Set(topLanguages.map((language) => language.name));
+			const otherPercent = languages
+				.filter((language) => !topNames.has(language.name))
+				.reduce((sum, language) => sum + language.percent, 0);
 			const result: ChartLanguage[] = topLanguages.map((language) => ({
 				name: language.name,
 				seconds: 0,
 				percent: language.percent,
 				color: resolveLanguageColor(language.name, language.color)
 			}));
-			if (languages.length > topLanguages.length && topPercent < 100) {
+			if (otherPercent > 0) {
 				result.push({
 					name: OTHER_LANGUAGE,
 					seconds: 0,
-					percent: Math.max(0, 100 - topPercent),
+					percent: otherPercent,
 					color: OTHER_COLOR
 				});
 			}
@@ -204,7 +188,7 @@
 			}
 		}
 		const allSeconds = Object.values(totals).reduce((sum, seconds) => sum + seconds, 0);
-		return [...primaryLanguageNames, OTHER_LANGUAGE].flatMap((name) => {
+		return languageDisplayOrder(primaryLanguageNames).flatMap((name) => {
 			const seconds = totals[name] ?? 0;
 			if (seconds <= 0 || allSeconds <= 0) return [];
 			const firstSegment = chartDays
@@ -282,37 +266,46 @@
 		return summary.join($t('common.comma'));
 	}
 
-	async function fetchJson<T>(url: string): Promise<T> {
-		const response = await fetch(url);
-		if (!response.ok) throw new Error(`WakaTime request failed: ${response.status}`);
-		return response.json() as Promise<T>;
-	}
+	let request: AbortController | null = null;
 
 	async function fetchWakaTime() {
+		request?.abort();
+		const current = new AbortController();
+		request = current;
+		loading = true;
+		errorKey = '';
 		if (!WAKATIME_URL) {
 			errorKey = 'home.hero.coding_activity.not_configured';
 			loading = false;
 			return;
 		}
 
+		const isCurrent = () => request === current && !current.signal.aborted;
+		if (LANGUAGES_URL) {
+			void loadJsonResource<LangEntry[]>(LANGUAGES_URL, {
+				signal: current.signal,
+				validate: normalizeAggregateLanguages
+			})
+				.then((value) => {
+					if (isCurrent()) languages = value;
+				})
+				.catch(() => {
+					// 语言汇总失败不影响当天总时长或已有每日语言明细。
+				});
+		}
 		try {
-			const [activityResponse, languageResponse] = await Promise.all([
-				fetchJson<WakaResponse<DayEntry>>(WAKATIME_URL),
-				LANGUAGES_URL
-					? fetchJson<WakaResponse<LangEntry>>(LANGUAGES_URL)
-					: Promise.resolve<WakaResponse<LangEntry> | null>(null)
-			]);
-			days = activityResponse.data ?? [];
-			languages = (languageResponse?.data ?? []).map((language) => ({
-				name: language.name,
-				percent: Number(language.percent) || 0,
-				color: isValidColor(language.color) ? language.color : null
-			}));
-		} catch (fetchError) {
-			console.error('获取 WakaTime 数据失败', fetchError);
-			errorKey = 'home.hero.coding_activity.load_error';
+			const activity = await loadJsonResource<DayEntry[]>(WAKATIME_URL, {
+				signal: current.signal,
+				validate: normalizeCodingDays
+			});
+			if (isCurrent()) {
+				days = activity;
+				activeDayIndex = null;
+			}
+		} catch {
+			if (isCurrent()) errorKey = 'home.hero.coding_activity.load_error';
 		} finally {
-			loading = false;
+			if (isCurrent()) loading = false;
 		}
 	}
 
@@ -320,7 +313,10 @@
 		return Math.max(...chartDays.map((day) => day.totalSeconds), 1);
 	}
 
-	onMount(fetchWakaTime);
+	onMount(() => {
+		void fetchWakaTime();
+		return () => request?.abort();
+	});
 </script>
 
 <div class="flex h-full flex-col pt-4">
@@ -342,7 +338,16 @@
 				</div>
 			</div>
 		{:else if errorKey}
-			<p class="text-sm text-muted-foreground">{$t(errorKey)}</p>
+			<div class="flex h-full items-center justify-between gap-3">
+				<p class="text-sm text-muted-foreground">
+					<Crossfade inline key={`${$locale}-${errorKey}`}>{$t(errorKey)}</Crossfade>
+				</p>
+				{#if WAKATIME_URL}
+					<button type="button" class="shrink-0 text-sm underline" onclick={fetchWakaTime}>
+						<Crossfade inline key={$locale}>{$t('common.retry')}</Crossfade>
+					</button>
+				{/if}
+			</div>
 		{:else}
 			<div class="relative flex h-full flex-col justify-between">
 				<div class="flex min-h-7 items-start justify-between gap-2 overflow-hidden">
