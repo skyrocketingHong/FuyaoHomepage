@@ -150,30 +150,30 @@ The public repository contains only source code, `config/*.example.yaml` migrate
 │   │   │   │       └── common/               # Shared homepage cards and headings
 │   │   │   │           ├── ContentCard.svelte
 │   │   │   │           └── SectionHeader.svelte
-│   │   │   ├── blog/         # Blog page components
+│   │   │   ├── blog/         # Newsroom-styled blog components
 │   │   │   │   ├── card/         # Article cards
-│   │   │   │   │   ├── FeaturedPostCard.svelte # Featured article card
-│   │   │   │   │   ├── GridPostCard.svelte  # Grid article card
-│   │   │   │   │   ├── ListPostCard.svelte  # List article card
-│   │   │   │   │   └── PostCard.svelte      # Unified article-card entry point
+│   │   │   │   │   ├── FeaturedPostCard.svelte # Full-width featured Newsroom card
+│   │   │   │   │   ├── GridPostCard.svelte  # Secondary and standard Newsroom grid cards
+│   │   │   │   │   ├── ListPostCard.svelte  # Compact Newsroom article row
+│   │   │   │   │   └── PostCard.svelte      # Four-variant article-card entry point
 │   │   │   │   ├── common/       # Shared small components
 │   │   │   │   │   ├── CategoryBadge.svelte # Category badge
-│   │   │   │   │   └── TagBadge.svelte      # Unified pill tag
+│   │   │   │   │   └── TagBadge.svelte      # Neutral Newsroom tag control
 │   │   │   │   ├── home/         # Blog home view
-│   │   │   │   │   ├── EmptyState.svelte    # Empty article state
-│   │   │   │   │   └── Home.svelte          # Blog home entry point
+│   │   │   │   │   ├── EmptyState.svelte    # Newsroom empty article state
+│   │   │   │   │   └── Home.svelte          # Newsroom 1+2+3 article grid
 │   │   │   │   ├── search/       # Search view
-│   │   │   │   │   └── Search.svelte        # Blog search page
+│   │   │   │   │   └── Search.svelte        # Newsroom search field and separated results
 │   │   │   │   ├── sidebar/      # Blog sidebar
 │   │   │   │   │   ├── Sidebar.svelte       # Archives and categories
 │   │   │   │   │   └── TagCloud.svelte      # Tag cloud
 │   │   │   │   ├── viewer/       # Article reader
 │   │   │   │   │   ├── BackButton.svelte    # Return-to-list button
-│   │   │   │   │   ├── Header.svelte        # Article title and metadata
-│   │   │   │   │   ├── LinkPreview.svelte   # Link preview
+│   │   │   │   │   ├── Header.svelte        # Newsroom title, metadata, sharing, and cover
+│   │   │   │   │   ├── LinkPreview.svelte   # Flat Newsroom link preview
 │   │   │   │   │   ├── MarkdownRenderer.svelte # Markdown renderer
-│   │   │   │   │   ├── TableOfContents.svelte # Article table of contents
-│   │   │   │   │   └── Viewer.svelte        # Reader entry point
+│   │   │   │   │   ├── TableOfContents.svelte # Depth-indented article table of contents
+│   │   │   │   │   └── Viewer.svelte        # Newsroom reader entry point
 │   │   │   │   └── header/       # Header integration
 │   │   │   │       ├── Actions.svelte        # Search and RSS action group
 │   │   │   │       ├── RssButton.svelte      # RSS button
@@ -181,7 +181,7 @@ The public repository contains only source code, `config/*.example.yaml` migrate
 │   │   │   ├── layout/       # Layout components
 │   │   │   │   ├── background/   # Background components
 │   │   │   │   │   ├── BackgroundInfoOverlay.svelte # Sequenced full-screen MTR browser and Bing original view
-│   │   │   │   │   └── BackgroundLayer.svelte # Responsive Bing wallpaper with two-stage fallback
+│   │   │   │   │   └── BackgroundLayer.svelte # Route-aware wallpaper, Newsroom, and reader backgrounds
 │   │   │   │   ├── bottom-info/  # Footer information components
 │   │   │   │   │   ├── BottomInfo.svelte       # Unified desktop/mobile information container
 │   │   │   │   │   ├── BackgroundInfo.svelte   # Single-line background location with full semantics
@@ -315,6 +315,7 @@ The public repository contains only source code, `config/*.example.yaml` migrate
 │   ├── amap-loader.test.js # SDK loading, deduplication, failure recovery, and proxy configuration
 │   ├── background-info.test.js # MTR topology, station selection, sequenced overlay, and Bing metadata
 │   ├── background-loading.test.js # Footer alignment, background transactions, and rebuilds
+│   ├── blog-newsroom.test.js # Newsroom grid, flat cards, reader typography, and background regressions
 │   ├── config-boundary.test.js # Configuration, placeholders, duplicates, and path escapes
 │   ├── content-deploy.test.js # Content release replacement, hard-link reuse, and atomic switching
 │   ├── content-watcher.test.js # Content watching, GPS retention, and deployment constraints
@@ -330,7 +331,7 @@ The public repository contains only source code, `config/*.example.yaml` migrate
 │   ├── navigation-state.test.js # Header ownership, blog routes, and background policy
 │   ├── public-permissions.test.js # Private-source and public-output permissions
 │   ├── project-integrity.test.js
-│   └── verify-build.js       # Production content, reader background, and Header checks
+│   └── verify-build.js       # Production content, Newsroom/reader backgrounds, and Header checks
 ```
 
 ## Component Usage and Conventions

@@ -1,16 +1,14 @@
 <script lang="ts">
 	/**
-	 * 博客搜索主界面 (Content View)
+	 * Newsroom 博客搜索页。
 	 *
-	 * 替代 SearchModal，嵌入在页面主体内容区域。
-	 * 负责处理搜索逻辑并注入 Header 返回按钮。
+	 * 使用平面搜索框与分隔式结果列表，保留完整加载、错误和空状态。
 	 */
 	import { onMount, onDestroy } from 'svelte';
-	import { Search as SearchIcon, SearchX, Loader2, FileText, Calendar } from 'lucide-svelte';
+	import { Search as SearchIcon, SearchX, Loader2, FileText } from 'lucide-svelte';
 	import { t, locale } from '$lib/i18n/store';
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
-	import LiquidGlass from '$lib/components/ui/effect/LiquidGlass.svelte';
 	import Crossfade from '$lib/components/ui/effect/Crossfade.svelte';
 	import StatusState from '$lib/components/ui/feedback/StatusState.svelte';
 	import { getPostUrl } from '$lib/utils/domain/blog';
@@ -21,7 +19,6 @@
 
 	let { onClose } = $props<{ onClose: () => void }>();
 
-	// 实例化搜索逻辑
 	const search = new BlogSearch();
 	let inputEl: HTMLInputElement;
 	let backBtnId = '';
@@ -29,7 +26,6 @@
 	onMount(() => {
 		void search.init();
 
-		// 注入返回按钮到 Header Left
 		backBtnId = headerState.setLeft(
 			BackButton,
 			{
@@ -38,7 +34,6 @@
 			'blog-search-back'
 		);
 
-		// 自动聚焦输入框 (等待 loading 结束或直接聚焦)
 		$effect(() => {
 			if (!search.loading && inputEl) {
 				inputEl.focus();
@@ -52,7 +47,6 @@
 		}
 	});
 
-	// 监听 query 变化触发搜索
 	$effect(() => {
 		if (search.query || search.fuse) {
 			search.handleSearch();
@@ -69,139 +63,131 @@
 </script>
 
 {#snippet retryAction()}
-	<LiquidGlass
-		tag="button"
-		variant="control"
-		gpuBlur={false}
-		contentLayout="center"
-		class="inline-flex !w-auto rounded-full px-4 py-2 text-sm font-medium text-foreground"
+	<button
+		type="button"
+		class="inline-flex min-h-11 cursor-pointer items-center justify-center px-3 text-[17px] font-medium text-(--newsroom-link) hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--newsroom-link)"
 		onclick={() => window.location.reload()}
 	>
 		<Crossfade key={'search-retry-' + $locale} inline class="inline-grid">
 			<span>{$t('blog.search.retry')}</span>
 		</Crossfade>
-	</LiquidGlass>
+	</button>
 {/snippet}
 
-<div class="mx-auto flex min-h-[60vh] max-w-[980px] flex-col xl:max-w-[1100px]">
-	<LiquidGlass class="flex w-full flex-col !p-0" variant="control" showLighting={false}>
-		<!-- 搜索头部 -->
-		<div class="flex items-center gap-3 border-b border-white/10 px-6 py-6">
-			<SearchIcon class="shrink-0 text-muted-foreground" size={24} />
-			<input
-				bind:this={inputEl}
-				value={search.query}
-				oninput={(e) => (search.query = e.currentTarget.value)}
-				placeholder={$t('blog.search.placeholder')}
-				class="flex-1 bg-transparent text-2xl font-medium outline-none placeholder:text-muted-foreground/60"
-				autocomplete="off"
+<div
+	class="mx-auto flex min-h-[60vh] max-w-[980px] flex-col font-newsroom text-(--newsroom-foreground) [font-optical-sizing:auto]"
+>
+	<div
+		class="flex min-h-14 items-center gap-3 rounded-full bg-(--newsroom-interactive) px-5 transition-colors focus-within:bg-(--newsroom-card) focus-within:outline-2 focus-within:outline-(--newsroom-link)"
+	>
+		<SearchIcon class="shrink-0 text-(--newsroom-secondary)" size={20} />
+		<input
+			bind:this={inputEl}
+			value={search.query}
+			oninput={(e) => (search.query = e.currentTarget.value)}
+			placeholder={$t('blog.search.placeholder')}
+			aria-label={$t('blog.search.placeholder')}
+			class="min-w-0 flex-1 bg-transparent text-[17px] outline-none placeholder:text-(--newsroom-caption) md:text-[20px]"
+			autocomplete="off"
+		/>
+		{#if search.loading}
+			<Loader2 class="shrink-0 animate-spin text-(--newsroom-secondary)" size={20} />
+		{/if}
+	</div>
+
+	<div class="mt-6 flex-1 md:mt-8">
+		{#if search.error}
+			<StatusState
+				icon={FileText}
+				code="!"
+				title={$t('blog.search.load_error')}
+				description={$t('blog.search.load_error_hint')}
+				transitionKey={$locale}
+				layout="embedded"
+				action={retryAction}
 			/>
-			{#if search.loading}
-				<Loader2 class="animate-spin text-muted-foreground" size={24} />
-			{/if}
-		</div>
-
-		<!-- 结果列表 -->
-		<div class="flex-1 p-4">
-			{#if search.error}
-				<StatusState
-					icon={FileText}
-					code="!"
-					title={$t('blog.search.load_error')}
-					description={$t('blog.search.load_error_hint')}
-					transitionKey={$locale}
-					layout="embedded"
-					action={retryAction}
-				/>
-			{:else if search.loading}
-				<div class="flex items-center justify-center py-12 text-muted-foreground">
-					<Loader2 class="mr-2 animate-spin" size={16} />
-					<Crossfade key={'search-loading-' + $locale} inline class="inline-grid">
-						<span>{$t('common.loading')}</span>
-					</Crossfade>
-				</div>
-			{:else if search.query && search.results.length === 0}
-				<StatusState
-					icon={SearchX}
-					code={0}
-					title={$t('blog.search.no_results', { query: search.query })}
-					description={$t('blog.search.try_another_keyword')}
-					transitionKey={$locale}
-					detailLabel={$t('blog.search.query_label')}
-					detailValue={search.query}
-					layout="embedded"
-				/>
-			{:else if search.results.length > 0}
-				<div class="space-y-2">
-					{#each search.results as post (post.slug)}
-						<button
-							class="group flex w-full flex-col gap-2 rounded-xl p-4 text-left transition-colors hover:bg-black/5 dark:hover:bg-white/10"
-							onclick={() => goToPost(post)}
-						>
-							<div class="flex w-full items-center justify-between">
-								<h3
-									class="line-clamp-1 text-lg font-bold text-foreground transition-colors group-hover:text-primary"
-								>
-									{post.title}
-								</h3>
-								{#if post.date}
-									<span class="flex shrink-0 items-center gap-1 text-sm text-muted-foreground">
-										<Calendar size={14} />
-										{post.date.substring(0, 10)}
-									</span>
-								{/if}
-							</div>
-
-							{#if post.description}
-								<p class="line-clamp-2 text-base text-muted-foreground">
-									{post.description}
-								</p>
-							{/if}
-
-							{#if post.tags && post.tags.length > 0}
-								<div class="mt-1 flex flex-wrap gap-1.5">
-									{#each post.tags.slice(0, 5) as tag (tag)}
-										<span
-											class="rounded-md bg-black/5 px-2 py-0.5 text-xs text-muted-foreground dark:bg-white/5"
-										>
-											#{tag}
-										</span>
-									{/each}
-								</div>
-							{/if}
-						</button>
-					{/each}
-				</div>
-			{:else}
-				<!-- 默认空状态 / 初始状态 -->
-				<div class="flex flex-col items-center justify-center py-20 text-muted-foreground/50">
-					<FileText size={64} class="mb-6 opacity-10" />
-					<p class="text-lg">
-						<Crossfade key={'search-placeholder-' + $locale} inline class="inline-grid">
-							<span>{$t('blog.search.placeholder')}</span>
-						</Crossfade>
-					</p>
-				</div>
-			{/if}
-		</div>
-
-		<!-- 底部状态栏 -->
-		{#if search.results.length > 0}
-			<div
-				class="flex justify-between border-t border-white/10 px-6 py-3 text-sm text-muted-foreground"
-			>
-				<Crossfade
-					key={`search-count-${search.results.length}-${$locale}`}
-					inline
-					class="inline-grid"
-				>
-					<span>
-						{search.results.length === 1
-							? $t('blog.search.result_count_one')
-							: $t('blog.search.result_count', { count: String(search.results.length) })}
-					</span>
+		{:else if search.loading}
+			<div class="flex items-center justify-center py-12 text-(--newsroom-secondary)">
+				<Loader2 class="mr-2 animate-spin" size={16} />
+				<Crossfade key={'search-loading-' + $locale} inline class="inline-grid">
+					<span>{$t('common.loading')}</span>
 				</Crossfade>
 			</div>
+		{:else if search.query && search.results.length === 0}
+			<StatusState
+				icon={SearchX}
+				code={0}
+				title={$t('blog.search.no_results', { query: search.query })}
+				description={$t('blog.search.try_another_keyword')}
+				transitionKey={$locale}
+				detailLabel={$t('blog.search.query_label')}
+				detailValue={search.query}
+				layout="embedded"
+			/>
+		{:else if search.results.length > 0}
+			<div class="border-t border-(--newsroom-border)">
+				{#each search.results as post (post.slug)}
+					<button
+						type="button"
+						class="group flex w-full flex-col gap-2 border-b border-(--newsroom-border) px-1 py-5 text-left transition-colors hover:bg-(--newsroom-interactive) focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--newsroom-link) md:px-4 md:py-6"
+						onclick={() => goToPost(post)}
+					>
+						<div
+							class="flex w-full flex-col gap-1 sm:flex-row sm:items-baseline sm:justify-between sm:gap-6"
+						>
+							<h3
+								class="line-clamp-2 text-[19px] leading-[25px] font-semibold text-balance text-(--newsroom-foreground) transition-colors group-hover:text-(--newsroom-link) md:text-[21px] md:leading-[26px]"
+							>
+								{post.title}
+							</h3>
+							{#if post.date}
+								<span class="shrink-0 text-[13px] whitespace-nowrap text-(--newsroom-secondary)">
+									{post.date.substring(0, 10)}
+								</span>
+							{/if}
+						</div>
+
+						{#if post.description}
+							<p class="line-clamp-2 text-[15px] leading-[23px] text-(--newsroom-secondary)">
+								{post.description}
+							</p>
+						{/if}
+
+						{#if post.tags && post.tags.length > 0}
+							<div class="mt-1 flex flex-wrap gap-x-3 gap-y-1">
+								{#each post.tags.slice(0, 5) as tag (tag)}
+									<span class="text-[12px] text-(--newsroom-caption)">#{tag}</span>
+								{/each}
+							</div>
+						{/if}
+					</button>
+				{/each}
+			</div>
+		{:else}
+			<div class="flex flex-col items-center justify-center py-20 text-(--newsroom-caption)">
+				<FileText size={48} class="mb-6 opacity-20" />
+				<p class="text-[17px]">
+					<Crossfade key={'search-placeholder-' + $locale} inline class="inline-grid">
+						<span>{$t('blog.search.placeholder')}</span>
+					</Crossfade>
+				</p>
+			</div>
 		{/if}
-	</LiquidGlass>
+	</div>
+
+	{#if search.results.length > 0}
+		<div class="mt-4 flex justify-between text-[13px] text-(--newsroom-secondary)">
+			<Crossfade
+				key={`search-count-${search.results.length}-${$locale}`}
+				inline
+				class="inline-grid"
+			>
+				<span>
+					{search.results.length === 1
+						? $t('blog.search.result_count_one')
+						: $t('blog.search.result_count', { count: String(search.results.length) })}
+				</span>
+			</Crossfade>
+		</div>
+	{/if}
 </div>

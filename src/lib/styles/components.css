@@ -244,40 +244,53 @@
 		color: var(--reader-foreground);
 	}
 
-	/* Apple Newsroom 风格文章卡片：内容优先、克制边界、统一图像比例。 */
+	/* Newsroom 卡片以图片、文字和留白分层，不使用边框、悬浮位移或投影。 */
 	.newsroom-card {
 		appearance: none;
 		padding: 0;
 		text-align: left;
-		border: 1px solid color-mix(in oklab, var(--foreground) 8%, transparent);
-		border-radius: 24px;
-		background: color-mix(in oklab, var(--card) 92%, var(--background));
-		box-shadow: 0 8px 28px rgb(15 23 42 / 7%);
-		transition:
-			transform 220ms ease-out,
-			box-shadow 220ms ease-out,
-			border-color 220ms ease-out;
+		border: 0;
+		border-radius: 18px;
+		background: var(--newsroom-card);
+		color: var(--newsroom-foreground);
+		transition: background-color 200ms ease-out;
 	}
 
-	.newsroom-card:hover,
 	.newsroom-card:focus-visible {
-		transform: translateY(-3px);
-		border-color: color-mix(in oklab, var(--foreground) 14%, transparent);
-		box-shadow: 0 16px 42px rgb(15 23 42 / 12%);
-		outline: none;
+		outline: 2px solid var(--newsroom-link);
+		outline-offset: 4px;
 	}
 
-	.newsroom-card--featured {
+	.newsroom-card--featured,
+	.newsroom-card--secondary {
 		border-radius: 28px;
 	}
 
 	.newsroom-card--compact {
-		border-radius: 20px;
+		border-radius: 0;
+		border-bottom: 1px solid var(--newsroom-border);
+		background: transparent;
 	}
 
-	.dark .newsroom-card {
-		background: color-mix(in oklab, var(--card) 88%, black);
-		box-shadow: 0 12px 36px rgb(0 0 0 / 24%);
+	.newsroom-card .newsroom-image {
+		transition: transform 300ms ease-out;
+	}
+
+	@media (hover: hover) {
+		.newsroom-card:hover .newsroom-image {
+			transform: scale(1.02);
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.newsroom-card,
+		.newsroom-card .newsroom-image {
+			transition: none;
+		}
+
+		.newsroom-card:hover .newsroom-image {
+			transform: none;
+		}
 	}
 
 	/* 地图版权提取到侧栏及移动端专属位置，隐藏原容器内的重复展示。 */

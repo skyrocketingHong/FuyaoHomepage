@@ -2,9 +2,9 @@
 	/**
 	 * 全局背景层组件
 	 *
-	 * 负责渲染全站的背景，可以是动态组件、静态图片、阅读纯色 (solid) 或流动背景。
+	 * 负责渲染动态组件、静态图片、Newsroom 列表底、阅读纯色或流动背景。
 	 * 是全站唯一的背景绘制与背景过渡入口：
-	 * - 进入或离开文章阅读背景时立即提交最终语义背景，避免旧背景与新页面重叠；
+	 * - 进入或离开博客语义背景时立即提交最终背景，避免旧背景与新页面重叠；
 	 * - 普通背景之间继续使用 Crossfade；外观 View Transition 激活时本层时长归零；
 	 * - prefers-reduced-motion 下 Crossfade 时长归零，直接切换最终状态。
 	 */
@@ -30,7 +30,7 @@
 	} = $props<{
 		spotlightUrl?: string; // 仅在 mode='image' 时需要
 		onImageLoad?: () => void; // 可选，用于通知外部图片加载完成
-		mode?: 'image' | 'solid' | 'flowing' | 'none' | 'mosaic';
+		mode?: 'image' | 'solid' | 'newsroom' | 'flowing' | 'none' | 'mosaic';
 	}>();
 
 	const wallpaperApi = publicConfig.services.wallpaper.apiUrl?.trim() ?? '';
@@ -92,10 +92,14 @@
 	let semanticModeChange = $state(false);
 	let previousMode = untrack(() => mode);
 
-	// solid 是文章阅读语义背景，进入和离开时均不得与普通背景交叉叠放。
+	// 博客 Newsroom 列表与 solid 文章背景不得与普通背景交叉叠放。
 	$effect.pre(() => {
 		const nextMode = mode;
-		semanticModeChange = nextMode === 'solid' || previousMode === 'solid';
+		semanticModeChange =
+			nextMode === 'solid' ||
+			nextMode === 'newsroom' ||
+			previousMode === 'solid' ||
+			previousMode === 'newsroom';
 		previousMode = nextMode;
 	});
 
@@ -137,7 +141,7 @@
 		// 纯色/流动/无背景不会失败，直接标记完成
 		// 马赛克背景由 MosaicBackground 首次绘制后主动标记
 		// 图片背景由 LazyImage 的 onload/onerror 标记
-		if (mode === 'solid' || mode === 'flowing' || mode === 'none') {
+		if (mode === 'solid' || mode === 'newsroom' || mode === 'flowing' || mode === 'none') {
 			finishLoading();
 		}
 		if (mode === 'image' && imageUnavailable) {
@@ -160,6 +164,8 @@
 		<Crossfade key={mode} duration={fadeDuration} class="h-full w-full">
 			{#if mode === 'solid'}
 				<SolidBackground />
+			{:else if mode === 'newsroom'}
+				<div class="absolute inset-0 -z-50 bg-(--newsroom-background)"></div>
 			{:else if mode === 'flowing'}
 				<FlowingBackground />
 			{:else if mode === 'none'}

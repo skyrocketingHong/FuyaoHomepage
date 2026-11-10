@@ -169,13 +169,13 @@ export const repoConfig = {
 /**
  * 背景模式定义
  */
-export type BackgroundMode = 'none' | 'image' | 'solid' | 'flowing' | 'mosaic';
+export type BackgroundMode = 'none' | 'image' | 'solid' | 'newsroom' | 'flowing' | 'mosaic';
 
 /**
  * 博客页面类型
  *
  * 由页面 load 函数解析并写入 page.data，不依赖 route id 或路径段数量猜测：
- * 列表/分类/标签/搜索使用马赛克全局背景，单篇文章使用纯白阅读背景。
+ * 列表/分类/标签/搜索使用 Newsroom 中性背景，单篇文章使用阅读背景。
  */
 export type BlogPageKind =
 	| 'blog-list'
@@ -204,7 +204,7 @@ export function getBlogPageKind(
 /**
  * 背景策略：路由背景模式 + 是否允许用户切换
  *
- * 足迹页 (none) 与博客文章页 (solid) 属于语义背景，为锁定模式：
+ * 足迹页 (none)、博客列表 (newsroom) 与博客文章页 (solid) 属于语义背景：
  * switchable 为 false，用户背景偏好不得覆盖，且 Header 不渲染背景切换器。
  */
 export interface BackgroundPolicy {
@@ -227,10 +227,9 @@ export function getBackgroundPolicy(
 	pageData?: { blogPageKind?: BlogPageKind } | null,
 	routeId?: string | null
 ): BackgroundPolicy {
-	// 博客页面按页面类型明确区分：列表类马赛克 (可切换)，文章页阅读背景 (锁定)
 	const blogKind = getBlogPageKind(pageData, routeId ?? null);
 	if (blogKind === 'blog-article') return { mode: 'solid', switchable: false };
-	if (blogKind) return { mode: 'mosaic', switchable: true };
+	if (blogKind) return { mode: 'newsroom', switchable: false };
 
 	// 查找匹配的导航项
 	const activeItem = navItems.find((item) => {
@@ -239,9 +238,8 @@ export function getBackgroundPolicy(
 		return pathname.startsWith(item.href);
 	});
 
-	// 语义背景 (none/solid) 锁定，其余模式允许用户偏好覆盖
 	const mode = activeItem?.backgroundMode ?? 'mosaic';
-	return { mode, switchable: mode !== 'none' && mode !== 'solid' };
+	return { mode, switchable: mode !== 'none' && mode !== 'solid' && mode !== 'newsroom' };
 }
 
 /**

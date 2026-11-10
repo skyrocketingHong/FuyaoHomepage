@@ -1,83 +1,82 @@
 <script lang="ts">
 	/**
-	 * 博客文章卡片 - 网格展示
+	 * Newsroom 网格文章卡片。
 	 *
-	 * 用于首页中部的网格布局。
+	 * large 用于两篇次级报道，regular 用于三篇标准网格报道。
 	 */
-	import { fly } from 'svelte/transition';
 	import { locale } from '$lib/i18n/store';
 	import { formatDate } from '$lib/utils/datetime/date';
 	import { getPostVisuals } from '$lib/utils/domain/blog';
 	import Crossfade from '$lib/components/ui/effect/Crossfade.svelte';
 	import CategoryBadge from '../common/CategoryBadge.svelte';
 	import LazyImage from '$lib/components/ui/display/LazyImage.svelte';
-	import Marquee from '$lib/components/ui/display/Marquee.svelte';
 	import type { BlogPost } from '$lib/utils/domain/blog';
 
 	let {
 		post,
 		categories = [],
-		index = 0,
+		size = 'regular',
 		onclick
 	} = $props<{
 		post: BlogPost;
 		categories?: { slug: string; title: string }[];
-		index?: number;
+		size?: 'large' | 'regular';
 		onclick: (post: BlogPost) => void;
 	}>();
 
 	let { visual, postCategories } = $derived(getPostVisuals(post));
-
-	function handleClick() {
-		onclick(post);
-	}
 </script>
 
-<div class="h-full w-full" in:fly={{ y: 20, duration: 500, delay: index * 50 }}>
+<div class="h-full w-full">
 	<button
 		type="button"
-		class="newsroom-card group flex h-full w-full cursor-pointer flex-col overflow-hidden"
-		onclick={handleClick}
+		class="newsroom-card group flex h-full w-full cursor-pointer flex-col overflow-hidden {size ===
+		'large'
+			? 'newsroom-card--secondary'
+			: ''}"
+		onclick={() => onclick(post)}
 	>
-		<div class="flex h-full flex-col">
-			<!-- 卡片图片 -->
-			<div class="relative aspect-[16/10] w-full overflow-hidden bg-card">
-				{#if post.cover}
-					<LazyImage
-						src={post.cover}
-						alt={post.title}
-						class="h-full w-full transition-transform duration-500 group-hover:scale-[1.02]"
-						fill
-					/>
-				{:else}
-					<div class="h-full w-full {visual.gradient} flex items-center justify-center">
-						<visual.icon size={48} class="{visual.color} opacity-80" />
-					</div>
-				{/if}
-			</div>
-
-			<!-- 卡片内容 -->
-			<div class="flex flex-1 flex-col px-5 pt-5 pb-6 md:px-6">
-				<CategoryBadge
-					{categories}
-					{postCategories}
-					class="mb-2 text-[11px] font-bold tracking-widest text-foreground uppercase md:text-[12px]"
-				/>
-
-				<div class="mb-4 h-[72px] overflow-hidden md:h-[86px]">
-					<Marquee
-						text={post.title}
-						direction="vertical"
-						class="h-full text-[21px] leading-[1.14] font-semibold tracking-[-0.015em] text-foreground md:text-[26px]"
-						fadeSize="15%"
+		<div
+			class="relative w-full overflow-hidden bg-(--newsroom-interactive) {size === 'large'
+				? 'aspect-[16/9]'
+				: 'aspect-[16/10]'}"
+		>
+			{#if post.cover}
+				<LazyImage src={post.cover} alt={post.title} class="newsroom-image h-full w-full" fill />
+			{:else}
+				<div class="flex h-full w-full items-center justify-center">
+					<visual.icon
+						size={size === 'large' ? 64 : 48}
+						class="text-(--newsroom-caption) opacity-70"
 					/>
 				</div>
+			{/if}
+		</div>
 
-				<div class="mt-auto text-[14px] font-semibold text-muted-foreground md:text-[15px]">
-					<Crossfade key={'post-date-' + post.slug + '-' + $locale} inline class="inline-grid">
-						<span>{formatDate(post.date, $locale)}</span>
-					</Crossfade>
-				</div>
+		<div
+			class="flex flex-1 flex-col {size === 'large'
+				? 'px-6 pt-6 pb-7 md:px-8 md:pt-7 md:pb-8'
+				: 'px-5 pt-5 pb-6 md:px-6'}"
+		>
+			<CategoryBadge
+				{categories}
+				{postCategories}
+				class="mb-2 text-[12px] font-semibold tracking-[0.02em] text-(--newsroom-secondary) uppercase md:text-[13px]"
+			/>
+
+			<h3
+				class="line-clamp-3 font-semibold text-balance text-(--newsroom-foreground) {size ===
+				'large'
+					? 'text-[24px] leading-[30px] tracking-[-0.02em] md:text-[28px] md:leading-[34px]'
+					: 'text-[21px] leading-[26px] tracking-[-0.015em]'}"
+			>
+				{post.title}
+			</h3>
+
+			<div class="mt-auto pt-5 text-[13px] font-medium text-(--newsroom-secondary) md:text-[14px]">
+				<Crossfade key={'post-date-' + post.slug + '-' + $locale} inline class="inline-grid">
+					<span>{formatDate(post.date, $locale)}</span>
+				</Crossfade>
 			</div>
 		</div>
 	</button>

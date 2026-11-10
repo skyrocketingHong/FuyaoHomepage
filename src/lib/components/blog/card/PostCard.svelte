@@ -1,8 +1,8 @@
 <script lang="ts">
 	/**
-	 * 博客文章卡片分发组件
+	 * 博客文章卡片分发组件。
 	 *
-	 * 根据 variant 属性分发到具体的子组件。
+	 * 提供主报道、次级报道、标准网格和紧凑列表四种 Newsroom 变体。
 	 */
 	import FeaturedPostCard from './FeaturedPostCard.svelte';
 	import GridPostCard from './GridPostCard.svelte';
@@ -13,21 +13,21 @@
 		post,
 		variant = 'grid',
 		categories = [],
-		index = 0,
 		onclick
 	} = $props<{
 		post: BlogPost;
-		variant?: 'featured' | 'grid' | 'list';
+		variant?: 'featured' | 'secondary' | 'grid' | 'list';
 		categories?: { slug: string; title: string }[];
-		index?: number;
 		onclick: (post: BlogPost) => void;
 	}>();
 </script>
 
 {#if variant === 'featured'}
 	<FeaturedPostCard {post} {categories} {onclick} />
+{:else if variant === 'secondary'}
+	<GridPostCard {post} {categories} size="large" {onclick} />
 {:else if variant === 'grid'}
-	<GridPostCard {post} {categories} {index} {onclick} />
+	<GridPostCard {post} {categories} {onclick} />
 {:else if variant === 'list'}
 	<ListPostCard {post} {categories} {onclick} />
 {/if}

@@ -1,8 +1,8 @@
 <script lang="ts">
 	/**
-	 * 博客文章卡片 - 特色展示 (Hero)
+	 * Newsroom 主报道卡片。
 	 *
-	 * 用于首页顶部的大图展示。
+	 * 使用整宽 16:9 图片和大号标题，首屏图片优先加载。
 	 */
 	import { t, locale } from '$lib/i18n/store';
 	import { formatDate, isRecent } from '$lib/utils/datetime/date';
@@ -23,45 +23,39 @@
 	}>();
 
 	let { visual, postCategories } = $derived(getPostVisuals(post));
-
-	function handleClick() {
-		onclick(post);
-	}
 </script>
 
 <button
 	type="button"
-	class="newsroom-card newsroom-card--featured group mb-6 flex w-full cursor-pointer flex-col overflow-hidden md:grid md:grid-cols-[minmax(0,1.85fr)_minmax(280px,1fr)]"
-	onclick={handleClick}
+	class="newsroom-card newsroom-card--featured group flex w-full cursor-pointer flex-col overflow-hidden"
+	onclick={() => onclick(post)}
 >
-	<!-- 图片容器 -->
-	<div
-		class="relative aspect-[16/9] h-auto w-full overflow-hidden bg-card md:aspect-auto md:min-h-[360px]"
-	>
+	<div class="relative aspect-[16/9] w-full overflow-hidden bg-(--newsroom-interactive)">
 		{#if post.cover}
 			<LazyImage
 				src={post.cover}
 				alt={post.title}
-				class="h-full w-full transition-transform duration-700 group-hover:scale-[1.02]"
+				class="newsroom-image h-full w-full"
 				fill
+				loading="eager"
+				fetchpriority="high"
 			/>
 		{:else}
-			<div class="h-full w-full {visual.gradient} flex items-center justify-center">
-				<visual.icon size={80} class="{visual.color} opacity-80" />
+			<div class="flex h-full w-full items-center justify-center">
+				<visual.icon size={80} class="text-(--newsroom-caption) opacity-70" />
 			</div>
 		{/if}
 	</div>
 
-	<!-- 内容区 -->
-	<div class="flex min-w-0 flex-1 flex-col items-start px-6 pt-5 pb-7 md:px-8 md:py-8">
-		<div class="mb-3 flex items-center gap-3">
+	<div class="flex min-w-0 flex-1 flex-col items-start px-6 pt-6 pb-7 md:px-10 md:pt-8 md:pb-9">
+		<div class="mb-3 flex flex-wrap items-center gap-x-3 gap-y-1">
 			<CategoryBadge
 				{categories}
 				{postCategories}
-				class="text-[12px] font-bold tracking-widest text-foreground uppercase md:text-[14px]"
+				class="text-[12px] font-semibold tracking-[0.02em] text-(--newsroom-secondary) uppercase md:text-[14px]"
 			/>
 			{#if isRecent(post.date)}
-				<span class="text-[12px] font-bold tracking-widest text-[#ff8800] uppercase">
+				<span class="text-[12px] font-semibold tracking-[0.02em] text-(--theme-color) uppercase">
 					<Crossfade key={'new-' + $locale} inline class="inline-grid">
 						<span>{$t('blog.new')}</span>
 					</Crossfade>
@@ -70,12 +64,12 @@
 		</div>
 
 		<h3
-			class="mb-5 max-w-[900px] text-[30px] leading-[1.08] font-semibold tracking-[-0.025em] text-foreground sm:text-[36px] md:text-[36px] md:leading-[1.08] xl:text-[40px]"
+			class="text-[28px] leading-[34px] font-semibold tracking-[-0.022em] text-balance text-(--newsroom-foreground) md:text-[40px] md:leading-[48px]"
 		>
 			{post.title}
 		</h3>
 
-		<div class="mt-auto text-[14px] font-medium text-muted-foreground sm:text-[16px]">
+		<div class="mt-6 text-[14px] font-medium text-(--newsroom-secondary) md:mt-8">
 			<Crossfade key={'featured-date-' + post.slug + '-' + $locale} inline class="inline-grid">
 				<span>{formatDate(post.date, $locale)}</span>
 			</Crossfade>

@@ -137,17 +137,26 @@
 	--header-control-highlight: oklch(1 0 0 / 0.45);
 	--header-control-shadow: oklch(0.4 0.02 265 / 0.14);
 	--header-control-divider: oklch(0.4 0.02 255 / 0.2);
-	/* 阅读语义 token (博客文章阅读面)：阅读背景由 BackgroundLayer (solid 模式) 统一绘制，
-	 * 正文/次级文字/卡片/边界/代码块由 reader.css 与文章组件引用，日夜随 .dark 切换 */
-	--reader-background: oklch(1 0 0);
-	--reader-foreground: oklch(0.232 0.004 286);
-	--reader-secondary: oklch(0.54 0.008 286);
-	--reader-caption: oklch(0.622 0.007 286);
-	--reader-card: oklch(0.971 0.003 286);
-	--reader-card-hover: oklch(0.932 0.007 286);
-	--reader-border: oklch(0.865 0.007 286);
-	--reader-interactive: oklch(0.232 0.004 286 / 0.04);
-	--reader-interactive-hover: oklch(0.232 0.004 286 / 0.08);
+	/* Newsroom 内容表面：列表与文章分别由 BackgroundLayer 的 newsroom/solid 模式绘制。 */
+	--newsroom-background: #f5f5f7;
+	--newsroom-card: #ffffff;
+	--newsroom-foreground: #1d1d1f;
+	--newsroom-secondary: #6e6e73;
+	--newsroom-caption: #86868b;
+	--newsroom-border: #d2d2d7;
+	--newsroom-link: #0066cc;
+	--newsroom-interactive: rgb(0 0 0 / 0.04);
+	--newsroom-interactive-hover: rgb(0 0 0 / 0.08);
+	/* 阅读语义 token：Apple Newsroom 文章正文、辅助文字、卡片与边界。 */
+	--reader-background: #ffffff;
+	--reader-foreground: #1d1d1f;
+	--reader-secondary: #6e6e73;
+	--reader-caption: #86868b;
+	--reader-card: #f5f5f7;
+	--reader-card-hover: #e8e8ed;
+	--reader-border: #d2d2d7;
+	--reader-interactive: rgb(0 0 0 / 0.04);
+	--reader-interactive-hover: rgb(0 0 0 / 0.08);
 	/* 代码块表面 (GitHub 浅色) */
 	--reader-code-background: oklch(1 0 0);
 	--reader-code-border: oklch(0.918 0.006 255.5);
@@ -244,17 +253,26 @@
 	/* 移动端 Dock 胶囊（夜间）：边界与投影同步加深 */
 	--mobile-dock-capsule-edge: oklch(1 0 0 / 0.16);
 	--mobile-dock-capsule-shadow: oklch(0 0 0 / 0.4);
-	/* 阅读语义 token (夜间)：近黑阅读背景 + 浅色文字，语法调色板为 GitHub 深色 */
-	--reader-background: oklch(0.176 0.014 258.4);
-	--reader-foreground: oklch(0.857 0.014 248);
-	--reader-secondary: oklch(0.662 0.018 250.9);
-	--reader-caption: oklch(0.711 0.007 286);
-	--reader-card: oklch(0.267 0.015 256.8);
-	--reader-card-hover: oklch(0.33 0.015 252.3);
-	--reader-border: oklch(0.33 0.015 252.3);
-	--reader-interactive: oklch(1 0 0 / 0.06);
-	--reader-interactive-hover: oklch(1 0 0 / 0.12);
-	--reader-code-background: oklch(0.176 0.014 258.4);
+	/* Newsroom 与阅读语义 token (夜间)：中性近黑表面 + 高对比浅色文字。 */
+	--newsroom-background: #000000;
+	--newsroom-card: #1d1d1f;
+	--newsroom-foreground: #f5f5f7;
+	--newsroom-secondary: #a1a1a6;
+	--newsroom-caption: #86868b;
+	--newsroom-border: #424245;
+	--newsroom-link: #2997ff;
+	--newsroom-interactive: rgb(255 255 255 / 0.06);
+	--newsroom-interactive-hover: rgb(255 255 255 / 0.12);
+	--reader-background: #000000;
+	--reader-foreground: #f5f5f7;
+	--reader-secondary: #a1a1a6;
+	--reader-caption: #86868b;
+	--reader-card: #1d1d1f;
+	--reader-card-hover: #2c2c2e;
+	--reader-border: #424245;
+	--reader-interactive: rgb(255 255 255 / 0.06);
+	--reader-interactive-hover: rgb(255 255 255 / 0.12);
+	--reader-code-background: #1d1d1f;
 	--reader-code-border: oklch(0.33 0.015 252.3);
 	--reader-code-border-inner: oklch(0.267 0.015 256.8);
 	--reader-code-text: oklch(0.857 0.014 248);
@@ -364,6 +382,7 @@
 }
 
 @theme inline {
+	--font-newsroom: 'MiSans VF', 'Misans TC VF', 'MiSans L3', sans-serif;
 	--font-sans:
 		'MiSans VF', 'Misans TC VF', 'MiSans ArabicUI VF', 'MiSans Devanagari VF', 'MiSans Gujarati VF',
 		'MiSans Gurmukhi VF', 'MiSans Khmer VF', 'MiSans Lao VF', 'MiSans Myanmar VF', 'MiSans Thai VF',

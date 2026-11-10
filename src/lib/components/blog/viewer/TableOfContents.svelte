@@ -1,12 +1,11 @@
 <script lang="ts">
 	/**
-	 * 博客文章目录 (TOC) 组件
+	 * 博客文章目录。
 	 *
-	 * 渲染侧边栏中的文章目录列表，支持自动高亮当前阅读位置。
+	 * 复用全局侧栏并按标题深度缩进，支持当前阅读位置高亮。
 	 *
-	 * @prop toc - 嵌套的目录项数组 (id, text, depth)
+	 * @prop toc - 目录项数组 (id, text, depth)
 	 * @prop onItemClick - 点击目录项时的回调
-	 * @prop variant - 视觉变体
 	 * @prop activeId - 当前激活的锚点 ID
 	 */
 	import SidebarItem from '$lib/components/layout/sidebar/Item.svelte';
@@ -18,6 +17,8 @@
 	}
 
 	let { toc, onItemClick, activeId = '' }: Props = $props();
+
+	const depthClasses = ['pl-3', 'pl-6', 'pl-9', 'pl-12', 'pl-14', 'pl-16'];
 </script>
 
 <div>
@@ -27,6 +28,9 @@
 			onclick={() => onItemClick(item.id)}
 			isActive={item.id === activeId}
 			data-id={item.id}
+			class="text-[14px] {depthClasses[
+				Math.min(Math.max(item.depth - 1, 0), depthClasses.length - 1)
+			]}"
 		/>
 	{/each}
 </div>

@@ -150,30 +150,30 @@
 │   │   │   │       └── common/               # 首页共用卡片与标题
 │   │   │   │           ├── ContentCard.svelte
 │   │   │   │           └── SectionHeader.svelte
-│   │   │   ├── blog/         # 博客页面组件
+│   │   │   ├── blog/         # Newsroom 风格博客组件
 │   │   │   │   ├── card/         # 卡片组件
-│   │   │   │   │   ├── FeaturedPostCard.svelte # 精选文章卡片
-│   │   │   │   │   ├── GridPostCard.svelte  # 网格文章卡片
-│   │   │   │   │   ├── ListPostCard.svelte  # 列表文章卡片
-│   │   │   │   │   └── PostCard.svelte      # 文章卡片统一入口
+│   │   │   │   │   ├── FeaturedPostCard.svelte # 整宽 Newsroom 主报道卡片
+│   │   │   │   │   ├── GridPostCard.svelte  # 次级与标准 Newsroom 网格卡片
+│   │   │   │   │   ├── ListPostCard.svelte  # Newsroom 紧凑文章行
+│   │   │   │   │   └── PostCard.svelte      # 四种变体的文章卡片入口
 │   │   │   │   ├── common/       # 公共小组件
 │   │   │   │   │   ├── CategoryBadge.svelte # 分类标签
-│   │   │   │   │   └── TagBadge.svelte      # 统一标签 (胶囊样式)
+│   │   │   │   │   └── TagBadge.svelte      # Newsroom 中性标签控件
 │   │   │   │   ├── home/         # 首页视图
-│   │   │   │   │   ├── EmptyState.svelte    # 文章空状态
-│   │   │   │   │   └── Home.svelte          # 博客首页主入口
+│   │   │   │   │   ├── EmptyState.svelte    # Newsroom 文章空状态
+│   │   │   │   │   └── Home.svelte          # Newsroom 1+2+3 文章栅格
 │   │   │   │   ├── search/       # 搜索视图
-│   │   │   │   │   └── Search.svelte        # 博客搜索页
+│   │   │   │   │   └── Search.svelte        # Newsroom 搜索框与分隔结果列表
 │   │   │   │   ├── sidebar/      # 侧边栏
 │   │   │   │   │   ├── Sidebar.svelte       # 博客归档/分类列表
 │   │   │   │   │   └── TagCloud.svelte      # 标签云展示
 │   │   │   │   ├── viewer/       # 文章阅读器
 │   │   │   │   │   ├── BackButton.svelte    # 返回列表按钮
-│   │   │   │   │   ├── Header.svelte        # 文章头部 (标题、作者等)
-│   │   │   │   │   ├── LinkPreview.svelte   # 链接预览组件
+│   │   │   │   │   ├── Header.svelte        # Newsroom 标题、元数据、分享与封面
+│   │   │   │   │   ├── LinkPreview.svelte   # Newsroom 平面链接预览
 │   │   │   │   │   ├── MarkdownRenderer.svelte # Markdown 内容渲染器
-│   │   │   │   │   ├── TableOfContents.svelte # 文章目录
-│   │   │   │   │   └── Viewer.svelte        # 阅读器主入口
+│   │   │   │   │   ├── TableOfContents.svelte # 按标题深度缩进的文章目录
+│   │   │   │   │   └── Viewer.svelte        # Newsroom 阅读器主入口
 │   │   │   │   └── header/       # 头部集成
 │   │   │   │       ├── Actions.svelte        # 博客操作胶囊 (搜索 + RSS)
 │   │   │   │       ├── RssButton.svelte      # RSS 订阅按钮
@@ -181,7 +181,7 @@
 │   │   │   ├── layout/       # 布局组件
 │   │   │   │   ├── background/   # 背景组件
 │   │   │   │   │   ├── BackgroundInfoOverlay.svelte # 顺序渐隐的全屏港铁背景浏览器与 Bing 原图信息
-│   │   │   │   │   └── BackgroundLayer.svelte # 通用背景层包裹（Bing 响应式壁纸与两级故障回退）
+│   │   │   │   │   └── BackgroundLayer.svelte # 按路由绘制壁纸、Newsroom 列表与文章阅读背景
 │   │   │   │   ├── bottom-info/  # 底部信息组件
 │   │   │   │   │   ├── BottomInfo.svelte       # 底部信息容器 (统一前景色、桌面侧栏/移动端紧凑两列四条静态单行)
 │   │   │   │   │   ├── BackgroundInfo.svelte   # 统一颜色的背景地点单行展示、完整语义与静态省略
@@ -315,6 +315,7 @@
 │   ├── amap-loader.test.js # SDK 加载去重、失败恢复及代理配置
 │   ├── background-info.test.js # 港铁拓扑、车站切换、顺序全屏过渡与 Bing 元数据测试
 │   ├── background-loading.test.js # 底部信息对齐、背景加载事务与尺寸重建回归测试
+│   ├── blog-newsroom.test.js # Newsroom 栅格、平面卡片、阅读排版与背景回归测试
 │   ├── config-boundary.test.js # 配置、占位值、重复字段与 realpath 越界测试
 │   ├── content-deploy.test.js # 内容 release 替换、硬链接复用与原子切换测试
 │   ├── content-watcher.test.js # 内容监听、GPS 保留与部署约束回归测试
@@ -330,7 +331,7 @@
 │   ├── navigation-state.test.js # Header 插槽所有权及博客路由、背景策略回归测试
 │   ├── public-permissions.test.js # 私有源权限与公开产物读取权限回归测试
 │   ├── project-integrity.test.js
-│   └── verify-build.js       # 生产构建正文、文章阅读背景及 Header 背景切换器验证
+│   └── verify-build.js       # 生产构建正文、Newsroom/阅读背景及 Header 背景切换器验证
 ```
 
 ## 组件调用与规范

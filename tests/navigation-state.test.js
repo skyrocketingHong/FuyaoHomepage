@@ -97,6 +97,7 @@ test('博客页面类型由 load 数据驱动根布局背景策略', () => {
 	assert.match(searchLoad, /blogPageKind: 'blog-search'/);
 	assert.match(config, /if \(pageData\?\.blogPageKind\) return pageData\.blogPageKind/);
 	assert.match(config, /blogKind === 'blog-article'.*mode: 'solid'.*switchable: false/);
+	assert.match(config, /if \(blogKind\) return \{ mode: 'newsroom', switchable: false \}/);
 	assert.doesNotMatch(config, /\[category\]\/\[slug\]/);
 	assert.match(
 		rootLayout,

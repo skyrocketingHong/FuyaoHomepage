@@ -1,8 +1,8 @@
 <script lang="ts">
 	/**
-	 * 博客文章卡片 - 列表展示
+	 * Newsroom 紧凑文章行。
 	 *
-	 * 用于首页底部的列表布局。
+	 * 用于“更多信息”双列列表，以小缩略图和细分隔线组织内容。
 	 */
 	import { locale } from '$lib/i18n/store';
 	import { formatDate } from '$lib/utils/datetime/date';
@@ -23,53 +23,42 @@
 	}>();
 
 	let { visual, postCategories } = $derived(getPostVisuals(post));
-
-	function handleClick() {
-		onclick(post);
-	}
 </script>
 
 <button
 	type="button"
-	class="newsroom-card newsroom-card--compact group w-full cursor-pointer overflow-hidden"
-	onclick={handleClick}
+	class="newsroom-card newsroom-card--compact group w-full cursor-pointer"
+	onclick={() => onclick(post)}
 >
-	<div class="flex h-[120px] items-stretch gap-0 sm:h-[160px]">
-		<!-- 缩略图 -->
-		<div class="relative w-[120px] shrink-0 overflow-hidden bg-muted sm:w-[160px]">
+	<div class="flex items-center gap-4 py-5 sm:gap-5 sm:py-6">
+		<div
+			class="relative size-[96px] shrink-0 overflow-hidden rounded-[12px] bg-(--newsroom-interactive) sm:size-[112px]"
+		>
 			{#if post.cover}
-				<LazyImage
-					src={post.cover}
-					alt={post.title}
-					class="h-full w-full transition-transform duration-500 group-hover:scale-[1.02]"
-					fill
-				/>
+				<LazyImage src={post.cover} alt={post.title} class="newsroom-image h-full w-full" fill />
 			{:else}
-				<div class="h-full w-full {visual.gradient} flex items-center justify-center">
-					<visual.icon size={32} class="{visual.color} opacity-80" />
+				<div class="flex h-full w-full items-center justify-center">
+					<visual.icon size={32} class="text-(--newsroom-caption) opacity-70" />
 				</div>
 			{/if}
 		</div>
 
-		<!-- 内容区 -->
-		<div class="flex flex-1 flex-col justify-between overflow-hidden px-5 py-4 sm:px-6 sm:py-5">
-			<div>
-				<CategoryBadge
-					{categories}
-					{postCategories}
-					class="mb-1 block text-[11px] font-bold tracking-widest text-muted-foreground uppercase"
-				/>
-				<h4
-					class="line-clamp-2 text-[18px] leading-[1.22] font-semibold tracking-[-0.01em] text-foreground sm:line-clamp-3 sm:text-[21px]"
-				>
-					{post.title}
-				</h4>
-			</div>
-			<span class="text-[13px] font-semibold text-muted-foreground sm:text-[14px]">
+		<div class="min-w-0 flex-1">
+			<CategoryBadge
+				{categories}
+				{postCategories}
+				class="mb-1 block text-[11px] font-semibold tracking-[0.02em] text-(--newsroom-secondary) uppercase sm:text-[12px]"
+			/>
+			<h4
+				class="line-clamp-3 text-[17px] leading-[22px] font-semibold tracking-[-0.01em] text-balance text-(--newsroom-foreground) sm:text-[18px] sm:leading-[24px]"
+			>
+				{post.title}
+			</h4>
+			<div class="mt-2 text-[12px] font-medium text-(--newsroom-secondary) sm:text-[13px]">
 				<Crossfade key={'more-date-' + post.slug + '-' + $locale} inline class="inline-grid">
 					<span>{formatDate(post.date, $locale)}</span>
 				</Crossfade>
-			</span>
+			</div>
 		</div>
 	</div>
 </button>

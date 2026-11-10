@@ -215,8 +215,10 @@
 	});
 </script>
 
-<div class="article-surface min-h-[calc(100dvh-52px)] w-full lg:min-h-[calc(100dvh-80px)]">
-	<article class="relative mx-auto w-full max-w-[980px] px-5 pt-6 md:px-8 xl:max-w-[1100px]">
+<div
+	class="article-surface min-h-[calc(100dvh-52px)] w-full font-newsroom [font-optical-sizing:auto] lg:min-h-[calc(100dvh-80px)]"
+>
+	<article class="relative mx-auto w-full max-w-[980px] px-5 pt-6 md:px-8 md:pt-10 lg:pt-14">
 		{#if loading}
 			<div class="flex h-[50vh] w-full items-center justify-center">
 				<LoadingState loading={true} />
@@ -237,16 +239,16 @@
 		{/if}
 	</article>
 	{#if !loading}
-		<div class="mx-auto w-full max-w-[980px] px-5 pt-2 pb-10 md:px-8 xl:max-w-[1100px]">
-			<div class="text-center">
+		<div class="mx-auto w-full max-w-[653px] px-5 pt-4 pb-10 md:px-0 md:pt-6 md:pb-14">
+			<div class="border-t border-(--reader-border) pt-4 md:pt-6">
 				<button
 					type="button"
-					class="inline-flex cursor-pointer appearance-none items-center justify-center rounded-full border border-(--reader-border) bg-(--reader-interactive) px-4 py-2 text-sm text-(--reader-foreground) transition-colors hover:bg-(--reader-interactive-hover) focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--reader-secondary)"
+					class="inline-flex min-h-11 cursor-pointer appearance-none items-center justify-center px-0 text-[17px] font-medium text-(--newsroom-link) hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--newsroom-link)"
 					onclick={onClose}
 				>
-					<Crossfade key={$locale} inline class="inline-grid"
-						><span>{$t('blog.back_to_list')}</span></Crossfade
-					>
+					<Crossfade key={$locale} inline class="inline-grid">
+						<span>{$t('blog.back_to_list')}</span>
+					</Crossfade>
 				</button>
 			</div>
 		</div>

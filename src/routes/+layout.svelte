@@ -79,7 +79,7 @@
 	);
 
 	// 路由背景策略：背景模式 + 是否允许用户切换 (集中自 config)
-	// 足迹页 none 与博客文章页 solid 属于语义背景，锁定且不允许用户偏好覆盖
+	// 足迹页 none、博客列表 newsroom 与文章页 solid 属于语义背景，不允许用户偏好覆盖
 	let backgroundPolicy = $derived(getBackgroundPolicy(page.url.pathname, page.data, page.route.id));
 	// 最终背景模式：普通页面允许用户偏好覆盖，语义背景不覆盖
 	let backgroundMode = $derived<BackgroundMode>(
