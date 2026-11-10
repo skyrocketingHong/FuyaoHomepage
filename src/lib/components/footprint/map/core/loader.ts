@@ -5,6 +5,8 @@
  */
 import { publicConfig } from '$lib/config/public';
 
+let loadingScript: Promise<void> | null = null;
+
 /**
  * 加载 AMap 脚本
  *
@@ -15,29 +17,57 @@ import { publicConfig } from '$lib/config/public';
 export function loadAMapScript(apiKey: string, securityCode: string): Promise<void> {
 	if (typeof window === 'undefined') return Promise.resolve();
 
-	// 1. 注入安全配置
-	const securityConfig: Record<string, unknown> = {
-		serviceHost: publicConfig.services.amap.serviceHost
-	};
-
-	if (securityCode) {
-		securityConfig.securityJsCode = securityCode;
-	}
-
-	(window as unknown as Record<string, unknown>)._AMapSecurityConfig = securityConfig;
-
-	// 2. 检查是否已加载
-	if ((window as unknown as Record<string, unknown>).AMap) {
+	const global = window as unknown as Record<string, unknown>;
+	if (global.AMap) {
 		return Promise.resolve();
 	}
+	if (loadingScript) return loadingScript;
 
-	// 3. 动态加载脚本
-	return new Promise((resolve, reject) => {
+	const serviceHost = publicConfig.services.amap.serviceHost;
+	// ASVS 13.3.1：代理模式由服务端附加安全码，浏览器只配置代理地址。
+	global._AMapSecurityConfig = serviceHost
+		? { serviceHost }
+		: securityCode
+			? { securityJsCode: securityCode }
+			: {};
+
+	loadingScript = new Promise<void>((resolve, reject) => {
 		const script = document.createElement('script');
-		script.src = `https://webapi.amap.com/maps?v=2.0&key=${apiKey}`;
+		const url = new URL('https://webapi.amap.com/maps');
+		url.searchParams.set('v', '2.0');
+		url.searchParams.set('key', apiKey);
+		script.src = url.toString();
 		script.async = true;
-		script.onload = () => resolve();
-		script.onerror = (e) => reject(e);
-		document.head.appendChild(script);
+
+		const cleanup = () => {
+			clearTimeout(timeout);
+			script.onload = null;
+			script.onerror = null;
+		};
+		const fail = () => {
+			cleanup();
+			script.remove();
+			// ASVS 16.5.1：不将包含 Key 的脚本 URL 或原始网络事件带入错误信息。
+			reject(new Error('AMap SDK failed to load'));
+		};
+		const timeout = setTimeout(fail, 15_000);
+		script.onload = () => {
+			if (!global.AMap) {
+				fail();
+				return;
+			}
+			cleanup();
+			resolve();
+		};
+		script.onerror = fail;
+		try {
+			document.head.appendChild(script);
+		} catch {
+			fail();
+		}
+	}).catch((error: unknown) => {
+		loadingScript = null;
+		throw error;
 	});
+	return loadingScript;
 }

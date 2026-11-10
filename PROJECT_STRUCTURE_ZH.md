@@ -115,18 +115,18 @@
 │   │   │   │   ├── GeneratorModal.svelte     # YAML 数据生成器弹窗
 │   │   │   │   ├── PlaceSearchDropdown.svelte# 地点搜索下拉框
 │   │   │   │   └── map/                      # 地图子组件
-│   │   │   │       ├── AMap.svelte           # 高德地图主入口
+│   │   │   │       ├── AMap.svelte           # 原生标点、控件及加载状态
 │   │   │   │       ├── MapCopyright.svelte   # 地图版权信息
-│   │   │   │       ├── MapInfoWindow.svelte  # 地图信息窗口
+│   │   │   │       ├── MapInfoWindow.svelte  # 高德原生信息窗内的地点内容
 │   │   │   │       ├── types.ts              # 地图类型定义
 │   │   │   │       └── core/                 # 地图核心逻辑
 │   │   │   │           ├── copyright.ts          # 版权工具
 │   │   │   │           ├── infoWindowController.svelte.ts # 信息窗口控制器
-│   │   │   │           ├── loader.ts             # 地图加载器
+│   │   │   │           ├── loader.ts             # SDK 共享加载、超时及重试
 │   │   │   │           ├── markers.ts            # 标记点管理
 │   │   │   │           ├── placeSearch.ts        # 地点搜索
 │   │   │   │           ├── view.ts               # 视图工具
-│   │   │   │           └── viewController.svelte.ts # 视图控制器
+│   │   │   │           └── viewController.svelte.ts # 原生非线性相机与减少动态效果
 │   │   │   ├── friends/      # 友链页面组件
 │   │   │   │   ├── FriendCard.svelte        # 友链卡片
 │   │   │   │   └── ProfileCard.svelte       # 个人信息卡片
@@ -299,9 +299,11 @@
 │   ├── fonts/                # 可公开分发的字体
 │   └── robots.txt            # 搜索引擎协议
 ├── tests/                    # Node.js 项目完整性测试
+│   ├── amap-loader.test.js # SDK 加载去重、失败恢复及代理配置
 │   ├── background-loading.test.js # 底部信息对齐、背景加载事务与尺寸重建回归测试
 │   ├── config-boundary.test.js # 配置、占位值、重复字段与 realpath 越界测试
 │   ├── content-watcher.test.js # 内容监听、GPS 保留与部署约束回归测试
+│   ├── footprint-map.test.js # 原生相机、动画中断及重合地点
 │   ├── home-components.test.js # 首页组件布局回归测试
 │   ├── markdown-rendering.test.js # Markdown HTML、链接、公式与表格回归测试
 │   ├── mobile-experience.test.js # Header、底部 Dock、Wallet 与编程统计回归测试

@@ -1,6 +1,28 @@
 example.com {
 	root * /srv/fuyao/current
 
+	# Set services.amap.serviceHost to https://example.com/_AMapService.
+	# Load FUYAO_AMAP_SECURITY_CODE into Caddy's service environment.
+	handle_path /_AMapService/* {
+		route {
+			@invalid_amap_referer not header_regexp Referer ^https://example\.com(/|$)
+			respond @invalid_amap_referer "Forbidden: Invalid Referer" 403
+			header Cache-Control "no-store"
+			rewrite * {path}?{query}&jscode={$FUYAO_AMAP_SECURITY_CODE}
+			@amap_styles path /v4/map/styles*
+			reverse_proxy @amap_styles https://webapi.amap.com {
+				header_up Host {upstream_hostport}
+			}
+			@amap_vectors path /v3/vectormap*
+			reverse_proxy @amap_vectors https://fmap01.amap.com {
+				header_up Host {upstream_hostport}
+			}
+			reverse_proxy https://restapi.amap.com {
+				header_up Host {upstream_hostport}
+			}
+		}
+	}
+
 	handle_path /media/albums/photos/* {
 		root * /srv/fuyao/shared/content/albums/photos
 		file_server

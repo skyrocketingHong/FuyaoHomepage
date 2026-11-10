@@ -1,93 +1,37 @@
+/** 通过高德原生相机过渡更新视图，保留 SDK 的缓动与手势中断行为。 */
 import { getOffsetCenter } from './view';
 import type { AMapInstance } from '../types';
 
-/**
- * 地图视图控制器
- * 负责管理地图的视图更新、缩放动画和交互状态
- */
 export class MapViewController {
-	// 依赖注入 mapInstance (由于 AMap 实例非响应式，我们通过 getter/setter 或方法传递)
-	private _mapInstance: AMapInstance | null = null;
-	private _transitionTimeout: ReturnType<typeof setTimeout> | null = null;
+	mapInstance: AMapInstance | null = null;
+	reducedMotion = false;
 
-	constructor() {}
-
-	set mapInstance(instance: AMapInstance | null) {
-		this._mapInstance = instance;
-	}
-
-	get mapInstance() {
-		return this._mapInstance;
-	}
-
-	/**
-	 * 更新地图视图 (平滑移动/缩放)
-	 * @param center 目标中心点
-	 * @param zoom 目标缩放层级
-	 */
 	updateMapView(center: [number, number], zoom: number) {
-		if (!this._mapInstance) return;
+		const map = this.mapInstance;
+		const current = map?.getCenter();
+		if (!map || !current) return;
+		const target = getOffsetCenter(center, zoom);
+		const distance = Math.hypot(current.getLng() - target[0], current.getLat() - target[1]);
+		if (distance < 0.000001 && Math.abs(map.getZoom() - zoom) < 0.001) return;
 
-		// 清除未完成的动画
-		if (this._transitionTimeout) {
-			clearTimeout(this._transitionTimeout);
-			this._transitionTimeout = null;
-		}
-
-		const currentCenter = this._mapInstance.getCenter();
-		if (!currentCenter) return;
-
-		// 计算考虑侧边栏遮挡的实际目标中心
-		const targetOffsetCenter = getOffsetCenter(center, zoom);
-
-		// 计算距离差异
-		const dx = Math.abs(currentCenter.getLng() - targetOffsetCenter[0]);
-		const dy = Math.abs(currentCenter.getLat() - targetOffsetCenter[1]);
-		const distance = Math.sqrt(dx * dx + dy * dy);
-
-		// 阈值设为 5 度，决定是否使用两段式跳转
-		if (distance > 5) {
-			// 远距离：先缩略预览 (Zoom 4)
-			const durationOut = 600;
-			const overviewCenter = getOffsetCenter([105, 35], 4);
-
-			this._mapInstance.setZoomAndCenter(4, overviewCenter, false, durationOut);
-
-			// 延迟后放大到目标
-			this._transitionTimeout = setTimeout(() => {
-				this._mapInstance?.setZoomAndCenter(zoom, targetOffsetCenter, false, 800);
-				this._transitionTimeout = null;
-			}, durationOut + 100);
-		} else if (distance > 0.0001) {
-			// 近距离：直接平滑过渡 (仅当有实质性移动时)
-			this._mapInstance.setZoomAndCenter(zoom, targetOffsetCenter, false, 500);
-		}
+		// SDK 内部使用 Bézier 插值；新目标会取消旧帧并从当前视图继续。
+		map.setZoomAndCenter(zoom, target, this.reducedMotion, distance > 5 ? 450 : 300);
 	}
 
-	/**
-	 * 设置地图交互状态
-	 * @param enabled 是否允许交互
-	 */
-	setMapInteraction(enabled: boolean) {
-		if (!this._mapInstance) return;
-
-		const status = {
-			zoomEnable: enabled,
-			dragEnable: enabled,
-			scrollWheel: enabled,
-			doubleClickZoom: enabled,
-			keyboardEnable: enabled,
-			touchZoom: enabled
-		};
-
-		this._mapInstance.setStatus(status);
+	setReducedMotion(reduced: boolean) {
+		const map = this.mapInstance;
+		if (map && reduced && !this.reducedMotion) {
+			const current = map.getCenter();
+			// 在关闭 animateEnable 之前终止当前 SDK 相机动画。
+			if (current) {
+				map.setZoomAndCenter(map.getZoom(), [current.getLng(), current.getLat()], false, 0);
+			}
+		}
+		this.reducedMotion = reduced;
+		map?.setStatus({ animateEnable: !reduced, jogEnable: !reduced });
 	}
 
 	destroy() {
-		if (this._transitionTimeout) {
-			clearTimeout(this._transitionTimeout);
-			this._transitionTimeout = null;
-		}
-		this._mapInstance = null;
+		this.mapInstance = null;
 	}
 }

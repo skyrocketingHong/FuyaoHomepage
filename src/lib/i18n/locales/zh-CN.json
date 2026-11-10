@@ -167,7 +167,10 @@
 		},
 		"map": {
 			"location_count": "{{count}} 个地点",
-			"reset_view": "返回足迹总览"
+			"reset_view": "返回足迹总览",
+			"load_error": "地图加载失败",
+			"configuration_error_hint": "尚未配置高德地图访问凭据。",
+			"load_error_hint": "请刷新页面重试；若仍无法加载，请检查高德地图域名授权与网络连接。"
 		},
 		"list_title": "足迹列表",
 		"generator": {

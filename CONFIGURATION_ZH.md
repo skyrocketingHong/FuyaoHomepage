@@ -65,6 +65,10 @@
 
 生产校验拒绝未知字段、重复字段、错误类型、无效 URL、无效日期、无效邮箱、错误语言代码、秘密字段、空关键字段和示例占位值。
 
+高德生产部署使用 Web JS API Key 配置 `services.amap.browserKey`，将 `services.amap.serviceHost` 设为 `https://<站点域名>/_AMapService`。对应安全码通过 Caddy 服务环境变量 `FUYAO_AMAP_SECURITY_CODE` 提供；代理模式下不填写 `services.amap.securityCode`。Caddy 模板只剥离一次代理前缀，将地图样式转发至 `webapi.amap.com`、矢量地图转发至 `fmap01.amap.com`、其他请求转发至 `restapi.amap.com`。必须在高德控制台的 Key 域名白名单中添加实际站点域名，域名迁移后同步更新。代理保留浏览器真实 `Referer`；`Referrer-Policy` 是响应策略，不是必需的请求头。修改配置后校验并重载 Caddy。
+
+足迹地图使用高德默认标点、聚合样式、信息窗体、工具条和比例尺。Logo 与版权继续提取到站点布局中展示，隐藏地图内的原生副本。视角移动调用 SDK 自带的可中断非线性动画；系统启用减少动态效果时关闭相机动画。
+
 编程统计使用两个可选公开端点：`codingActivityProxyUrl` 返回每日活动，`codingLanguagesProxyUrl` 返回七日总语言分布。每日活动端点需要保留真实的逐日语言秒数，响应契约如下：
 
 ```json

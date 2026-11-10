@@ -115,18 +115,18 @@ The public repository contains only source code, `config/*.example.yaml` migrate
 │   │   │   │   ├── GeneratorModal.svelte     # YAML generator dialog
 │   │   │   │   ├── PlaceSearchDropdown.svelte# Place-search results
 │   │   │   │   └── map/                      # Map components
-│   │   │   │       ├── AMap.svelte           # AMap entry point
+│   │   │   │       ├── AMap.svelte           # Native markers, controls, and load state
 │   │   │   │       ├── MapCopyright.svelte   # Map attribution
-│   │   │   │       ├── MapInfoWindow.svelte  # Map information window
+│   │   │   │       ├── MapInfoWindow.svelte  # Content inside the native information window
 │   │   │   │       ├── types.ts              # Map types
 │   │   │   │       └── core/                 # Map core logic
 │   │   │   │           ├── copyright.ts          # Attribution utilities
 │   │   │   │           ├── infoWindowController.svelte.ts # Information-window controller
-│   │   │   │           ├── loader.ts             # AMap loader
+│   │   │   │           ├── loader.ts             # Shared SDK loading, timeout, and retry
 │   │   │   │           ├── markers.ts            # Marker management
 │   │   │   │           ├── placeSearch.ts        # Place search
 │   │   │   │           ├── view.ts               # View utilities
-│   │   │   │           └── viewController.svelte.ts # View controller
+│   │   │   │           └── viewController.svelte.ts # Native nonlinear camera and reduced motion
 │   │   │   ├── friends/      # Friend page components
 │   │   │   │   ├── FriendCard.svelte        # Friend-link card
 │   │   │   │   └── ProfileCard.svelte       # Profile card
@@ -299,9 +299,11 @@ The public repository contains only source code, `config/*.example.yaml` migrate
 │   ├── fonts/                # Publicly distributable fonts
 │   └── robots.txt            # Search-engine directives
 ├── tests/                    # Node.js project-integrity tests
+│   ├── amap-loader.test.js # SDK loading, deduplication, failure recovery, and proxy configuration
 │   ├── background-loading.test.js # Footer alignment, background transactions, and rebuilds
 │   ├── config-boundary.test.js # Configuration, placeholders, duplicates, and path escapes
 │   ├── content-watcher.test.js # Content watching, GPS retention, and deployment constraints
+│   ├── footprint-map.test.js # Native camera motion, interruption, and overlapping places
 │   ├── home-components.test.js # Homepage component layout regressions
 │   ├── markdown-rendering.test.js # Markdown HTML, links, math, and tables
 │   ├── mobile-experience.test.js # Header, bottom dock, Wallet, and coding activity

@@ -35,3 +35,5 @@ services:
   amap:
     browserKey: your_amap_key_here
     securityCode: your_amap_security_code_here
+    # Production: configure serviceHost instead of securityCode.
+    # serviceHost: https://example.com/_AMapService

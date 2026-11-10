@@ -17,6 +17,7 @@
 	import { sidebarState, layoutState, headerState } from '$lib/stores/app.svelte';
 	import { loadFootprints, type FootprintData, type BasePlace } from '$lib/utils/domain/footprints';
 	import LoadingState from '$lib/components/ui/feedback/LoadingState.svelte';
+	import StatusState from '$lib/components/ui/feedback/StatusState.svelte';
 	import { t, locale } from '$lib/i18n/store';
 	import type { CopyrightData } from '$lib/components/footprint/map/types';
 	import { fade } from 'svelte/transition';
@@ -39,6 +40,7 @@
 	let loading = $state(true);
 	let mapLoaded = $state(false);
 	let error = $state('');
+	let mapError = $state<'configuration_error' | 'load_error' | ''>('');
 
 	// 地图视图状态
 	let mapCenter = $state<[number, number]>([105, 35]); // 默认中国中心
@@ -192,15 +194,17 @@
 					handleSelect(place as unknown as BasePlace);
 					sidebarState.setViewMode('city');
 				}}
-				onInfoWindowClose={() => {
-					selectedPlace = null;
-				}}
+				onInfoWindowClose={handleResetMap}
 				onCopyrightLoad={(data) => {
 					mapCopyrightData = data;
+				}}
+				onMapError={(reason) => {
+					mapError = reason;
 				}}
 				onMapLoad={() => {
 					// 仅当数据也加载完成时，才认为整体加载完成
 					// 但 actually we just set mapLoaded = true, the derived state or template check handles the rest
+					mapError = '';
 					mapLoaded = true;
 				}}
 			/>
@@ -251,7 +255,16 @@
 			</div>
 		{/if}
 
-		{#if loading || !mapLoaded}
+		{#if mapError}
+			<div class="z-controls pointer-events-auto fixed inset-0 bg-background">
+				<StatusState
+					icon={MapPinned}
+					title={$t('footprint.map.load_error')}
+					description={$t(`footprint.map.${mapError}_hint`)}
+					transitionKey={`${$locale}-${mapError}`}
+				/>
+			</div>
+		{:else if loading || !mapLoaded}
 			<div
 				class="fixed inset-0 z-50 flex items-center justify-center bg-background"
 				transition:fade={{ duration: 300 }}

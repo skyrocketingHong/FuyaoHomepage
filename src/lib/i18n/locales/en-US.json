@@ -167,7 +167,10 @@
 		},
 		"map": {
 			"location_count": "{{count}} locations",
-			"reset_view": "Return to footprint overview"
+			"reset_view": "Return to footprint overview",
+			"load_error": "Map failed to load",
+			"configuration_error_hint": "AMap access credentials have not been configured.",
+			"load_error_hint": "Refresh to try again. If the problem continues, check AMap domain authorization and your connection."
 		},
 		"list_title": "Footprint List",
 		"generator": {

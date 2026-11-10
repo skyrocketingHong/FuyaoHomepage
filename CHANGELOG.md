@@ -4,6 +4,17 @@ English | [简体中文](./CHANGELOG_ZH.md)
 
 Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## Unreleased
+
+### Changed
+
+- Adopted AMap native markers, cluster styling, information-window chrome, and zoom controls; retained extracted attribution in the site layout.
+- Used interruptible SDK camera easing with reduced-motion support and retained selection of overlapping places.
+
+### Fixed
+
+- Fixed AMap proxy routing and documented domain allowlists; deduplicated SDK loading with timeout recovery and visible load failures.
+
 ## 27.1.1 (2026-07-29)
 
 ### Added

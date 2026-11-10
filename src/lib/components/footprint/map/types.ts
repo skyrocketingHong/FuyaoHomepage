@@ -21,7 +21,9 @@ export interface AMapInstance {
 	destroy(): void;
 	on(event: string, handler: () => void): void;
 	plugin(plugins: string[], callback: () => void): void;
+	addControl(control: object): void;
 	getCenter(): AMapLngLat | null;
+	getZoom(): number;
 	setZoomAndCenter(
 		zoom: number,
 		center: [number, number],
@@ -57,6 +59,7 @@ export interface AMapMarker {
 
 /** 高德官方 MarkerCluster 实例的项目内最小接口。 */
 export interface AMapMarkerCluster {
+	on(event: 'click', handler: (event: AMapClusterClickEvent) => void): void;
 	/** 替换当前聚合数据。 */
 	setData(data: AMapClusterPoint[]): void;
 	/** 将聚合图层挂载到地图，传入 `null` 时移除。 */
@@ -69,6 +72,13 @@ export interface AMapClusterPoint {
 	lnglat: [number, number];
 	/** 聚合中心权重。 */
 	weight?: number;
+	place?: MarkerConfig;
+}
+
+/** 官方聚合点点击事件；clusterData 由 SDK 按坐标分组。 */
+export interface AMapClusterClickEvent {
+	marker: AMapMarker;
+	clusterData?: (AMapClusterPoint | AMapClusterPoint[])[];
 }
 
 /** MarkerCluster 自定义渲染回调参数。 */
@@ -101,6 +111,8 @@ export interface AMapNamespace {
 			renderMarker?: (context: AMapClusterRenderContext) => void;
 		}
 	) => AMapMarkerCluster;
+	ToolBar: new (opts: Record<string, unknown>) => object;
+	Scale: new (opts: Record<string, unknown>) => object;
 	InfoWindow: new (opts: Record<string, unknown>) => AMapInfoWindow;
 	Pixel: new (x: number, y: number) => AMapPixel;
 	plugin: (plugins: string[], callback: () => void) => void;

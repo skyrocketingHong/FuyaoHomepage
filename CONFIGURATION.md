@@ -65,6 +65,10 @@ Use [config/site.example.yaml](./config/site.example.yaml) as the field template
 
 Production validation rejects unknown or duplicate fields, incorrect types, invalid URLs, invalid dates, invalid email addresses, unsupported locale codes, secret fields, empty required values, and example placeholders.
 
+For AMap production deployments, set `services.amap.browserKey` to a Web JS API key and `services.amap.serviceHost` to `https://<site-domain>/_AMapService`. Keep the matching security code in Caddy's service environment as `FUYAO_AMAP_SECURITY_CODE`; omit `services.amap.securityCode` when using the proxy. The Caddy template strips the prefix once, forwards map styles to `webapi.amap.com`, vector maps to `fmap01.amap.com`, and other requests to `restapi.amap.com`. Add the actual site domain to the key's domain allowlist in the AMap console, including after a domain migration. Forward the browser's real `Referer`; `Referrer-Policy` is a response policy, not a required request header. Validate and reload Caddy after updating its configuration.
+
+The footprint map uses AMap's default markers, cluster presentation, information windows, toolbar, and scale. The native logo and attribution are extracted for display in the site layout, with the map's duplicate hidden. Camera movement uses the SDK's interruptible nonlinear transitions; reduced-motion preferences disable camera animation.
+
 Coding statistics use two optional public endpoints: `codingActivityProxyUrl` returns daily activity, while `codingLanguagesProxyUrl` returns the aggregate seven-day language distribution. The daily endpoint must preserve real per-day language seconds:
 
 ```json

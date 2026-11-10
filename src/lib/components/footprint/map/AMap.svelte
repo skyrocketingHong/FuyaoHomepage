@@ -1,26 +1,10 @@
 <script lang="ts">
-	/**
-	 * 高德地图 (AMap) 组件
-	 *
-	 * 负责动态加载高德地图 JS API 并渲染可交互地图。
-	 *
-	 * 功能特性：
-	 * 1. 自动注入安全密钥 (SecurityJSCode) 并加载脚本。
-	 * 2. 使用高德官方 MarkerCluster 响应式渲染足迹点并按距离聚合。
-	 * 3. 视图自适应：考虑侧边栏遮挡，自动计算可视中心。
-	 * 4. 平滑过渡：支持长距离跳转的两段式动画和短距离平滑移动。
-	 * 5. 版权提取：提取地图 Logo 和版权信息供外部展示。
-	 */
+	/** 高德地图入口；标点、聚合、工具条和信息窗均使用官方默认外观。 */
 	import { onMount, onDestroy } from 'svelte';
-	import { browser } from '$app/environment';
 	import { themeState } from '$lib/stores/app.svelte';
 	import { loadAMapScript } from './core/loader';
-	import {
-		createFootprintClusterContent,
-		createFootprintMarkerContent,
-		getPositionKey
-	} from './core/markers';
 	import { extractCopyright } from './core/copyright';
+	import { groupMarkersByPosition, getPositionKey } from './core/markers';
 	import type {
 		CopyrightData,
 		MarkerConfig,
@@ -33,215 +17,192 @@
 	import { MapInfoWindowController } from './core/infoWindowController.svelte';
 	import { getOffsetCenter } from './core/view';
 
-	// ==========================================
-	// Props 定义
-	// ==========================================
 	let props = $props<{
-		apiKey?: string; // API Key
-		securityCode?: string; // 安全密钥
-		markers?: MarkerConfig[]; // 标记点数据
-		center?: [number, number]; // 地图中心 [lng, lat]
-		zoom?: number; // 缩放层级
-		zooms?: [number, number]; // 缩放范围 [min, max]
-		selectedPlace?: MarkerConfig | null; // 当前选中地点
-		onMarkerClick?: (place: MarkerConfig) => void; // 点击回调
-		onInfoWindowClose?: () => void; // 信息窗关闭回调
-		onCopyrightLoad?: (data: CopyrightData) => void; // 版权加载回调
-		onMapLoad?: () => void; // 地图加载完成回调
+		apiKey?: string;
+		securityCode?: string;
+		markers?: MarkerConfig[];
+		center?: [number, number];
+		zoom?: number;
+		zooms?: [number, number];
+		selectedPlace?: MarkerConfig | null;
+		onMarkerClick?: (place: MarkerConfig) => void;
+		onInfoWindowClose?: () => void;
+		onMapLoad?: () => void;
+		onCopyrightLoad?: (data: CopyrightData) => void;
+		onMapError?: (reason: 'configuration_error' | 'load_error') => void;
 	}>();
 
-	// Props 默认值处理
-	const apiKey = $derived(props.apiKey ?? '');
-	const securityCode = $derived(props.securityCode ?? '');
 	const markers = $derived(props.markers ?? []);
 	const center = $derived(props.center ?? [105, 35]);
 	const zoom = $derived(props.zoom ?? 4);
-	const zooms = $derived(props.zooms ?? [2, 20]);
 	const selectedPlace = $derived(props.selectedPlace ?? null);
-	const onMarkerClick = $derived(props.onMarkerClick ?? (() => {}));
-	const onInfoWindowClose = $derived(props.onInfoWindowClose ?? (() => {}));
-	const onCopyrightLoad = $derived(props.onCopyrightLoad ?? (() => {}));
-	const onMapLoad = $derived(props.onMapLoad ?? (() => {}));
+	const mapStyle = $derived(themeState.isDark ? 'amap://styles/grey' : 'amap://styles/whitesmoke');
 
-	// ==========================================
-	// 状态管理
-	// ==========================================
 	let mapContainer: HTMLDivElement;
-	let mapInstance: AMapInstance | null = null; // 保持非响应式，避免 Proxy 问题
-	let mapReady = $state(false); // 引入明确的就绪状态用于 Effect 依赖
+	let mapInstance: AMapInstance | null = null;
+	let mapReady = $state(false);
 	let markerCluster: AMapMarkerCluster | null = null;
 	let markerRenderVersion = 0;
+	let disposed = false;
+	let readyTimeout: ReturnType<typeof setTimeout> | undefined;
+	let motionQuery: MediaQueryList | undefined;
 
-	// 控制器实例
-	let viewController = new MapViewController();
-	let infoWindowController = new MapInfoWindowController(
-		() => onInfoWindowClose(), // Close callback
-		(enabled) => viewController.setMapInteraction(enabled) // Interaction callback
+	const viewController = new MapViewController();
+	const infoWindowController = new MapInfoWindowController(
+		() => props.onInfoWindowClose?.(),
+		(place) => props.onMarkerClick?.(place)
 	);
+	const updateMotion = () => viewController.setReducedMotion(motionQuery?.matches ?? false);
 
-	// 派生当前地图样式 (响应主题变化)
-	let mapStyle = $derived(themeState.isDark ? 'amap://styles/grey' : 'amap://styles/whitesmoke');
-
-	// ==========================================
-	// 生命周期
-	// ==========================================
-	onMount(async () => {
-		if (!browser) return;
-
-		try {
-			// 1. 加载 AMap 脚本
-			await loadAMapScript(apiKey, securityCode);
-
-			// 2. 初始化地图实例
-			initMap();
-
-			// 3. 提取版权信息
-			const copyrightData = await extractCopyright(mapContainer);
-			onCopyrightLoad(copyrightData);
-		} catch (e) {
-			console.error('高德地图初始化失败:', e);
-		}
+	onMount(() => {
+		motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+		motionQuery.addEventListener('change', updateMotion);
+		void initialize();
 	});
 
 	onDestroy(() => {
-		// 销毁控制器
-		viewController.destroy();
-		infoWindowController.destroy();
+		disposed = true;
+		clearTimeout(readyTimeout);
+		motionQuery?.removeEventListener('change', updateMotion);
 		markerRenderVersion += 1;
 		markerCluster?.setMap(null);
 		markerCluster = null;
-
-		if (mapInstance) {
-			mapInstance.destroy();
-			mapInstance = null;
-			mapReady = false;
-		}
+		infoWindowController.destroy();
+		viewController.destroy();
+		mapInstance?.destroy();
+		mapInstance = null;
 	});
 
-	// ==========================================
-	// 响应式 Effects
-	// ==========================================
-
-	// 1. 监听主题变化更新地图样式
 	$effect(() => {
-		if (mapReady && mapInstance && mapStyle) {
-			mapInstance.setMapStyle(mapStyle);
-		}
+		if (mapReady && mapInstance) mapInstance.setMapStyle(mapStyle);
 	});
 
-	// 2. 监听标记点数据变化
 	$effect(() => {
-		// 注意：这里的 markers 依赖已经在 updateMarkers 内部使用
-		// 但为了确保响应式触发，我们需要明确调用
-		const isDark = themeState.isDark;
-		if (mapReady && mapInstance && markers) {
-			updateMarkers(markers, isDark);
-		}
+		if (mapReady && mapInstance) updateMarkers(markers);
 	});
 
-	// 3. 监听选中地点变化 (信息窗体)
 	$effect(() => {
-		if (
-			mapReady &&
-			mapInstance &&
-			typeof (window as unknown as Record<string, unknown>).AMap !== 'undefined'
-		) {
-			if (selectedPlace) {
-				infoWindowController.openInfoWindow(selectedPlace, center, zoom);
-			} else {
-				infoWindowController.close();
-			}
-		}
+		if (!mapReady || !mapInstance) return;
+		if (selectedPlace) infoWindowController.openInfoWindow(selectedPlace);
+		else infoWindowController.close();
 	});
 
-	// 4. 监听视图变化 (中心点和缩放)
 	$effect(() => {
-		// 依赖 mapReady, center, zoom
-		if (mapReady && mapInstance) {
-			// 委托给控制器处理
-			viewController.updateMapView(center, zoom);
-		}
+		if (mapReady && mapInstance) viewController.updateMapView(center, zoom);
 	});
 
-	// ==========================================
-	// 内部逻辑
-	// ==========================================
+	async function initialize() {
+		if (!props.apiKey?.trim()) {
+			props.onMapError?.('configuration_error');
+			return;
+		}
+		try {
+			await loadAMapScript(props.apiKey, props.securityCode ?? '');
+			if (disposed) return;
+			const AMap = (window as unknown as Window & { AMap?: AMapNamespace }).AMap;
+			if (!AMap) throw new Error('AMap unavailable');
 
-	/**
-	 * 初始化地图实例
-	 */
-	function initMap() {
-		const AMap = (window as unknown as Window & { AMap?: AMapNamespace }).AMap;
-		if (!mapContainer || !AMap) return;
+			mapInstance = new AMap.Map(mapContainer, {
+				viewMode: '2D',
+				zoom,
+				center: getOffsetCenter(center, zoom),
+				mapStyle,
+				zooms: props.zooms ?? [2, 20],
+				showLabel: true,
+				animateEnable: !motionQuery?.matches,
+				jogEnable: !motionQuery?.matches,
+				resizeEnable: true
+			});
+			viewController.mapInstance = mapInstance;
+			infoWindowController.mapInstance = mapInstance;
+			updateMotion();
 
-		// 计算初始偏移中心，确保地图直接渲染在正确位置，避免初始动画
-		const initialCenter = getOffsetCenter(center, zoom);
+			readyTimeout = setTimeout(() => {
+				if (!disposed && !mapReady) props.onMapError?.('load_error');
+			}, 20000);
+			mapInstance.on('complete', () => {
+				if (disposed || mapReady) return;
+				clearTimeout(readyTimeout);
+				mapReady = true;
+				props.onMapLoad?.();
+			});
 
-		mapInstance = new AMap.Map(mapContainer, {
-			viewMode: '2D',
-			zoom: zoom,
-			center: initialCenter,
-			mapStyle: mapStyle,
-			zooms: zooms,
-			showLabel: true,
-			animateEnable: true,
-			resizeEnable: true
-		});
+			void extractCopyright(mapContainer).then((data) => {
+				if (!disposed) props.onCopyrightLoad?.(data);
+			});
 
-		// 注入 mapInstance 到控制器
-		viewController.mapInstance = mapInstance;
-		infoWindowController.mapInstance = mapInstance;
-
-		mapInstance.on('complete', () => {
-			mapReady = true; // 标记地图就绪，触发依赖 Effect
-			onMapLoad();
-		});
+			const currentMap = mapInstance;
+			currentMap.plugin(['AMap.ToolBar', 'AMap.Scale'], () => {
+				if (disposed || mapInstance !== currentMap) return;
+				currentMap.addControl(
+					new AMap.ToolBar({
+						position: { top: 'calc(var(--header-height) + 16px)', right: '16px' }
+					})
+				);
+				currentMap.addControl(
+					new AMap.Scale({
+						position: { bottom: 'calc(var(--mobile-dock-clearance) + 48px)', right: '16px' }
+					})
+				);
+			});
+		} catch {
+			if (!disposed) props.onMapError?.('load_error');
+		}
 	}
 
-	/**
-	 * 使用高德官方 MarkerCluster 更新地图标记点。
-	 *
-	 * @param newMarkers - 足迹点数据
-	 * @param isDark - 是否使用深色标记样式
-	 */
-	function updateMarkers(newMarkers: MarkerConfig[], isDark: boolean) {
+	function updateMarkers(newMarkers: MarkerConfig[]) {
 		if (!mapInstance) return;
 		const currentMap = mapInstance;
 		const renderVersion = ++markerRenderVersion;
 		markerCluster?.setMap(null);
 		markerCluster = null;
-
 		if (newMarkers.length === 0) return;
-		const markerLookup = new Map(
-			newMarkers.map((place) => [getPositionKey(place.position), place] as const)
-		);
+
+		const markerLookup = groupMarkersByPosition(newMarkers);
 		const points: AMapClusterPoint[] = newMarkers.map((place) => ({
-			lnglat: place.position,
-			weight: place.type === 'city' ? 2 : 1
+			lnglat: [...place.position],
+			weight: place.type === 'city' ? 2 : 1,
+			place
 		}));
 
 		currentMap.plugin(['AMap.MarkerCluster'], () => {
-			if (renderVersion !== markerRenderVersion || !mapInstance) return;
+			if (disposed || renderVersion !== markerRenderVersion || mapInstance !== currentMap) return;
 			const AMap = (window as unknown as Window & { AMap: AMapNamespace }).AMap;
 			markerCluster = new AMap.MarkerCluster(currentMap, points, {
 				gridSize: 68,
 				maxZoom: 17,
 				averageCenter: true,
-				renderClusterMarker: ({ marker, count = 0 }) => {
-					marker.setContent(createFootprintClusterContent(count));
-					marker.setOffset(new AMap.Pixel(-23, -23));
-				},
 				renderMarker: ({ marker }) => {
 					const position = marker.getPosition();
 					if (!position) return;
-					const place = markerLookup.get(getPositionKey([position.getLng(), position.getLat()]));
-					if (!place) return;
-
-					marker.setContent(createFootprintMarkerContent(place, isDark));
-					marker.setOffset(new AMap.Pixel(-18, -18));
-					marker.setTitle(place.title ?? '');
-					marker.setExtData(place);
-					marker.on('click', () => onMarkerClick(place));
+					const places = markerLookup.get(getPositionKey([position.getLng(), position.getLat()]));
+					if (!places?.length) return;
+					marker.setTitle(places.map((place) => place.title ?? '').join('、'));
+					marker.setExtData(places);
+					marker.on('click', () => {
+						if (places.length > 1) infoWindowController.openPlaces(places);
+						else props.onMarkerClick?.(places[0]);
+					});
+				}
+			});
+			markerCluster.on('click', ({ marker, clusterData }) => {
+				// 非聚合图钉已有自己的点击处理，保留插件默认皮肤。
+				if (marker.getExtData()) return;
+				const places = (clusterData ?? [])
+					.flat()
+					.flatMap((point) => (point.place ? [point.place] : []));
+				if (!places.length) return;
+				const key = getPositionKey(places[0].position);
+				if (places.every((place) => getPositionKey(place.position) === key)) {
+					infoWindowController.openPlaces(places);
+				} else {
+					const position = marker.getPosition();
+					if (position) {
+						viewController.updateMapView(
+							[position.getLng(), position.getLat()],
+							Math.min(currentMap.getZoom() + 2, 18)
+						);
+					}
 				}
 			});
 		});
