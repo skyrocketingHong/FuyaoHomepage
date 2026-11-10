@@ -36,15 +36,52 @@ example.com {
 		}
 	}
 
+	@mutable_content path /release.json /service-worker.js /posts/* /data/* /albums/* /favicon/* /images/* /wp-content/* /blog/rss.xml /sitemap.xml
+	header @mutable_content {
+		Cache-Control "no-store, max-age=0"
+		CDN-Cache-Control "no-store"
+		Cloudflare-CDN-Cache-Control "no-store"
+	}
+
 	handle_path /media/albums/photos/* {
 		root * /srv/fuyao/shared/content/albums/photos
+		header {
+			Cache-Control "no-store, max-age=0"
+			CDN-Cache-Control "no-store"
+			Cloudflare-CDN-Cache-Control "no-store"
+		}
 		file_server
 	}
 
 	handle_path /media/albums/thumbnails/* {
 		root * /srv/fuyao/shared/content/albums/thumbnails
+		header {
+			Cache-Control "no-store, max-age=0"
+			CDN-Cache-Control "no-store"
+			Cloudflare-CDN-Cache-Control "no-store"
+		}
 		file_server
 	}
 
-	file_server
+	@blog_page {
+		path /blog /blog/*
+		not path /blog/rss.xml
+	}
+	route @blog_page {
+		try_files {path}/index.html {path}index.html /200.html
+		file_server
+	}
+
+	@static {
+		path *.js *.css *.png *.jpg *.jpeg *.gif *.svg *.ico *.woff *.woff2 *.webp *.json *.xml *.txt *.yaml
+		path /fonts/* /posts/* /data/*
+	}
+	handle @static {
+		file_server
+	}
+
+	handle {
+		try_files {path}/index.html {path}index.html {path}.html /200.html
+		file_server
+	}
 }

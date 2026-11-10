@@ -194,12 +194,15 @@ npm run build:production
 仓库提供以下生产模板和脚本：
 
 - `scripts/deploy.js`：获取部署锁、读取或克隆源码、检查生产输入、构建独立 release、切换 `current` 并执行可选健康检查。
-- `scripts/watch-content.js`：递归监听文章和相册目录，合并短时间内的连续文件事件。
-- `scripts/prepare-content-update.js`：在低内存服务器上整理相册、生成缩略图和元数据，并记录待发布状态，不执行 Vite 构建。
+- `scripts/deploy-content.js`：基于当前应用 release 创建低内存内容 release，替换可变公开内容、执行健康检查并原子切换 `current`，不运行 Vite。
+- `scripts/prepare-content-release.js`：校验并组装文章、附件、数据 YAML、相册元数据、favicon、RSS 和 Sitemap；相册事件会先导入照片并重新生成缩略图及 EXIF 索引。
+- `scripts/watch-content.js`：递归监听文章及附件、持久化 `images/` 与 `wp-content/`、相册原图、数据 YAML 和 favicon，合并短时间内的连续文件事件。
 - `deploy/systemd/`：部署任务和内容监听服务模板。
 - `deploy/caddy/`：静态 release 与外部相册媒体路由模板。
 
-默认内容监听服务采用 `prepare` 模式。服务器只准备内容并记录待发布状态，最终生产构建和 release 发布由独立发布流程完成，避免在低内存服务器上执行预渲染。资源充足且变量完整时，监听器也支持直接调用部署脚本。
+默认内容监听服务采用 `content-only` 模式。服务通过硬链接复用当前应用 bundle，将可变内容发布为独立 release，避免在低内存服务器上运行 Vite 和 SvelteKit 预渲染。内容 release 的博客路由使用现有 `200.html` 回退；后续完整代码 release 会恢复文章预渲染 HTML。可变资源统一发送浏览器与 CDN `no-store` 头，Service Worker 为持久化媒体附加缓存绕过查询参数；已打开页面每 30 秒检查 `release.json`，发现 release 变化后自动刷新。
+
+首次启用该链路时必须先执行一次完整代码发布，使当前应用包含 SPA 回退、Service Worker 可变资源规则和 release 轮询逻辑。完成这次引导发布后，日常内容变更只经过内容监听服务，不再要求运行 Vite 构建。
 
 部署前必须根据实际服务器路径、运行账户、域名和 Secret 管理方式调整模板。完整流程、变量表、Caddy 映射和回滚方法见 [CONFIGURATION_ZH.md](./CONFIGURATION_ZH.md)。
 

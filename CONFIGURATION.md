@@ -138,33 +138,37 @@ Album media uses `external` mode. Metadata enters the build snapshot, while orig
 
 `.env.example` lists only routine, non-secret deployment parameters. Production builds, deployments, migrations, and content services support the following external variables:
 
-| Variable                      | Required for                                     | Purpose                                                        |
-| :---------------------------- | :----------------------------------------------- | :------------------------------------------------------------- |
-| `FUYAO_CONFIG_ROOT`           | Production build, deployment                     | Directory containing external `site.yaml` and `content.yaml`   |
-| `FUYAO_CONTENT_ROOT`          | Production build, migration, content preparation | Persistent external content root                               |
-| `FUYAO_FAVICON_ROOT`          | Production build, deployment                     | Persistent external favicon directory                          |
-| `FUYAO_SHARED_ROOT`           | Deployment                                       | Persistent root containing configuration, content, and secrets |
-| `FUYAO_RELEASE_ROOT`          | Deployment                                       | Directory containing independent releases                      |
-| `FUYAO_CURRENT_LINK`          | Deployment                                       | Symbolic link to the active release                            |
-| `FUYAO_DEPLOY_LOCK`           | Optional                                         | Build and deployment mutex path                                |
-| `FUYAO_SECRETS_FILE`          | Optional                                         | Secret values that final artifact scanning must reject         |
-| `FUYAO_REPOSITORY_URL`        | Deployment without a local source root           | Public source repository URL                                   |
-| `FUYAO_SOURCE_ROOT`           | Optional                                         | Existing source directory, avoiding a fresh clone              |
-| `FUYAO_RELEASE_KEEP`          | Optional                                         | Number of successful releases to retain; default `5`           |
-| `FUYAO_HEALTHCHECK_URL`       | Optional                                         | Site URL used to validate `release.json` after switching       |
-| `FUYAO_POSTS_WATCH_DIR`       | Content watcher                                  | Article directory to watch                                     |
-| `FUYAO_ALBUM_PHOTOS_DIR`      | Album generation, content watcher                | Album-originals directory                                      |
-| `FUYAO_ALBUM_THUMBNAILS_DIR`  | Album generation, content preparation            | Album-thumbnail directory                                      |
-| `FUYAO_ALBUM_METADATA_DIR`    | Album generation, content preparation            | Album-index output directory                                   |
-| `FUYAO_ALBUM_COORD_TYPE`      | Optional                                         | Source EXIF coordinate system: `wgs84` or `gcj02`              |
-| `FUYAO_CONTENT_PENDING_FILE`  | Content preparation                              | Pending-deployment state file                                  |
-| `FUYAO_WATCH_MODE`            | Optional                                         | Content-watcher mode: `prepare` or `deploy`                    |
-| `FUYAO_WATCH_DEBOUNCE_MS`     | Optional                                         | File-event debounce in milliseconds; default `5000`            |
-| `FUYAO_CONTENT_DEPLOY_SCRIPT` | Optional                                         | Preparation or deployment script invoked by the watcher        |
-| `FUYAO_LEGACY_ROOT`           | 3.0.0 migration                                  | Independent copy of the 3.0.0 source tree                      |
-| `FUYAO_MIGRATION_TYPES`       | Optional                                         | Comma-separated content types to migrate                       |
-| `FUYAO_MIGRATION_MANIFEST`    | Migration apply                                  | SHA-256 migration-manifest output path                         |
-| `FUYAO_PRIVACY_TERMS_FILE`    | Optional                                         | External privacy-term file, one term per line                  |
+| Variable                      | Required for                                     | Purpose                                                                      |
+| :---------------------------- | :----------------------------------------------- | :--------------------------------------------------------------------------- |
+| `FUYAO_CONFIG_ROOT`           | Production build, deployment                     | Directory containing external `site.yaml` and `content.yaml`                 |
+| `FUYAO_CONTENT_ROOT`          | Production build, migration, content preparation | Persistent external content root                                             |
+| `FUYAO_FAVICON_ROOT`          | Production build, deployment                     | Persistent external favicon directory                                        |
+| `FUYAO_SHARED_ROOT`           | Deployment                                       | Persistent root containing configuration, content, and secrets               |
+| `FUYAO_RELEASE_ROOT`          | Deployment                                       | Directory containing independent releases                                    |
+| `FUYAO_CURRENT_LINK`          | Deployment                                       | Symbolic link to the active release                                          |
+| `FUYAO_DEPLOY_LOCK`           | Optional                                         | Build and deployment mutex path                                              |
+| `FUYAO_SECRETS_FILE`          | Optional                                         | Secret values that final artifact scanning must reject                       |
+| `FUYAO_REPOSITORY_URL`        | Deployment without a local source root           | Public source repository URL                                                 |
+| `FUYAO_SOURCE_ROOT`           | Optional                                         | Existing source directory, avoiding a fresh clone                            |
+| `FUYAO_RELEASE_KEEP`          | Optional                                         | Number of successful releases to retain; default `5`                         |
+| `FUYAO_HEALTHCHECK_URL`       | Optional                                         | Site URL used to validate `release.json` after switching                     |
+| `FUYAO_POSTS_WATCH_DIR`       | Content watcher                                  | Article directory to watch                                                   |
+| `FUYAO_DATA_WATCH_DIR`        | Content watcher                                  | YAML data directory to watch                                                 |
+| `FUYAO_FAVICON_WATCH_DIR`     | Content watcher                                  | Persistent favicon directory to watch                                        |
+| `FUYAO_STATIC_WATCH_DIRS`     | Content watcher                                  | Platform-delimited persistent static directories to watch                    |
+| `FUYAO_ALBUM_PHOTOS_DIR`      | Album generation, content watcher                | Album-originals directory                                                    |
+| `FUYAO_ALBUM_THUMBNAILS_DIR`  | Album generation, content preparation            | Album-thumbnail directory                                                    |
+| `FUYAO_ALBUM_METADATA_DIR`    | Album generation, content preparation            | Album-index output directory                                                 |
+| `FUYAO_ALBUM_COORD_TYPE`      | Optional                                         | Source EXIF coordinate system: `wgs84` or `gcj02`                            |
+| `FUYAO_CONTENT_PENDING_FILE`  | Content preparation                              | Pending-deployment state file                                                |
+| `FUYAO_WATCH_MODE`            | Optional                                         | Content-watcher mode: `content-only`, `prepare`, or `deploy`                 |
+| `FUYAO_WATCH_DEBOUNCE_MS`     | Optional                                         | File-event debounce in milliseconds; default `5000`                          |
+| `FUYAO_WATCH_RETRY_MS`        | Optional                                         | Initial retry delay after a failed publication; default `30000` milliseconds |
+| `FUYAO_CONTENT_DEPLOY_SCRIPT` | Optional                                         | Preparation or deployment script invoked by the watcher                      |
+| `FUYAO_LEGACY_ROOT`           | 3.0.0 migration                                  | Independent copy of the 3.0.0 source tree                                    |
+| `FUYAO_MIGRATION_TYPES`       | Optional                                         | Comma-separated content types to migrate                                     |
+| `FUYAO_MIGRATION_MANIFEST`    | Migration apply                                  | SHA-256 migration-manifest output path                                       |
+| `FUYAO_PRIVACY_TERMS_FILE`    | Optional                                         | External privacy-term file, one term per line                                |
 
 `FUYAO_SKIP_LOCK`, `FUYAO_SKIP_INSTALL`, `FUYAO_FAST_DEPLOY`, `FUYAO_DEPLOY_REASON`, and snapshot-related variables are passed internally by deployment and content scripts. They are not routine operator configuration.
 
@@ -217,19 +221,26 @@ node scripts/deploy.js --rollback=<release-id>
 
 Rollback switches only the release pointer. It does not modify persistent content.
 
+`npm run deploy:content` is the low-memory content transaction. It acquires the same deployment lock, scans albums when requested, validates all mutable public content, hard-links the active application release into a staging release, replaces `posts/`, `data/`, `albums/`, `favicon/`, RSS, and Sitemap, removes stale blog prerendered HTML, and atomically switches `current`. A failed validation or health check leaves or restores the previous release. Full code deployment remains responsible for rebuilding application bundles and restoring prerendered blog HTML.
+
 ## 8. Content Watching
 
-Production uses `fuyao-content-watcher.service` to watch the authoritative content directories:
+Production uses `fuyao-content-watcher.service` in `content-only` mode to watch the authoritative content directories:
 
-- Markdown changes under `/srv/fuyao/shared/content/posts/` add `posts` to the pending-deployment state.
-- Image changes under `/srv/fuyao/shared/content/albums/photos/` import new root-level photos, rename and archive them by date, generate responsive WebP thumbnails and public EXIF metadata with GPS, and add `albums` to pending state.
+- Any article or attachment change under `/srv/fuyao/shared/content/posts/` schedules a content release.
+- Image changes under `/srv/fuyao/shared/content/albums/photos/` import new root-level photos, rename and archive them by date, generate responsive WebP thumbnails and public EXIF metadata with GPS, then publish the updated album indexes.
+- YAML changes under `/srv/fuyao/shared/content/data/` and files under `/srv/fuyao/shared/legacy/root-assets/favicon/` schedule the same atomic content release.
+- Changes under the externally served `/srv/fuyao/shared/content/images/` and `/srv/fuyao/shared/content/wp-content/` trees schedule a release refresh without copying those persistent files into the release.
 - A five-second debounce coalesces rapid events. Events received during processing remain queued rather than starting a concurrent operation.
+- Pending reasons are persisted in `/srv/fuyao/shared/content/state/pending-deploy.json`; service restart resumes them, and successful publication removes only completed reasons. The watcher also journals queued and active reasons in the `.watcher.json` sidecar. Failed jobs, including deployment-lock conflicts, restore their reasons and retry with exponential backoff up to five times; exhausted jobs remain durable until another event, reload, or restart.
 
 Upload `jpg`, `jpeg`, `png`, `heic`, `webp`, `tiff`, or `tif` files directly to the root of `albums/photos/`. Do not write manually to `thumbnails/` or `metadata/`.
 
-The service runs verified source and dependencies from `/srv/fuyao/tooling/current` through `/opt/fuyao/node/bin/node`. Update tooling after releasing new code. Content changes no longer clone the remote repository on demand.
+The service runs verified source and dependencies from `/srv/fuyao/tooling/current` through `/opt/fuyao/node/bin/node`. Update tooling after releasing new code. Content changes neither clone the repository nor run Vite.
 
-The server prepares content and writes `/srv/fuyao/shared/content/state/pending-deploy.json`; it does not run the Vite production build. The release workflow downloads external configuration, content, and favicons to the build host, runs `npm run build:production`, uploads an independent release with rsync, and atomically switches `current`. This prevents prerendering from causing out-of-memory failures or heavy swapping on low-memory servers.
+Before enabling `content-only` for the first time, perform one full code release with this version. That bootstrap installs the `200.html` SPA fallback, Service Worker bypass rules, and browser release polling into the active application bundle. Subsequent content events do not require a full build.
+
+The Caddy template tries an existing prerendered blog `index.html` first and otherwise serves `200.html`. Content releases intentionally remove stale blog HTML so new and modified articles render from current Markdown and JSON. Full code releases retain prerendered HTML. Caddy sends browser and CDN `no-store` headers for mutable content, persistent `images/` and `wp-content/`, and external album media; the Service Worker bypasses those paths. Open pages poll `/release.json` every 30 seconds and reload after an atomic switch.
 
 ```bash
 systemctl reload fuyao-content-watcher.service
@@ -237,9 +248,19 @@ systemctl kill -s SIGUSR2 fuyao-content-watcher.service
 journalctl -u fuyao-content-watcher.service -f
 ```
 
-- `reload`: manually record a pending article update.
-- `SIGUSR2`: manually prepare albums and record a pending update.
-- `journalctl`: follow watcher and content-preparation output.
+- `reload`: manually schedule and publish an article content release.
+- `SIGUSR2`: manually scan albums and publish updated content.
+- `journalctl`: follow preparation, validation, atomic switching, and recovery output.
+
+After completing the bootstrap code release and installing updated tooling, merge `deploy/caddy/FuyaoHomepage.caddy.example` into the active site configuration, validate and reload Caddy, then replace and restart the watcher unit:
+
+```bash
+sudo caddy validate --config /etc/caddy/Caddyfile
+sudo systemctl reload caddy
+sudo install -m 0644 deploy/systemd/fuyao-content-watcher.service /etc/systemd/system/
+sudo systemctl daemon-reload
+sudo systemctl enable --now fuyao-content-watcher.service
+```
 
 The former `/root/blog-tools/scripts/watch-posts.js` watched only `/home/caddy/www/index/posts`. Disable `blog-watcher.service` after migration. You may retain the old tooling and unit backup for rollback, but never run both watchers at the same time.
 

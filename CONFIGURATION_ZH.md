@@ -138,33 +138,37 @@ Caddy 将 `.webmanifest` 作为 `application/manifest+json` 返回，避免回�
 
 `.env.example` 只列出非秘密的常规部署参数。生产部署和内容服务支持的外部变量如下：
 
-| 变量                          | 必需条件                 | 用途                                           |
-| :---------------------------- | :----------------------- | :--------------------------------------------- |
-| `FUYAO_CONFIG_ROOT`           | 生产构建、部署           | 外部 `site.yaml` 与 `content.yaml` 所在目录    |
-| `FUYAO_CONTENT_ROOT`          | 生产构建、迁移、内容准备 | 外部持久化内容根目录                           |
-| `FUYAO_FAVICON_ROOT`          | 生产构建、部署           | 外部持久化 favicon 目录                        |
-| `FUYAO_SHARED_ROOT`           | 部署                     | 配置、内容和密钥的持久化根目录                 |
-| `FUYAO_RELEASE_ROOT`          | 部署                     | 独立 release 保存目录                          |
-| `FUYAO_CURRENT_LINK`          | 部署                     | 当前线上 release 的符号链接                    |
-| `FUYAO_DEPLOY_LOCK`           | 可选                     | 构建与部署互斥锁路径                           |
-| `FUYAO_SECRETS_FILE`          | 可选                     | 为最终产物泄漏扫描提供需禁止出现的服务端秘密值 |
-| `FUYAO_REPOSITORY_URL`        | 未设置本地源码目录时部署 | 公开源码仓库地址                               |
-| `FUYAO_SOURCE_ROOT`           | 可选                     | 使用已存在源码目录部署，避免重新克隆           |
-| `FUYAO_RELEASE_KEEP`          | 可选                     | 成功部署后保留的 release 数量，默认 `5`        |
-| `FUYAO_HEALTHCHECK_URL`       | 可选                     | 切换后用于验证 `release.json` 的站点地址       |
-| `FUYAO_POSTS_WATCH_DIR`       | 内容监听                 | 文章监听目录                                   |
-| `FUYAO_ALBUM_PHOTOS_DIR`      | 相册生成、内容监听       | 相册原图目录                                   |
-| `FUYAO_ALBUM_THUMBNAILS_DIR`  | 相册生成、内容准备       | 相册缩略图目录                                 |
-| `FUYAO_ALBUM_METADATA_DIR`    | 相册生成、内容准备       | 相册索引输出目录                               |
-| `FUYAO_ALBUM_COORD_TYPE`      | 可选                     | 原始 EXIF 坐标系，`wgs84` 或 `gcj02`           |
-| `FUYAO_CONTENT_PENDING_FILE`  | 内容准备                 | 待发布状态文件                                 |
-| `FUYAO_WATCH_MODE`            | 可选                     | 内容监听模式，`prepare` 或 `deploy`            |
-| `FUYAO_WATCH_DEBOUNCE_MS`     | 可选                     | 连续文件事件合并时间，默认 `5000` 毫秒         |
-| `FUYAO_CONTENT_DEPLOY_SCRIPT` | 可选                     | 内容监听器调用的准备或部署脚本路径             |
-| `FUYAO_LEGACY_ROOT`           | 3.0.0 内容迁移           | 独立保存的 3.0.0 源文件树                      |
-| `FUYAO_MIGRATION_TYPES`       | 可选                     | 逗号分隔的迁移内容类型                         |
-| `FUYAO_MIGRATION_MANIFEST`    | 执行迁移                 | SHA-256 迁移清单输出路径                       |
-| `FUYAO_PRIVACY_TERMS_FILE`    | 可选                     | 隐私扫描的外部敏感词文件，每行一项             |
+| 变量                          | 必需条件                 | 用途                                                |
+| :---------------------------- | :----------------------- | :-------------------------------------------------- |
+| `FUYAO_CONFIG_ROOT`           | 生产构建、部署           | 外部 `site.yaml` 与 `content.yaml` 所在目录         |
+| `FUYAO_CONTENT_ROOT`          | 生产构建、迁移、内容准备 | 外部持久化内容根目录                                |
+| `FUYAO_FAVICON_ROOT`          | 生产构建、部署           | 外部持久化 favicon 目录                             |
+| `FUYAO_SHARED_ROOT`           | 部署                     | 配置、内容和密钥的持久化根目录                      |
+| `FUYAO_RELEASE_ROOT`          | 部署                     | 独立 release 保存目录                               |
+| `FUYAO_CURRENT_LINK`          | 部署                     | 当前线上 release 的符号链接                         |
+| `FUYAO_DEPLOY_LOCK`           | 可选                     | 构建与部署互斥锁路径                                |
+| `FUYAO_SECRETS_FILE`          | 可选                     | 为最终产物泄漏扫描提供需禁止出现的服务端秘密值      |
+| `FUYAO_REPOSITORY_URL`        | 未设置本地源码目录时部署 | 公开源码仓库地址                                    |
+| `FUYAO_SOURCE_ROOT`           | 可选                     | 使用已存在源码目录部署，避免重新克隆                |
+| `FUYAO_RELEASE_KEEP`          | 可选                     | 成功部署后保留的 release 数量，默认 `5`             |
+| `FUYAO_HEALTHCHECK_URL`       | 可选                     | 切换后用于验证 `release.json` 的站点地址            |
+| `FUYAO_POSTS_WATCH_DIR`       | 内容监听                 | 文章监听目录                                        |
+| `FUYAO_DATA_WATCH_DIR`        | 内容监听                 | YAML 数据监听目录                                   |
+| `FUYAO_FAVICON_WATCH_DIR`     | 内容监听                 | 持久化 favicon 监听目录                             |
+| `FUYAO_STATIC_WATCH_DIRS`     | 内容监听                 | 以平台路径分隔符连接的持久化静态资源监听目录        |
+| `FUYAO_ALBUM_PHOTOS_DIR`      | 相册生成、内容监听       | 相册原图目录                                        |
+| `FUYAO_ALBUM_THUMBNAILS_DIR`  | 相册生成、内容准备       | 相册缩略图目录                                      |
+| `FUYAO_ALBUM_METADATA_DIR`    | 相册生成、内容准备       | 相册索引输出目录                                    |
+| `FUYAO_ALBUM_COORD_TYPE`      | 可选                     | 原始 EXIF 坐标系，`wgs84` 或 `gcj02`                |
+| `FUYAO_CONTENT_PENDING_FILE`  | 内容准备                 | 待发布状态文件                                      |
+| `FUYAO_WATCH_MODE`            | 可选                     | 内容监听模式，`content-only`、`prepare` 或 `deploy` |
+| `FUYAO_WATCH_DEBOUNCE_MS`     | 可选                     | 连续文件事件合并时间，默认 `5000` 毫秒              |
+| `FUYAO_WATCH_RETRY_MS`        | 可选                     | 发布失败后的首次重试延迟，默认 `30000` 毫秒         |
+| `FUYAO_CONTENT_DEPLOY_SCRIPT` | 可选                     | 内容监听器调用的准备或部署脚本路径                  |
+| `FUYAO_LEGACY_ROOT`           | 3.0.0 内容迁移           | 独立保存的 3.0.0 源文件树                           |
+| `FUYAO_MIGRATION_TYPES`       | 可选                     | 逗号分隔的迁移内容类型                              |
+| `FUYAO_MIGRATION_MANIFEST`    | 执行迁移                 | SHA-256 迁移清单输出路径                            |
+| `FUYAO_PRIVACY_TERMS_FILE`    | 可选                     | 隐私扫描的外部敏感词文件，每行一项                  |
 
 `FUYAO_SKIP_LOCK`、`FUYAO_SKIP_INSTALL`、`FUYAO_FAST_DEPLOY`、`FUYAO_DEPLOY_REASON` 以及构建快照相关变量由部署和内容脚本内部传递，不作为常规人工配置入口。
 
@@ -217,19 +221,26 @@ node scripts/deploy.js --rollback=<release-id>
 
 回滚仅切换 release 指针，不修改持久化内容。
 
+`npm run deploy:content` 是低内存内容发布事务。它获取同一部署锁，按需扫描相册，校验全部可变公开内容，以硬链接把当前应用 release 复制为暂存 release，替换 `posts/`、`data/`、`albums/`、`favicon/`、RSS 和 Sitemap，移除过期博客预渲染 HTML，最后原子切换 `current`。校验或健康检查失败时不切换或恢复旧 release。完整代码发布仍负责重建应用 bundle 并恢复博客预渲染 HTML。
+
 ## 8. 内容目录监控
 
-生产环境使用 `fuyao-content-watcher.service` 统一监听以下权威目录：
+生产环境使用 `fuyao-content-watcher.service` 的 `content-only` 模式统一监听以下权威目录：
 
-- 监听 `/srv/fuyao/shared/content/posts/` 下的 Markdown 变更，并将 `posts` 写入待发布状态。
-- 监听 `/srv/fuyao/shared/content/albums/photos/` 下的图片变更，导入根目录新照片、按日期重命名归档、生成响应式 WebP 缩略图和保留 GPS 的公开 EXIF 元数据，并将 `albums` 写入待发布状态。
+- 监听 `/srv/fuyao/shared/content/posts/` 下的文章及附件变更并安排内容 release。
+- 监听 `/srv/fuyao/shared/content/albums/photos/` 下的图片变更，导入根目录新照片、按日期重命名归档、生成响应式 WebP 缩略图和保留 GPS 的公开 EXIF 元数据，再发布更新后的相册索引。
+- 监听 `/srv/fuyao/shared/content/data/` 下的 YAML，以及 `/srv/fuyao/shared/legacy/root-assets/favicon/` 下的文件，并纳入同一原子内容 release。
+- 监听由 Caddy 直接提供的 `/srv/fuyao/shared/content/images/` 和 `/srv/fuyao/shared/content/wp-content/`；变更时触发 release 刷新，但不把这些持久化文件复制进 release。
 - 使用 5 秒防抖合并连续文件事件；处理期间产生的新事件会排队，不并行修改内容。
+- 将待发布原因持久化到 `/srv/fuyao/shared/content/state/pending-deploy.json`；服务重启后自动恢复，发布成功后仅清除已完成原因。监听器另用 `.watcher.json` 附属文件记录排队和执行中的原因。发布失败或部署锁冲突后恢复队列，指数退避重试最多五次；达到上限后仍保留记录，等待新事件、reload 或服务重启恢复。
 
 新增照片时，将 `jpg`、`jpeg`、`png`、`heic`、`webp`、`tiff` 或 `tif` 文件直接上传到 `albums/photos/` 根目录。不要手工写入 `thumbnails/` 或 `metadata/`。
 
-服务使用 `/srv/fuyao/tooling/current` 中的已验证源码与依赖，并通过 `/opt/fuyao/node/bin/node` 运行。代码版本发布后必须同步更新 tooling；内容变更不再从远程仓库临时克隆。
+服务使用 `/srv/fuyao/tooling/current` 中的已验证源码与依赖，并通过 `/opt/fuyao/node/bin/node` 运行。代码版本发布后必须同步更新 tooling；内容变更不克隆仓库，也不运行 Vite。
 
-服务器只准备内容并写入 `/srv/fuyao/shared/content/state/pending-deploy.json`，不执行 Vite 生产构建。发布时将外部配置、内容和 favicon 下载到本地，运行 `npm run build:production`，再通过 rsync 上传独立 release 并原子切换 `current`。该模式避免低内存服务器因预渲染进入 OOM 或重度换页。
+首次启用 `content-only` 前，必须使用本版本完成一次完整代码发布，将 `200.html` SPA 回退、Service Worker 绕过规则和浏览器 release 轮询写入当前应用 bundle。完成该引导发布后，后续内容事件不再需要完整构建。
+
+Caddy 模板优先读取已经存在的博客预渲染 `index.html`，不存在时回退到 `200.html`。内容 release 会主动移除过期博客 HTML，使新增和修改文章从最新 Markdown 与 JSON 渲染；完整代码 release 继续保留预渲染 HTML。Caddy 对可变内容、持久化 `images/`、`wp-content/` 及外部相册媒体发送浏览器与 CDN `no-store` 头，Service Worker 不拦截这些路径。已打开页面每 30 秒轮询 `/release.json`，原子切换后自动刷新。
 
 ```bash
 systemctl reload fuyao-content-watcher.service
@@ -237,9 +248,19 @@ systemctl kill -s SIGUSR2 fuyao-content-watcher.service
 journalctl -u fuyao-content-watcher.service -f
 ```
 
-- `reload`：手工记录文章待发布状态。
-- `SIGUSR2`：手工触发相册整理并记录待发布状态。
-- `journalctl`：查看监听事件和内容准备结果。
+- `reload`：手工安排并发布文章内容 release。
+- `SIGUSR2`：手工扫描相册并发布更新内容。
+- `journalctl`：查看内容准备、校验、原子切换和失败恢复日志。
+
+完成引导代码发布并更新 tooling 后，将 `deploy/caddy/FuyaoHomepage.caddy.example` 的规则合并到实际站点配置，验证并重载 Caddy，再替换和重启 watcher unit：
+
+```bash
+sudo caddy validate --config /etc/caddy/Caddyfile
+sudo systemctl reload caddy
+sudo install -m 0644 deploy/systemd/fuyao-content-watcher.service /etc/systemd/system/
+sudo systemctl daemon-reload
+sudo systemctl enable --now fuyao-content-watcher.service
+```
 
 旧 `/root/blog-tools/scripts/watch-posts.js` 仅监控 `/home/caddy/www/index/posts`，迁移后必须停用 `blog-watcher.service`。为便于回滚，可保留旧工具目录和 unit 备份，但不得同时启用两个监听服务。
 

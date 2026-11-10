@@ -63,7 +63,7 @@ const deployReasons = new Set(
 		.map((value) => value.trim())
 		.filter(Boolean)
 );
-const allowedReasons = new Set(['manual', 'posts', 'albums']);
+const allowedReasons = new Set(['manual', 'posts', 'albums', 'data', 'favicon', 'static']);
 
 if ([...deployReasons].some((reason) => !allowedReasons.has(reason))) {
 	throw new Error(`不支持的部署原因：${[...deployReasons].join(',')}`);

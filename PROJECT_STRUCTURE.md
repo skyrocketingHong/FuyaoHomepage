@@ -31,7 +31,7 @@ The public repository contains only source code, `config/*.example.yaml` migrate
 │   └── systemd/
 │       ├── fuyao-deploy.service
 │       ├── fuyao-public-data.service # Loopback data cache with private configuration credentials
-│       └── fuyao-content-watcher.service # Unified article and photo watcher
+│       └── fuyao-content-watcher.service # Low-memory article, album, data, and favicon publisher
 ├── fixtures/content/     # Public demonstration content for development and CI
 │   ├── posts/            # Markdown demonstration articles migrated from static
 │   ├── data/             # Footprint, friend, payment, and social samples
@@ -60,15 +60,19 @@ The public repository contains only source code, `config/*.example.yaml` migrate
 │   ├── generate-album-index.js# Generate EXIF indexes and responsive thumbnails
 │   ├── prepare-build-inputs.js # Validate, copy, and freeze external favicon/content inputs
 │   ├── prepare-content-update.js # Low-memory album preparation and pending state
+│   ├── prepare-content-release.js # Assemble and validate mutable public content without Vite
+│   ├── prepare-spa-fallback.js # Reuse prerendered GlobalLoader markup in the SPA fallback
 │   ├── validate-deployment.js  # Input, artifact exposure, and public-read checks
 │   ├── audit-repository.js     # Privacy scan for current files and complete Git history
 │   ├── migrate-content.js      # External persistent-content copy with SHA-256 manifest
 │   ├── deploy.js               # Independent releases, atomic switching, and rollback
-│   ├── watch-content.js       # Recursive article/photo watcher with event coalescing
+│   ├── deploy-content.js       # Hard-linked low-memory content releases and atomic switching
+│   ├── watch-content.js       # Recursive content watcher with durable event coalescing
 │   └── update-version.js      # Version validation, synchronization, and Build Train formatting
 ├── src/
 │   ├── app.d.ts          # TypeScript declarations
 │   ├── app.html          # HTML template
+│   ├── hooks.client.ts   # Hydrate the real GlobalLoader before SPA route resolution
 │   ├── service-worker.ts # Service Worker
 │   ├── lib/              # Core application library
 │   │   ├── actions/          # Svelte Actions
@@ -197,7 +201,8 @@ The public repository contains only source code, `config/*.example.yaml` migrate
 │   │   │   │   │   ├── MobileBottomDock.svelte # Two live-blurred pills, gap, and safe area
 │   │   │   │   │   └── MobileNav.svelte      # Six equal-width floating direct tabs
 │   │   │   │   ├── loader/       # Loading indicators
-│   │   │   │   │   └── GlobalLoader.svelte   # Initial background and canvas-rebuild overlay
+│   │   │   │   │   ├── GlobalLoader.svelte   # Initial background and canvas-rebuild overlay
+│   │   │   │   │   └── spaFallbackLoader.ts  # Hydrate and outro the same loader in SPA fallback
 │   │   │   │   └── sidebar/      # Global sidebar
 │   │   │   │       ├── Sidebar.svelte        # Desktop sidebar container
 │   │   │   │       ├── SidebarTree.svelte    # Recursive navigation tree
@@ -307,6 +312,7 @@ The public repository contains only source code, `config/*.example.yaml` migrate
 │   ├── amap-loader.test.js # SDK loading, deduplication, failure recovery, and proxy configuration
 │   ├── background-loading.test.js # Footer alignment, background transactions, and rebuilds
 │   ├── config-boundary.test.js # Configuration, placeholders, duplicates, and path escapes
+│   ├── content-deploy.test.js # Content release replacement, hard-link reuse, and atomic switching
 │   ├── content-watcher.test.js # Content watching, GPS retention, and deployment constraints
 │   ├── footprint-map.test.js # Native camera motion, interruption, and overlapping places
 │   ├── github-repositories.test.js # Repository validation, safe links, and duplicate identities

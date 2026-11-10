@@ -310,6 +310,10 @@ test('viewport 状态使用实际可用区域并声明式关闭 MainContent 滚�
 	assert.match(theme, /bottom: var\(--viewport-state-bottom-clearance\)/);
 	assert.match(loading, /data-status-layout="viewport"/);
 	assert.match(loading, /viewport-state-region/);
+	assert.match(loading, /viewport-state-region--fullscreen/);
+	assert.match(loading, /relative min-w-0 text-center/);
+	assert.match(theme, /\.viewport-state-region--fullscreen\s*\{[^}]*inset:\s*0;/s);
+	assert.match(loading, /absolute top-1\/2 right-full mr-4 -translate-y-1\/2/);
 	assert.ok((viewportSources.match(/layout="viewport"/g) ?? []).length >= 4);
 	assert.equal((blogSearch.match(/layout="embedded"/g) ?? []).length, 2);
 	assert.doesNotMatch(

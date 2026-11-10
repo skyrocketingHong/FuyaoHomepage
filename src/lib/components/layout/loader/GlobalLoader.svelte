@@ -12,11 +12,23 @@
 	import { publicConfig } from '$lib/config/public';
 
 	const loadingText = `${getTranslation('common.travingto')}${getTranslation('common.colon')}${publicConfig.site.name}`;
+	const transitionDuration = 400;
 
 	let { showContent } = $props<{ showContent: boolean }>();
+
+	/** 供 SPA fallback 的水合实例触发与正常根布局完全相同的 Crossfade 退场。 */
+	export function finishLoading(): Promise<void> {
+		showContent = true;
+		return new Promise((resolve) => window.setTimeout(resolve, transitionDuration));
+	}
 </script>
 
-<Crossfade key={showContent} duration={400} class="z-loader pointer-events-none fixed inset-0">
+<template id="fuyao-global-loader-start"></template>
+<Crossfade
+	key={showContent}
+	duration={transitionDuration}
+	class="z-loader pointer-events-none fixed inset-0"
+>
 	{#if !showContent}
 		<div class="pointer-events-auto h-full w-full">
 			<LoadingState loading={true} variant="fullscreen" text={loadingText} />
@@ -26,3 +38,4 @@
 		<div></div>
 	{/if}
 </Crossfade>
+<template id="fuyao-global-loader-end"></template>

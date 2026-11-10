@@ -12,7 +12,7 @@ import process from 'node:process';
 import { fileURLToPath } from 'node:url';
 
 const projectRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const allowedReasons = new Set(['posts', 'albums']);
+const allowedReasons = new Set(['posts', 'albums', 'data', 'favicon', 'static']);
 
 function required(name) {
 	const value = process.env[name];

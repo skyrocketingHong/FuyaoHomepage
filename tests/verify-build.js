@@ -21,10 +21,19 @@ assert(fs.existsSync(articlePath), `构建产物缺少文章页面：${category}
 
 const articleHtml = fs.readFileSync(articlePath, 'utf8');
 const blogListHtml = fs.readFileSync(path.join(buildRoot, 'blog', 'index.html'), 'utf8');
+const fallbackHtml = fs.readFileSync(path.join(buildRoot, '200.html'), 'utf8');
 assert.match(articleHtml, /<title>[^<]+<\/title>/, '文章页面缺少服务端渲染标题');
 assert.match(articleHtml, /<div class="markdown-body"/, '文章页面缺少服务端渲染正文');
 assert.match(articleHtml, /reader-background/, '文章首屏未使用纯色阅读背景');
 assert.doesNotMatch(articleHtml, /title="背景模式 \(/, '文章首屏不应渲染背景切换胶囊');
 assert.match(blogListHtml, /title="背景模式 \(/, '博客列表页应保留背景切换胶囊');
+assert.match(fallbackHtml, /id="fuyao-prerendered-loader"/, 'SPA fallback 缺少预渲染加载器');
+assert.match(fallbackHtml, /fuyao-global-loader-start/, 'SPA fallback 未复用 GlobalLoader 输出');
+assert.match(
+	fallbackHtml,
+	/fuyao-prerendered-loader[^>]*><!--\[-->/,
+	'SPA fallback 的 GlobalLoader 缺少 Svelte 水合边界'
+);
+assert.doesNotMatch(fallbackHtml, /fuyao-bootstrap-loader/, 'SPA fallback 不应包含独立加载实现');
 
-console.log('构建产物验证通过：博客正文、阅读背景及列表页背景切换器状态正确。');
+console.log('构建产物验证通过：博客正文、阅读背景、列表背景切换及 SPA 加载器正确。');

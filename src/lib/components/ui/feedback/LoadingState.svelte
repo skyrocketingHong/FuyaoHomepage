@@ -3,8 +3,7 @@
 	 * 加载状态管理器
 	 *
 	 * 统一管理加载中、错误及正常内容三种状态的切换。
-	 * 支持内联 (inline) 和全屏 (fullscreen) 布局模式；全屏模式与 StatusState
-	 * viewport 共用 Header、侧栏和 Bottom Dock 之间的实际可用区域计算。
+	 * 支持内联 (inline) 和全屏 (fullscreen) 布局模式；全屏模式相对整个视口居中。
 	 *
 	 * @prop loading - 是否处于加载状态 (默认 false)
 	 * @prop error - 错误信息内容 (默认 '')
@@ -65,14 +64,18 @@
 			data-status-layout="viewport"
 			class="relative h-full w-full bg-background {sidebarOffset ? 'md:pl-72' : ''} {className}"
 		>
-			<div class="viewport-state-region z-content flex-row gap-4">
-				<LoadingSpinner size="md" />
+			<div class="viewport-state-region viewport-state-region--fullscreen z-content">
 				{#if showText}
-					<span class="text-xs font-medium tracking-widest text-muted-foreground">
-						<Crossfade key={$locale} inline class="inline-grid">
-							<span>{displayText}</span>
-						</Crossfade>
-					</span>
+					<div class="relative min-w-0 text-center">
+						<LoadingSpinner size="md" class="absolute top-1/2 right-full mr-4 -translate-y-1/2" />
+						<span class="text-xs font-medium tracking-widest text-muted-foreground">
+							<Crossfade key={$locale} inline class="inline-grid">
+								<span>{displayText}</span>
+							</Crossfade>
+						</span>
+					</div>
+				{:else}
+					<LoadingSpinner size="md" />
 				{/if}
 			</div>
 

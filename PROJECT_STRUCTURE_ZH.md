@@ -31,7 +31,7 @@
 │   └── systemd/
 │       ├── fuyao-deploy.service
 │       ├── fuyao-public-data.service # 使用私有配置凭据的本机数据缓存
-│       └── fuyao-content-watcher.service # 文章与照片统一监听及自动发布
+│       └── fuyao-content-watcher.service # 文章、相册、数据与 favicon 低内存自动发布
 ├── fixtures/content/     # 开发与 CI 使用的公开演示内容
 │   ├── posts/            # 从旧 static 迁移的 Markdown 演示文章
 │   ├── data/             # 从旧 static 迁移的足迹、友链、付款及社交示例
@@ -60,15 +60,19 @@
 │   ├── generate-album-index.js# 相册 EXIF 索引及响应式缩略图生成脚本
 │   ├── prepare-build-inputs.js # 校验、复制外部 favicon/内容并冻结构建输入快照
 │   ├── prepare-content-update.js # 低内存相册整理与待发布状态写入
+│   ├── prepare-content-release.js # 不运行 Vite 的可变公开内容组装与校验
+│   ├── prepare-spa-fallback.js # 在 SPA fallback 中复用预渲染 GlobalLoader 标记
 │   ├── validate-deployment.js  # 构建输入与最终产物泄漏、公开读取权限检查
 │   ├── audit-repository.js     # 当前文件和完整 Git 历史隐私扫描
 │   ├── migrate-content.js      # 外部持久化内容复制与 SHA-256 清单
 │   ├── deploy.js               # 独立 release、原子切换与回滚
-│   ├── watch-content.js       # 文章与照片递归监听、事件合并及自动发布
+│   ├── deploy-content.js       # 硬链接复用的低内存内容 release 与原子切换
+│   ├── watch-content.js       # 全内容递归监听、持久化事件合并及自动发布
 │   └── update-version.js      # 版本校验、更新、同步及 Build Train 格式化入口
 ├── src/
 │   ├── app.d.ts          # TypeScript 类型定义
 │   ├── app.html          # HTML 模版
+│   ├── hooks.client.ts   # SPA 路由解析前水合真实 GlobalLoader
 │   ├── service-worker.ts # Service Worker
 │   ├── lib/              # 核心库代码
 │   │   ├── actions/          # Svelte Actions
@@ -197,7 +201,8 @@
 │   │   │   │   │   ├── MobileBottomDock.svelte # 编排两个独立同材质实时模糊胶囊、5px 间距与安全区
 │   │   │   │   │   └── MobileNav.svelte      # 六项等宽直达、复用 Dock 胶囊材质的悬浮 Tab Bar
 │   │   │   │   ├── loader/       # 加载指示器
-│   │   │   │   │   └── GlobalLoader.svelte   # 首次背景加载与画布尺寸重建的全局遮罩
+│   │   │   │   │   ├── GlobalLoader.svelte   # 首次背景加载与画布尺寸重建的全局遮罩
+│   │   │   │   │   └── spaFallbackLoader.ts  # SPA fallback 中同一加载器的水合与退场
 │   │   │   │   └── sidebar/      # 全局侧边栏
 │   │   │   │       ├── Sidebar.svelte        # PC端侧边栏容器
 │   │   │   │       ├── SidebarTree.svelte    # 递归导航树
@@ -307,6 +312,7 @@
 │   ├── amap-loader.test.js # SDK 加载去重、失败恢复及代理配置
 │   ├── background-loading.test.js # 底部信息对齐、背景加载事务与尺寸重建回归测试
 │   ├── config-boundary.test.js # 配置、占位值、重复字段与 realpath 越界测试
+│   ├── content-deploy.test.js # 内容 release 替换、硬链接复用与原子切换测试
 │   ├── content-watcher.test.js # 内容监听、GPS 保留与部署约束回归测试
 │   ├── footprint-map.test.js # 原生相机、动画中断及重合地点
 │   ├── github-repositories.test.js # 仓库数据、链接与重复标识校验

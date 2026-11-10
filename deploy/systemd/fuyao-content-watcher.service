@@ -4,6 +4,10 @@ After=network-online.target caddy.service
 Wants=network-online.target
 ConditionPathIsDirectory=/srv/fuyao/shared/content/posts
 ConditionPathIsDirectory=/srv/fuyao/shared/content/albums/photos
+ConditionPathIsDirectory=/srv/fuyao/shared/content/data
+ConditionPathIsDirectory=/srv/fuyao/shared/content/images
+ConditionPathIsDirectory=/srv/fuyao/shared/content/wp-content
+ConditionPathIsDirectory=/srv/fuyao/shared/legacy/root-assets/favicon
 
 [Service]
 Type=simple
@@ -11,14 +15,24 @@ User=root
 Group=root
 WorkingDirectory=/srv/fuyao/tooling/current
 Environment=PATH=/opt/fuyao/node/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
-Environment=FUYAO_WATCH_MODE=prepare
+EnvironmentFile=/srv/fuyao/shared/config/deployment.env
+Environment=FUYAO_WATCH_MODE=content-only
+Environment=FUYAO_CONFIG_ROOT=/srv/fuyao/shared/config
+Environment=FUYAO_CONTENT_ROOT=/srv/fuyao/shared/content
+Environment=FUYAO_FAVICON_ROOT=/srv/fuyao/shared/legacy/root-assets/favicon
+Environment=FUYAO_SHARED_ROOT=/srv/fuyao/shared
+Environment=FUYAO_RELEASE_ROOT=/srv/fuyao/releases
+Environment=FUYAO_CURRENT_LINK=/srv/fuyao/current
+Environment=FUYAO_DEPLOY_LOCK=/srv/fuyao/deploy.lock
 Environment=FUYAO_POSTS_WATCH_DIR=/srv/fuyao/shared/content/posts
 Environment=FUYAO_ALBUM_PHOTOS_DIR=/srv/fuyao/shared/content/albums/photos
 Environment=FUYAO_ALBUM_THUMBNAILS_DIR=/srv/fuyao/shared/content/albums/thumbnails
 Environment=FUYAO_ALBUM_METADATA_DIR=/srv/fuyao/shared/content/albums/metadata
+Environment=FUYAO_DATA_WATCH_DIR=/srv/fuyao/shared/content/data
+Environment=FUYAO_FAVICON_WATCH_DIR=/srv/fuyao/shared/legacy/root-assets/favicon
+Environment=FUYAO_STATIC_WATCH_DIRS=/srv/fuyao/shared/content/images:/srv/fuyao/shared/content/wp-content
 Environment=FUYAO_CONTENT_PENDING_FILE=/srv/fuyao/shared/content/state/pending-deploy.json
 Environment=FUYAO_WATCH_DEBOUNCE_MS=5000
-EnvironmentFile=/srv/fuyao/shared/config/deployment.env
 ExecStart=/opt/fuyao/node/bin/node scripts/watch-content.js
 ExecReload=/bin/kill -USR1 $MAINPID
 Restart=on-failure
@@ -38,8 +52,8 @@ ProtectKernelModules=true
 ProtectControlGroups=true
 RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
 InaccessiblePaths=/srv/fuyao/shared/secrets
-ReadWritePaths=/srv/fuyao/shared/content/albums /srv/fuyao/shared/content/state
-ReadOnlyPaths=/opt/fuyao/node /srv/fuyao/tooling /srv/fuyao/shared/config /srv/fuyao/shared/content/posts /srv/fuyao/shared/content/data
+ReadWritePaths=/srv/fuyao /srv/fuyao/shared/content/albums /srv/fuyao/shared/content/state
+ReadOnlyPaths=/opt/fuyao/node /srv/fuyao/tooling /srv/fuyao/shared
 MemoryHigh=640M
 MemoryMax=768M
 

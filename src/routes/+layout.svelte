@@ -11,11 +11,16 @@
 	import { page, navigating } from '$app/state';
 	import { backgroundState, layoutState } from '$lib/stores/app.svelte';
 	import { t } from '$lib/i18n/store';
+	import { onMount } from 'svelte';
 	import { fade } from 'svelte/transition';
 
 	// 引入新的模块化组件
 	import BackgroundLayer from '$lib/components/layout/background/BackgroundLayer.svelte';
 	import GlobalLoader from '$lib/components/layout/loader/GlobalLoader.svelte';
+	import {
+		hasSpaFallbackLoader,
+		releaseSpaFallbackLoader
+	} from '$lib/components/layout/loader/spaFallbackLoader';
 	import LoadingSpinner from '$lib/components/ui/feedback/LoadingSpinner.svelte';
 
 	import MobileBottomDock from '$lib/components/layout/nav/MobileBottomDock.svelte';
@@ -52,6 +57,15 @@
 
 	// 只有当图片加载完成时才显示内容
 	let showContent = $derived(backgroundState.isLoaded);
+	let spaFallbackLoaderActive = $state(hasSpaFallbackLoader());
+
+	$effect(() => {
+		if (spaFallbackLoaderActive && showContent) {
+			void releaseSpaFallbackLoader().then(() => {
+				spaFallbackLoaderActive = false;
+			});
+		}
+	});
 
 	// 决定是否渲染布局层级的 SEO 标签。
 	// 博客子页面（文章及特定分类）会自行处理 SEO，因此在此跳过。
@@ -78,6 +92,43 @@
 	// 内容滚动模式由路由配置派生，是滚动状态的唯一来源
 	let contentScrollable = $derived(getContentScrollable(page.url.pathname));
 
+	onMount(() => {
+		let currentReleaseId = '';
+		let checking = false;
+		let stopped = false;
+
+		async function checkRelease() {
+			if (checking || stopped || document.visibilityState === 'hidden') return;
+			checking = true;
+			try {
+				const response = await fetch(`/release.json?check=${Date.now()}`, { cache: 'no-store' });
+				if (!response.ok) return;
+				const release = (await response.json()) as { releaseId?: string };
+				if (!release.releaseId) return;
+				if (currentReleaseId && currentReleaseId !== release.releaseId) {
+					stopped = true;
+					window.location.reload();
+					return;
+				}
+				currentReleaseId = release.releaseId;
+			} catch {
+				// 网络不可用时保留当前页面，下次轮询或重新回到前台时继续检查。
+			} finally {
+				checking = false;
+			}
+		}
+
+		void checkRelease();
+		const interval = window.setInterval(checkRelease, 30_000);
+		const handleVisibilityChange = () => void checkRelease();
+		document.addEventListener('visibilitychange', handleVisibilityChange);
+		return () => {
+			stopped = true;
+			window.clearInterval(interval);
+			document.removeEventListener('visibilitychange', handleVisibilityChange);
+		};
+	});
+
 	function handleLightboxClose() {
 		if (lightboxState.onClose) lightboxState.onClose();
 		else lightboxState.close();
@@ -94,7 +145,9 @@
 {/if}
 
 <!-- 加载屏幕：在背景图片未加载时显示 -->
-<GlobalLoader {showContent} />
+{#if !spaFallbackLoaderActive}
+	<GlobalLoader {showContent} />
+{/if}
 
 <!-- 全局背景层 -->
 <BackgroundLayer spotlightUrl={data.appConfig?.wallpaper?.default ?? ''} mode={backgroundMode} />

@@ -69,13 +69,12 @@ function assertNoLeaks(root, label) {
 	if (issues.length) throw new Error(issues.join('\n'));
 }
 
-function validateInputs(snapshotRoot) {
-	const publicRoot = path.join(snapshotRoot, 'public');
+function appendBlogIssues(publicRoot, issues) {
 	const postsRoot = path.join(publicRoot, 'posts');
-	const dataRoot = path.join(publicRoot, 'data');
-	const faviconRoot = path.join(publicRoot, 'favicon');
-	const albumIndex = path.join(publicRoot, 'albums', 'index.json');
-	const issues = [];
+	if (!fs.existsSync(postsRoot)) {
+		issues.push('博客内容缺少 posts 目录');
+		return;
+	}
 
 	for (const file of filesUnder(postsRoot).filter(
 		(value) => value.endsWith('.md') && path.basename(value) !== '_index.md'
@@ -97,21 +96,31 @@ function validateInputs(snapshotRoot) {
 				issues.push(`${file} 引用了不存在的资源 ${target}`);
 		}
 	}
+	for (const required of ['all.json', 'categories.json', 'search.json', 'manifest.json']) {
+		if (!fs.existsSync(path.join(postsRoot, required))) issues.push(`博客索引缺少 ${required}`);
+	}
+	if (!fs.existsSync(path.join(publicRoot, 'blog', 'rss.xml'))) issues.push('博客内容缺少 RSS');
+	if (!fs.existsSync(path.join(publicRoot, 'sitemap.xml'))) issues.push('博客内容缺少 Sitemap');
+}
 
-	for (const file of filesUnder(dataRoot).filter((value) => /\.ya?ml$/i.test(value))) {
-		try {
-			yaml.load(fs.readFileSync(file, 'utf8'), { json: false });
-		} catch (error) {
-			issues.push(`${file} YAML 无效：${error instanceof Error ? error.message : String(error)}`);
+function appendSharedContentIssues(publicRoot, issues) {
+	const dataRoot = path.join(publicRoot, 'data');
+	const faviconRoot = path.join(publicRoot, 'favicon');
+	const albumIndex = path.join(publicRoot, 'albums', 'index.json');
+	if (!fs.existsSync(dataRoot)) issues.push('公开内容缺少 data 目录');
+	else {
+		for (const file of filesUnder(dataRoot).filter((value) => /\.ya?ml$/i.test(value))) {
+			try {
+				yaml.load(fs.readFileSync(file, 'utf8'), { json: false });
+			} catch (error) {
+				issues.push(`${file} YAML 无效：${error instanceof Error ? error.message : String(error)}`);
+			}
 		}
 	}
 	if (!fs.existsSync(albumIndex)) issues.push('相册元数据缺少 index.json');
 	else {
 		const index = JSON.parse(fs.readFileSync(albumIndex, 'utf8'));
 		if (index.schemaVersion !== 1) issues.push('相册 index.json 缺少兼容的 schemaVersion: 1');
-	}
-	for (const required of ['all.json', 'categories.json', 'search.json', 'manifest.json']) {
-		if (!fs.existsSync(path.join(postsRoot, required))) issues.push(`博客索引缺少 ${required}`);
 	}
 	for (const required of [
 		'apple-touch-icon.png',
@@ -123,15 +132,40 @@ function validateInputs(snapshotRoot) {
 	]) {
 		if (!fs.existsSync(path.join(faviconRoot, required))) issues.push(`favicon 缺少 ${required}`);
 	}
+}
+
+function validateInputs(snapshotRoot) {
+	const publicRoot = path.join(snapshotRoot, 'public');
+	const issues = [];
+
+	appendBlogIssues(publicRoot, issues);
+	appendSharedContentIssues(publicRoot, issues);
 	if (issues.length) throw new Error(`构建输入校验失败：\n- ${issues.join('\n- ')}`);
 	assertNoLeaks(publicRoot, '公开构建输入');
 	assertPublicTreePermissions(publicRoot, '公开构建输入');
+}
+
+function validateContentRelease(publicRoot) {
+	const issues = [];
+	appendBlogIssues(publicRoot, issues);
+	appendSharedContentIssues(publicRoot, issues);
+	if (issues.length) throw new Error(`公开内容校验失败：\n- ${issues.join('\n- ')}`);
+	assertNoLeaks(publicRoot, '公开内容 release');
+	assertPublicTreePermissions(publicRoot, '公开内容 release');
 }
 
 if (phase === 'inputs') {
 	const snapshotRoot = process.env.FUYAO_BUILD_SNAPSHOT;
 	if (!snapshotRoot) throw new Error('缺少 FUYAO_BUILD_SNAPSHOT');
 	validateInputs(snapshotRoot);
+	console.log('构建输入校验通过');
+	process.exit(0);
+} else if (phase === 'content-release') {
+	const publicRoot = process.env.FUYAO_CONTENT_PUBLIC_ROOT;
+	if (!publicRoot) throw new Error('缺少 FUYAO_CONTENT_PUBLIC_ROOT');
+	validateContentRelease(fs.realpathSync(publicRoot));
+	console.log('公开内容 release 校验通过');
+	process.exit(0);
 } else {
 	const buildRoot = process.env.FUYAO_BUILD_ROOT || path.join(projectRoot, 'build');
 	if (!fs.existsSync(buildRoot)) throw new Error(`构建产物不存在：${buildRoot}`);
@@ -142,4 +176,4 @@ if (phase === 'inputs') {
 	}
 }
 
-console.log(`${phase === 'inputs' ? '构建输入' : '构建产物'}校验通过`);
+console.log('构建产物校验通过');

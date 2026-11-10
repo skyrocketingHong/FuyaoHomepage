@@ -6,12 +6,21 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## Unreleased
 
+### Added
+
+- Added low-memory content-only releases for articles, attachments, data YAML, album indexes, favicons, RSS, and Sitemap without running Vite.
+- Added recursive content watching with durable pending-state recovery, album import and thumbnail generation, atomic switching, health checks, and automatic page reload after a release change.
+
 ### Changed
+
+- Reuse same-size glass textures, clip rendering to visible regions, and skip redraws when scrolling leaves glass geometry unchanged.
 
 - Serve GitHub projects and analytics through same-origin cached endpoints, with bounded client requests and validated recent-success fallbacks.
 
 - Adopted AMap native markers, cluster styling, information-window chrome, and zoom controls; retained extracted attribution in the site layout.
 - Used interruptible SDK camera easing with reduced-motion support and retained selection of overlapping places.
+
+- Added Caddy SPA fallback for blog pages missing prerendered HTML, browser/CDN `no-store` headers, and Service Worker cache bypass for mutable persistent media.
 
 ### Fixed
 
@@ -19,6 +28,8 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Fixed Web Manifest routing and MIME type, stopped Cloudflare beacon auto-injection with `no-transform`, and removed synthetic offline HTTP 408 responses from the Service Worker.
 
 - Fixed AMap proxy routing and documented domain allowlists; deduplicated SDK loading with timeout recovery and visible load failures.
+
+- Fixed direct album URLs being treated as physical directories instead of SPA routes; fallback pages now hydrate the real `GlobalLoader` before route resolution, preserving its Crossfade lifecycle and true viewport-centered text.
 
 ## 27.1.1 (2026-07-29)
 

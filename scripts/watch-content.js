@@ -2,8 +2,8 @@
 /**
  * 生产内容监听器。
  *
- * 递归监听外部文章和照片目录，将短时间内的事件合并后调用原子部署脚本。
- * 文章变更直接触发构建；照片变更由部署脚本先完成导入、缩略图和公开元数据更新。
+ * 递归监听外部文章、照片、数据、favicon 和持久化静态资源目录，将短时间内的事件
+ * 合并后调用内容原子发布脚本。相册变更会先完成导入、缩略图和公开元数据更新。
  */
 import { spawn } from 'node:child_process';
 import fs from 'node:fs';
@@ -14,8 +14,8 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 const projectRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const imageExtensions = new Set(['.jpg', '.jpeg', '.png', '.heic', '.webp', '.tiff', '.tif']);
 
-/** @typedef {'posts' | 'albums'} ContentScope */
-/** @typedef {'posts' | 'albums'} DeployReason */
+/** @typedef {'posts' | 'albums' | 'data' | 'favicon' | 'static'} ContentScope */
+/** @typedef {'posts' | 'albums' | 'data' | 'favicon' | 'static'} DeployReason */
 
 /**
  * @param {unknown} scope
@@ -24,10 +24,14 @@ const imageExtensions = new Set(['.jpg', '.jpeg', '.png', '.heic', '.webp', '.ti
  */
 export function classifyContentChange(scope, filename) {
 	if (typeof filename !== 'string' || filename.length === 0) return null;
-	if (scope === 'posts') return path.extname(filename).toLowerCase() === '.md' ? 'posts' : null;
+	if (path.basename(filename).startsWith('.')) return null;
+	if (scope === 'posts') return 'posts';
 	if (scope === 'albums') {
 		return imageExtensions.has(path.extname(filename).toLowerCase()) ? 'albums' : null;
 	}
+	if (scope === 'data') return /\.ya?ml$/i.test(filename) ? 'data' : null;
+	if (scope === 'favicon') return 'favicon';
+	if (scope === 'static') return 'static';
 	return null;
 }
 
@@ -37,6 +41,31 @@ export function hasRootAlbumImports(directory) {
 	return fs
 		.readdirSync(directory, { withFileTypes: true })
 		.some((entry) => entry.isFile() && imageExtensions.has(path.extname(entry.name).toLowerCase()));
+}
+
+/** @param {string | undefined} markerPath @returns {DeployReason[]} */
+export function readPendingReasons(markerPath) {
+	if (!markerPath || !fs.existsSync(markerPath)) return [];
+	try {
+		const marker = JSON.parse(fs.readFileSync(markerPath, 'utf8'));
+		/** @type {DeployReason[]} */
+		const reasons = [];
+		for (const value of Array.isArray(marker.reasons) ? marker.reasons : []) {
+			const reason = String(value);
+			if (
+				reason === 'posts' ||
+				reason === 'albums' ||
+				reason === 'data' ||
+				reason === 'favicon' ||
+				reason === 'static'
+			) {
+				reasons.push(reason);
+			}
+		}
+		return reasons;
+	} catch {
+		return [];
+	}
 }
 
 /** @param {string} name */
@@ -51,8 +80,15 @@ function requiredDirectory(name) {
 export function startWatcher() {
 	const postsDirectory = requiredDirectory('FUYAO_POSTS_WATCH_DIR');
 	const albumsDirectory = requiredDirectory('FUYAO_ALBUM_PHOTOS_DIR');
+	const dataDirectory = requiredDirectory('FUYAO_DATA_WATCH_DIR');
+	const faviconDirectory = requiredDirectory('FUYAO_FAVICON_WATCH_DIR');
+	const staticDirectories = (process.env.FUYAO_STATIC_WATCH_DIRS || '')
+		.split(path.delimiter)
+		.map((directory) => directory.trim())
+		.filter(Boolean)
+		.map((directory) => fs.realpathSync(directory));
 	const watchMode = process.env.FUYAO_WATCH_MODE || 'deploy';
-	if (!['deploy', 'prepare'].includes(watchMode)) {
+	if (!['deploy', 'prepare', 'content-only'].includes(watchMode)) {
 		throw new Error(`不支持的 FUYAO_WATCH_MODE：${watchMode}`);
 	}
 	const deployScript = path.resolve(
@@ -61,12 +97,23 @@ export function startWatcher() {
 	const actionScript =
 		watchMode === 'prepare'
 			? path.join(projectRoot, 'scripts/prepare-content-update.js')
-			: deployScript;
+			: watchMode === 'content-only'
+				? path.join(projectRoot, 'scripts/deploy-content.js')
+				: deployScript;
 	const debounceMs = Math.max(
 		500,
 		Number.parseInt(process.env.FUYAO_WATCH_DEBOUNCE_MS || '5000', 10) || 5000
 	);
+	const retryMs = Math.max(
+		500,
+		Number.parseInt(process.env.FUYAO_WATCH_RETRY_MS || '30000', 10) || 30000
+	);
+	const pendingFile = process.env.FUYAO_CONTENT_PENDING_FILE;
+	const journalPath = pendingFile ? `${pendingFile}.watcher.json` : undefined;
 	const pendingReasons = new Set();
+	/** @type {DeployReason[]} */
+	let activeReasons = [];
+	let failedAttempts = 0;
 	/** @type {fs.FSWatcher[]} */
 	const watchers = [];
 	/** @type {NodeJS.Timeout | undefined} */
@@ -76,9 +123,25 @@ export function startWatcher() {
 	let child;
 	let stopping = false;
 
+	function persistQueue() {
+		if (!journalPath) return;
+		const reasons = [...new Set([...pendingReasons, ...activeReasons])].sort();
+		if (reasons.length === 0) {
+			fs.rmSync(journalPath, { force: true });
+			return;
+		}
+		const temporaryPath = `${journalPath}.${process.pid}.tmp`;
+		fs.writeFileSync(temporaryPath, `${JSON.stringify({ schemaVersion: 1, reasons })}\n`, {
+			mode: 0o644
+		});
+		fs.renameSync(temporaryPath, journalPath);
+	}
+
 	/** @param {DeployReason} reason */
 	function schedule(reason) {
 		pendingReasons.add(reason);
+		failedAttempts = 0;
+		persistQueue();
 		if (running || stopping) return;
 		if (timer) clearTimeout(timer);
 		timer = setTimeout(runDeployment, debounceMs);
@@ -89,9 +152,11 @@ export function startWatcher() {
 		if (running || stopping || pendingReasons.size === 0) return;
 		const reasons = [...pendingReasons].sort();
 		pendingReasons.clear();
+		activeReasons = reasons;
+		persistQueue();
 		running = true;
 		console.log(
-			`[Watcher] 开始${watchMode === 'prepare' ? '准备内容' : '部署'}：${reasons.join(',')}`
+			`[Watcher] 开始${watchMode === 'prepare' ? '准备内容' : watchMode === 'content-only' ? '发布内容 release' : '部署'}：${reasons.join(',')}`
 		);
 		child = spawn(process.execPath, [actionScript], {
 			cwd: projectRoot,
@@ -115,18 +180,34 @@ export function startWatcher() {
 			child = undefined;
 			running = false;
 			if (code !== 0) {
-				console.error(
-					`[Watcher] 处理失败：${signal ? `signal=${signal}` : `exit=${String(code)}`}`
-				);
+				for (const reason of reasons) pendingReasons.add(reason);
+				failedAttempts += 1;
+				if (failedAttempts === 1) {
+					console.error(
+						`[Watcher] 处理失败，将退避重试：${signal ? `signal=${signal}` : `exit=${String(code)}`}`
+					);
+				}
 			} else {
+				failedAttempts = 0;
 				console.log(`[Watcher] 处理完成：${reasons.join(',')}`);
 				// 相册导入会在 photos 内部移动文件；根目录无待导入照片时忽略这些自身事件。
 				if (reasons.includes('albums') && !hasRootAlbumImports(albumsDirectory)) {
 					pendingReasons.delete('albums');
 				}
 			}
+			activeReasons = [];
+			persistQueue();
 			if (pendingReasons.size > 0 && !stopping) {
-				timer = setTimeout(runDeployment, debounceMs);
+				if (failedAttempts > 5) {
+					console.error(
+						'[Watcher] 连续重试仍失败，已保留待发布队列，等待内容变更、reload 或服务重启'
+					);
+				} else {
+					const delay = failedAttempts
+						? Math.min(retryMs * 2 ** (failedAttempts - 1), 300000)
+						: debounceMs;
+					timer = setTimeout(runDeployment, delay);
+				}
 			}
 		});
 	}
@@ -158,12 +239,20 @@ export function startWatcher() {
 
 	watch('posts', postsDirectory);
 	watch('albums', albumsDirectory);
+	watch('data', dataDirectory);
+	watch('favicon', faviconDirectory);
+	for (const directory of staticDirectories) watch('static', directory);
 	process.on('SIGUSR1', () => schedule('posts'));
 	process.on('SIGUSR2', () => schedule('albums'));
 	process.on('SIGTERM', () => stop('SIGTERM'));
 	process.on('SIGINT', () => stop('SIGINT'));
 	console.log(`[Watcher] 防抖时间：${debounceMs}ms`);
 	console.log(`[Watcher] 模式：${watchMode}`);
+	for (const reason of new Set([
+		...readPendingReasons(pendingFile),
+		...readPendingReasons(journalPath)
+	]))
+		schedule(reason);
 	return { schedule, stop };
 }
 

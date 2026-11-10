@@ -194,12 +194,15 @@ Configuration, content, and secrets remain in persistent storage such as `shared
 The repository includes the following production scripts and templates:
 
 - `scripts/deploy.js` acquires the deployment lock, reads or clones source, validates production inputs, builds an independent release, switches `current`, and performs an optional health check.
-- `scripts/watch-content.js` recursively watches article and album directories and coalesces rapid file events.
-- `scripts/prepare-content-update.js` prepares albums, thumbnails, and metadata on a low-memory server and records pending deployment state without running Vite.
+- `scripts/deploy-content.js` creates a low-memory content release from the active application release, replaces mutable public content, performs health checks, and atomically switches `current` without running Vite.
+- `scripts/prepare-content-release.js` validates and assembles articles, attachments, data YAML, album metadata, favicons, RSS, and Sitemap; album events first import photos and regenerate thumbnails and EXIF indexes.
+- `scripts/watch-content.js` recursively watches articles and attachments, persistent `images/` and `wp-content/`, album originals, data YAML, and favicons, then coalesces rapid file events.
 - `deploy/systemd/` contains deployment and content-watcher service templates.
 - `deploy/caddy/` contains routing templates for static releases and external album media.
 
-The provided content-watcher service uses `prepare` mode by default. The server prepares content and records pending changes, while a separate release workflow performs the final production build and deployment. This avoids prerendering on memory-constrained hosts. On a sufficiently provisioned host with complete variables, the watcher can also invoke the deployment script directly.
+The provided watcher uses `content-only` mode by default. It reuses the current application bundles through hard links, publishes mutable content as an independent release, and avoids Vite and SvelteKit prerendering on memory-constrained hosts. Content releases use the existing `200.html` fallback for blog routes; a later full code release restores prerendered article HTML. Mutable resources use browser and CDN `no-store` headers, the Service Worker adds a cache-bypass query to persistent media, and open pages check `release.json` every 30 seconds and reload after a release change.
+
+Roll out this feature with one full code release first so the active application contains the SPA fallback, mutable-resource Service Worker rules, and release polling. After that bootstrap release, ordinary content changes use only the content watcher and do not require another Vite build.
 
 Adapt the templates to the actual server paths, service accounts, domain, and secret-management method before installation. See [CONFIGURATION.md](./CONFIGURATION.md) for the full workflow, variable reference, Caddy mapping, and rollback procedure.
 

@@ -343,8 +343,7 @@
 	}
 }
 
-/* Header 下方、固定 Bottom Dock 上方的统一可用内容区域。
- * StatusState viewport 与 LoadingState fullscreen 共用，避免超大 min-height 或嵌套滚动。 */
+/* Header 下方、固定 Bottom Dock 上方的统一可用内容区域。 */
 .viewport-state-region {
 	position: fixed;
 	top: var(--main-content-top-inset, calc(var(--header-height) + var(--header-content-gap)));
@@ -357,6 +356,11 @@
 	align-items: center;
 	justify-content: center;
 	overflow: hidden;
+}
+
+/* LoadingState fullscreen 覆盖整个视口，不能继承主内容区的侧栏偏移。 */
+.viewport-state-region--fullscreen {
+	inset: 0;
 }
 
 @theme inline {
