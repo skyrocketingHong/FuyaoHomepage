@@ -41,7 +41,7 @@
 		/** 是否使用绝对定位填充父容器 (常用模式) */
 		fill?: boolean;
 		/** 图片加载完成回调 */
-		onload?: () => void;
+		onload?: (event: Event) => void;
 		/** 内部 img 元素的额外 class */
 		imgClass?: string;
 		/** 图片加载失败回调 */
@@ -73,9 +73,9 @@
 
 	let loaded = $state(false);
 
-	function handleLoad() {
+	function handleLoad(event: Event) {
 		loaded = true;
-		onload?.();
+		onload?.(event);
 	}
 
 	function handleError() {

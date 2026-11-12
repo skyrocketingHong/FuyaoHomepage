@@ -4,6 +4,7 @@
 	 *
 	 * 桌面布局左侧的侧边栏，包含主导航、动态列表区域和版权信息。
 	 *
+	 * @prop showNavigation - 是否显示主导航区域，默认 true；独立信息视图可仅展示注入列表
 	 */
 	import LiquidGlass from '$lib/components/ui/effect/LiquidGlass.svelte';
 	import BottomInfo from '../bottom-info/BottomInfo.svelte';
@@ -23,8 +24,11 @@
 	import SegmentedControl from '$lib/components/ui/display/SegmentedControl.svelte';
 	import { X } from 'lucide-svelte';
 
-	// 监听路由变化，如果当前页面不需要侧边栏列表，则立即清理
+	let { showNavigation = true } = $props<{ showNavigation?: boolean }>();
+
+	// 监听路由变化，如果当前页面不需要侧边栏列表，则立即清理；独立信息视图注入期间保留
 	$effect(() => {
+		if (sidebarState.isListPinned) return;
 		const currentPath = page.url.pathname;
 		const activeItem = navItems.find((item) => isActiveRoute(currentPath, item.href));
 
@@ -64,7 +68,7 @@
 		await tick();
 		if (!scrollContainer) return;
 
-		// 如果我们在同一个“部分”内导航（侧边栏列表保持不变），可根据需要在这里处理
+		// 如果我们在同一个“部分”内导航（侧边栏列表保持不变，可根据需要在这里处理
 
 		if (type === 'popstate' && to?.url.pathname) {
 			const savedPosition = scrollPositions.get(to.url.pathname) ?? 0;
@@ -163,20 +167,22 @@
 				onscroll={updateScrollState}
 			>
 				<!-- 1. 路由导航区域 -->
-				<div class="flex flex-none flex-col">
-					<h2 class="sidebar-section-title mb-2 flex-none">
-						<Crossfade key={$t('layout.sidebar.navigation')} inline class="inline-grid"
-							><span>{$t('layout.sidebar.navigation')}</span></Crossfade
-						>
-					</h2>
-					<div class="flex flex-col px-1">
-						<div class="flex flex-col gap-1">
-							{#each sidebarNavItems as item (item.href)}
-								<SidebarTree {item} />
-							{/each}
+				{#if showNavigation}
+					<div class="flex flex-none flex-col">
+						<h2 class="sidebar-section-title mb-2 flex-none">
+							<Crossfade key={$t('layout.sidebar.navigation')} inline class="inline-grid"
+								><span>{$t('layout.sidebar.navigation')}</span></Crossfade
+							>
+						</h2>
+						<div class="flex flex-col px-1">
+							<div class="flex flex-col gap-1">
+								{#each sidebarNavItems as item (item.href)}
+									<SidebarTree {item} />
+								{/each}
+							</div>
 						</div>
 					</div>
-				</div>
+				{/if}
 
 				<!-- 2. 动态列表区域 -->
 				<div class="flex flex-col">
@@ -190,7 +196,11 @@
 									<div
 										class="sidebar-section-title mb-2 flex flex-none items-center justify-between"
 									>
-										<h2>
+										<h2 class="flex items-center gap-1.5">
+											{#if sidebarState.listTitleIcon}
+												{@const TitleIcon = sidebarState.listTitleIcon}
+												<TitleIcon class="size-4 shrink-0" aria-hidden="true" />
+											{/if}
 											<Crossfade key={$t(sidebarState.listTitle)} inline class="inline-grid"
 												><span>{$t(sidebarState.listTitle)}</span></Crossfade
 											>

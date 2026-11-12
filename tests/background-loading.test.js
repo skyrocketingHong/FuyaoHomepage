@@ -101,14 +101,17 @@ test('Bing 来源仅在 API 图片成功后按所有权注入并提供完整国�
 		/sidebarState\.setExtraInfo\(BingWallpaperInfo, \{\}, 'bing-wallpaper'\)/
 	);
 	assert.match(background, /return \(\) => sidebarState\.clearExtraInfo\(id\)/);
-	assert.match(background, /function handleError\(\) \{\s*loadedBingSession = null/);
+	assert.match(
+		background,
+		/function handleError\(\) \{\s*backgroundInfoState\.setWallpaperUrl\(''\);\s*loadedBingSession = null/
+	);
 	assert.match(info, /data-simple-icon="microsoftbing"/);
 	assert.match(info, /viewBox="0 0 24 24"/);
 	assert.match(info, /fill="currentColor"/);
 	assert.doesNotMatch(info, /lucide-svelte|ImageIcon/);
 	assert.match(info, /title=\{detailLabel\}/);
 	assert.match(info, /aria-label=\{detailLabel\}/);
-	assert.match(info, /backgroundInfoState\.open\('bing'\)/);
+	assert.match(info, /resolve\('\/background\/wallpaper\/'\)/);
 	assert.match(info, /text-\[10px\]/);
 	assert.match(info, /text-\[12px\]/);
 	assert.match(info, /truncate/);

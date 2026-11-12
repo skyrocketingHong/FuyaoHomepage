@@ -11,6 +11,8 @@
 	 *
 	 * @prop size - 尺寸：'md'（桌面端）或 'sm'（移动端紧凑布局）。
 	 */
+	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import { t, locale } from '$lib/i18n/store';
 	import { backgroundInfoState } from '$lib/stores/backgroundInfo.svelte';
 	import Crossfade from '$lib/components/ui/effect/Crossfade.svelte';
@@ -27,7 +29,10 @@
 
 <button
 	type="button"
-	onclick={() => backgroundInfoState.open('bing')}
+	onclick={() => {
+		backgroundInfoState.returnUrl = `${window.location.pathname}${window.location.search}`;
+		void goto(resolve('/background/wallpaper/'));
+	}}
 	class="flex w-full min-w-0 cursor-pointer items-center justify-start gap-1.5 overflow-hidden rounded-sm whitespace-nowrap transition-colors duration-200 hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary/60"
 	title={detailLabel}
 	aria-label={detailLabel}

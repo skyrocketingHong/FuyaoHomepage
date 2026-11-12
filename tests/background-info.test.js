@@ -145,9 +145,9 @@ test('来源入口打开全屏信息且港铁文字按站交叉淡化', () => {
 	const layout = read('src/routes/+layout.svelte');
 	const overlay = read('src/lib/components/layout/background/BackgroundInfoOverlay.svelte');
 
-	assert.match(mosaic, /backgroundInfoState\.open\('mosaic'\)/);
+	assert.match(mosaic, /resolve\('\/background\/mtr\/'\)/);
 	assert.match(mosaic, /key=\{`\$\{station\.name\}:\$\{\$locale\}`\}/);
-	assert.match(bing, /backgroundInfoState\.open\('bing'\)/);
+	assert.match(bing, /resolve\('\/background\/wallpaper\/'\)/);
 	assert.match(layout, /inert=\{backgroundInfoState\.isOpen\}/);
 	assert.match(layout, /backgroundInfoState\.isOpen \? 'opacity-0' : 'opacity-100'/);
 	assert.match(layout, /<BackgroundInfoOverlay \/>/);
@@ -158,17 +158,96 @@ test('来源入口打开全屏信息且港铁文字按站交叉淡化', () => {
 	);
 });
 
-test('全部港铁背景按线路折叠并可点击切换当前画布', () => {
+test('全局 SidebarState 注入一级线路并以横向站台卡片切换当前画布', () => {
 	const overlay = read('src/lib/components/layout/background/BackgroundInfoOverlay.svelte');
+	const sidebar = read('src/lib/components/layout/sidebar/Sidebar.svelte');
+	const sidebarTree = read('src/lib/components/layout/sidebar/SidebarTree.svelte');
+	const sidebarItem = read('src/lib/components/layout/sidebar/Item.svelte');
+	const styles = read('src/lib/styles/components.css');
 	const mosaic = read('src/lib/components/ui/background/MosaicBackground.svelte');
 	const store = read('src/lib/stores/mosaic.svelte.ts');
 
-	assert.match(overlay, /\{#each MTR_LINES as line \(line\.id\)\}/);
-	assert.match(overlay, /aria-expanded=\{expanded\}/);
-	assert.match(overlay, /getMtrLineStations\(line\)/);
+	assert.match(overlay, /sidebarState\.setList\(\s*SidebarTree/);
+	assert.match(overlay, /hideRoot: true/);
+	assert.match(overlay, /sidebarState\.listTitleIcon = previousList\.titleIcon/);
+	assert.match(sidebar, /TitleIcon = sidebarState\.listTitleIcon/);
+	assert.match(sidebarTree, /hideRoot = false/);
+	assert.match(sidebarItem, /labelEn\?: string/);
+	assert.match(sidebarItem, /color\?: string/);
+	assert.match(overlay, /labelEn: line\.name/);
+	assert.match(overlay, /color: line\.color/);
+	assert.match(overlay, /sidebarState\.updateList\(injectedListId/);
+	assert.match(overlay, /activeId: selectedLineId,\s+hideRoot: true/);
+	assert.match(overlay, /sidebarState\.currentListId = previousList\.id/);
+	assert.match(overlay, /sidebarState\.isListPinned = previousList\.isListPinned/);
+	assert.match(sidebar, /if \(sidebarState\.isListPinned\) return/);
+	assert.match(overlay, /<Sidebar showNavigation=\{false\} \/>/);
+	assert.match(sidebar, /showNavigation = true/);
+	assert.match(sidebar, /\{#if showNavigation\}/);
+	assert.match(overlay, /md:h-\[100dvh\]/);
+	assert.match(overlay, /if \(!selectedLineId && lines\?\.length\)/);
+	assert.doesNotMatch(
+		overlay,
+		/listComponent=\{SidebarTree\}|background-info-title|backdrop-blur-md|absolute top-3 right-3/
+	);
+	assert.match(overlay, /id="mtr-line-detail"/);
+	assert.match(overlay, /\{#each selectedLineStations as station \(station\.name\)\}/);
+	assert.match(overlay, /data-station-name=\{station\.name\}/);
 	assert.match(overlay, /onclick=\{\(\) => selectStation\(station\.name\)\}/);
-	assert.match(overlay, /aria-pressed=\{selected\}/);
+	assert.match(overlay, /centerActiveStation/);
+	assert.match(overlay, /showStart=\{stationsShowStart\}/);
+	assert.match(overlay, /showEnd=\{stationsShowEnd\}/);
+	assert.doesNotMatch(overlay, /bg-background\/35/);
+	assert.match(styles, /MTRSong/);
+	assert.match(styles, /Myriad Pro Semibold/);
 	assert.match(store, /selectedStationName = \$state\(''\)/);
 	assert.match(mosaic, /fixedStation \|\| mosaicState\.selectedStationName/);
 	assert.match(mosaic, /mosaicState\.currentStation\?\.name === requestedStation/);
+});
+
+test('背景信息直达路由驱动对应视图并锁定背景模式', () => {
+	const layout = read('src/routes/+layout.svelte');
+	const config = read('src/lib/config/index.ts');
+	const mtrRoute = read('src/routes/background/mtr/+page.svelte');
+	const wallpaperRoute = read('src/routes/background/wallpaper/+page.svelte');
+
+	assert.match(layout, /getBackgroundInfoSource\(page\.url\.pathname\)/);
+	assert.match(
+		config,
+		/startsWith\('\/background\/mtr'\)\) return \{ mode: 'mosaic', switchable: false \}/
+	);
+	assert.match(
+		config,
+		/startsWith\('\/background\/wallpaper'\)\) return \{ mode: 'image', switchable: false \}/
+	);
+	assert.match(mtrRoute, /港铁背景信息直达路由/);
+	assert.match(wallpaperRoute, /Bing 壁纸信息直达路由/);
+});
+
+test('横向站点支持滚轮且窄屏通过底部 Tab 打开同一注入列表', () => {
+	const overlay = read('src/lib/components/layout/background/BackgroundInfoOverlay.svelte');
+	const mobileNav = read('src/lib/components/layout/nav/MobileNav.svelte');
+
+	assert.match(overlay, /function handleStationsWheel/);
+	assert.match(overlay, /event\.preventDefault\(\)/);
+	assert.match(overlay, /onwheel=\{handleStationsWheel\}/);
+	assert.match(overlay, /<MobileBottomDock \/>/);
+	assert.match(overlay, /<MobileDrawer \/>/);
+	assert.match(mobileNav, /sidebarState\.listComponent \? 1 : 0/);
+	assert.match(mobileNav, /sidebarState\.toggleMobileDrawer\(\)/);
+	assert.match(mobileNav, /aria-expanded=\{sidebarState\.isMobileDrawerOpen\}/);
+});
+
+test('壁纸详情使用当前已加载图片的真实地址而非随机 API 地址', () => {
+	const background = read('src/lib/components/layout/background/BackgroundLayer.svelte');
+	const lazyImage = read('src/lib/components/ui/display/LazyImage.svelte');
+	const overlay = read('src/lib/components/layout/background/BackgroundInfoOverlay.svelte');
+
+	assert.match(background, /image\.currentSrc \|\| image\.src/);
+	assert.match(background, /backgroundInfoState\.setWallpaperUrl\(''\)/);
+	assert.match(lazyImage, /onload\?\.\(event\)/);
+	assert.match(
+		overlay,
+		/backgroundInfoState\.wallpaperUrl \|\| metadata\?\.imageUrl \|\| wallpaperApi/
+	);
 });

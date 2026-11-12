@@ -10,7 +10,7 @@
 	import type { BackgroundMode } from '$lib/config/index';
 	import { page, navigating } from '$app/state';
 	import { backgroundState, layoutState } from '$lib/stores/app.svelte';
-	import { backgroundInfoState } from '$lib/stores/backgroundInfo.svelte';
+	import { backgroundInfoState, getBackgroundInfoSource } from '$lib/stores/backgroundInfo.svelte';
 	import { t } from '$lib/i18n/store';
 	import { onMount } from 'svelte';
 	import { fade } from 'svelte/transition';
@@ -87,6 +87,13 @@
 	);
 	// 是否渲染背景切换器 (锁定页面从 DOM 卸载切换器，禁止仅 CSS 隐藏)
 	let backgroundSwitchable = $derived(backgroundPolicy.switchable);
+
+	// 独立背景信息路由直接驱动全屏信息视图，离开该路由即关闭
+	$effect(() => {
+		const source = getBackgroundInfoSource(page.url.pathname);
+		if (source) backgroundInfoState.open(source);
+		else backgroundInfoState.close();
+	});
 
 	// 内容是否已滚动进入 Header 后方 (由 MainContent 的真实内部滚动容器提供)
 	let headerObscured = $state(false);

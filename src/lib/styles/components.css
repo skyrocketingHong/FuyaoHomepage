@@ -18,6 +18,17 @@
 		@apply size-5 flex-none;
 	}
 
+	.mtr-zh {
+		font-family: 'MTRSong', 'Noto Serif TC', 'PingFang TC', serif;
+		font-weight: 600;
+		letter-spacing: 0.055em;
+	}
+
+	.mtr-en {
+		font-family: 'Myriad Pro Semibold', 'Myriad Pro', 'Helvetica Neue', Arial, sans-serif;
+		font-weight: 600;
+	}
+
 	/* Liquid Glass 分层材质。折射滤镜由组件按需生成，此处仅负责低成本表面层。 */
 
 	/*

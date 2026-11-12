@@ -180,7 +180,7 @@
 │   │   │   │       └── SearchButton.svelte   # 搜索按钮
 │   │   │   ├── layout/       # 布局组件
 │   │   │   │   ├── background/   # 背景组件
-│   │   │   │   │   ├── BackgroundInfoOverlay.svelte # 顺序渐隐的全屏港铁背景浏览器与 Bing 原图信息
+│   │   │   │   │   ├── BackgroundInfoOverlay.svelte # 路由驱动的全屏港铁背景、移动端抽屉与 Bing 原图信息
 │   │   │   │   │   └── BackgroundLayer.svelte # 按路由绘制壁纸、Newsroom 列表与文章阅读背景
 │   │   │   │   ├── bottom-info/  # 底部信息组件
 │   │   │   │   │   ├── BottomInfo.svelte       # 底部信息容器 (统一前景色、桌面侧栏/移动端紧凑两列四条静态单行)
@@ -201,7 +201,7 @@
 │   │   │   │   ├── nav/          # 导航
 │   │   │   │   │   ├── CategoryNav.svelte    # 顶部分类导航
 │   │   │   │   │   ├── MobileBottomDock.svelte # 编排两个独立同材质实时模糊胶囊、5px 间距与安全区
-│   │   │   │   │   └── MobileNav.svelte      # 六项等宽直达、复用 Dock 胶囊材质的悬浮 Tab Bar
+│   │   │   │   │   └── MobileNav.svelte      # 六项直达及可选注入列表抽屉 Tab，复用 Dock 胶囊材质
 │   │   │   │   ├── loader/       # 加载指示器
 │   │   │   │   │   ├── GlobalLoader.svelte   # 首次背景加载与画布尺寸重建的全局遮罩
 │   │   │   │   │   └── spaFallbackLoader.ts  # SPA fallback 中同一加载器的水合与退场
@@ -286,6 +286,9 @@
 │       ├── +layout.svelte    # 全局布局 (Header, Sidebar)
 │       ├── +layout.ts        # 客户端适配加载 logic
 │       ├── +page.svelte      # 首页入口
+│       ├── background/       # 背景信息直达路由
+│       │   ├── mtr/+page.svelte # 港铁背景信息入口
+│       │   └── wallpaper/+page.svelte # Bing 壁纸信息入口
 │       ├── albums/[...path]/ # 相册列表、筛选和照片深链接
 │       │   ├── +page.svelte  # 照片网格、侧边栏与灯箱状态
 │       │   └── +page.ts      # 路径校验及按年数据加载

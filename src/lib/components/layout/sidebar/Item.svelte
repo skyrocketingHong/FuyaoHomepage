@@ -2,14 +2,18 @@
 	/**
 	 * 侧边栏基础项组件
 	 *
-	 * 侧边栏列表中的原子项，可能是链接 (a) 或按钮 (button)。
+	 * 支持链接、按钮、可选标识色及双行文本。
 	 *
-	 * @prop label - 显示的文本标签
+	 * @prop label - 主文本标签
+	 * @prop labelEn - 可选第二行文本
+	 * @prop labelClass - 主文本样式类
+	 * @prop labelEnClass - 第二行文本样式类
+	 * @prop color - 可选标识色
 	 * @prop icon - 图标组件
 	 * @prop href - 跳转链接
 	 * @prop onclick - 点击回调
-	 * @prop isActive - 是否处于激活状态 (默认 false)
-	 * @prop children - Svelte Snippet 内容 (若存在则覆盖 label)
+	 * @prop isActive - 是否处于激活状态
+	 * @prop children - Svelte Snippet 内容（若存在则覆盖文本）
 	 * @prop class - 额外的 CSS 类名
 	 */
 	import type { ComponentType, Snippet } from 'svelte';
@@ -19,6 +23,10 @@
 
 	let {
 		label,
+		labelEn,
+		labelClass = '',
+		labelEnClass = 'text-muted-foreground',
+		color,
 		icon: Icon,
 		href,
 		onclick,
@@ -28,6 +36,10 @@
 		...rest
 	} = $props<{
 		label?: string;
+		labelEn?: string;
+		labelClass?: string;
+		labelEnClass?: string;
+		color?: string;
 		icon?: ComponentType;
 		href?: Pathname;
 		onclick?: () => void;
@@ -37,11 +49,30 @@
 		[key: string]: unknown;
 	}>();
 
-	// 使用来自 app.css 的全局类名以保持一致性
 	const baseClasses = 'sidebar-item-base';
 	const activeClasses = 'sidebar-item-active';
 	const inactiveClasses = 'sidebar-item-inactive';
 </script>
+
+{#snippet content()}
+	{#if color}
+		<span class="h-7 w-1 shrink-0 rounded-full" style:background-color={color} aria-hidden="true"
+		></span>
+	{/if}
+	{#if Icon}
+		<Icon class="sidebar-icon" />
+	{/if}
+	{#if children}
+		{@render children()}
+	{:else}
+		<Crossfade key={`${label}:${labelEn ?? ''}`} inline class="min-w-0 flex-1">
+			<span class="block truncate {labelClass}">{label}</span>
+			{#if labelEn}
+				<span class="block truncate {labelEnClass}">{labelEn}</span>
+			{/if}
+		</Crossfade>
+	{/if}
+{/snippet}
 
 {#if href}
 	<a
@@ -50,14 +81,7 @@
 		{onclick}
 		{...rest}
 	>
-		{#if Icon}
-			<Icon class="sidebar-icon" />
-		{/if}
-		{#if children}
-			{@render children()}
-		{:else}
-			<Crossfade key={label!} inline class="inline-grid w-full"><span>{label}</span></Crossfade>
-		{/if}
+		{@render content()}
 	</a>
 {:else}
 	<button
@@ -65,13 +89,6 @@
 		{onclick}
 		{...rest}
 	>
-		{#if Icon}
-			<Icon class="sidebar-icon" />
-		{/if}
-		{#if children}
-			{@render children()}
-		{:else}
-			<Crossfade key={label!} inline class="inline-grid w-full"><span>{label}</span></Crossfade>
-		{/if}
+		{@render content()}
 	</button>
 {/if}

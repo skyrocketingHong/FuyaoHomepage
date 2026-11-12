@@ -15,6 +15,14 @@ import type { DynamicComponent } from './component';
 export interface SidebarItemType {
 	/** 显示文本 */
 	label: string;
+	/** 可选第二行文本 */
+	labelEn?: string;
+	/** 主文本样式类 */
+	labelClass?: string;
+	/** 第二行文本样式类 */
+	labelEnClass?: string;
+	/** 可选标识色 */
+	color?: string;
 	/** 图标组件 */
 	icon?: ComponentType;
 	/** 图标 CSS 类名（覆盖默认 sidebar-icon） */

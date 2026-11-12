@@ -10,6 +10,7 @@
 	 */
 	import { onMount, untrack } from 'svelte';
 	import { backgroundState, sidebarState } from '$lib/stores/app.svelte';
+	import { backgroundInfoState } from '$lib/stores/backgroundInfo.svelte';
 	import {
 		appearanceTransitionState,
 		APPEARANCE_TRANSITION_MS
@@ -68,7 +69,11 @@
 		onImageLoad?.();
 	}
 
-	function handleLoad() {
+	function handleLoad(event: Event) {
+		const image = event.currentTarget as HTMLImageElement;
+		backgroundInfoState.setWallpaperUrl(
+			mode === 'image' && !usingFallback ? image.currentSrc || image.src : ''
+		);
 		loadedBingSession =
 			mode === 'image' && !usingFallback && wallpaperApi.length > 0 ? imageSession : null;
 		finishLoading();
@@ -76,6 +81,7 @@
 
 	/** API 失败后只切换一次备用图；备用图也失败时回退主题纯色并结束事务。 */
 	function handleError() {
+		backgroundInfoState.setWallpaperUrl('');
 		loadedBingSession = null;
 		if (!usingFallback && spotlightUrl) {
 			usingFallback = true;

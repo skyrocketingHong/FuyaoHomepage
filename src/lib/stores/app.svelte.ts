@@ -4,6 +4,7 @@
  * 提供侧边栏、背景、布局、主题、顶部导航栏等核心状态的集中管理。
  * 所有状态类均以 Svelte 5 runes ($state) 实现响应性。
  */
+import type { ComponentType } from 'svelte';
 import type { DynamicComponent } from '$lib/types/component';
 import type { SidebarViewMode } from '$lib/types/sidebar';
 import { runAppearanceTransition } from '$lib/utils/effect/appearanceTransition.svelte';
@@ -24,6 +25,8 @@ export class SidebarState {
 	listProps = $state<Record<string, unknown>>({});
 	/** 列表标题 (支持 i18n key) */
 	listTitle = $state<string>('');
+	/** 列表标题图标 */
+	listTitleIcon = $state<ComponentType | null>(null);
 
 	/** 当前视图模式 ID */
 	viewMode = $state<string>('');
@@ -35,6 +38,9 @@ export class SidebarState {
 
 	/** 当前列表的唯一标识符，用于防止页面切换时的竞态条件 */
 	currentListId = $state<string>('');
+
+	/** 独立信息视图打开期间保留注入列表，阻止路由默认清理 */
+	isListPinned = $state(false);
 
 	/** 当前激活项 ID，独立追踪以避免通过 listProps 传递时的响应性丢失 */
 	activeId = $state<string | undefined>(undefined);
@@ -51,13 +57,16 @@ export class SidebarState {
 	 * @param component 需要渲染的组件
 	 * @param props 组件参数
 	 * @param title 列表标题 (支持 i18n key)
+	 * @param modes 可选视图模式
+	 * @param titleIcon 可选标题图标
 	 * @returns uniqueId 返回当前列表的唯一ID，需要在组件销毁时传回给 clearList
 	 */
 	setList(
 		component: DynamicComponent,
 		props: Record<string, unknown> = {},
 		title: string = '',
-		modes: SidebarViewMode[] = []
+		modes: SidebarViewMode[] = [],
+		titleIcon: ComponentType | null = null
 	) {
 		const id = generateId();
 		this.listComponent = component;
@@ -66,6 +75,7 @@ export class SidebarState {
 		this.activeId = props.activeId as string | undefined;
 
 		this.listTitle = title;
+		this.listTitleIcon = titleIcon;
 		this.currentListId = id;
 
 		// 重置筛选状态
@@ -164,6 +174,7 @@ export class SidebarState {
 		this.listProps = {};
 		this.activeId = undefined;
 		this.listTitle = '';
+		this.listTitleIcon = null;
 		this.currentListId = '';
 		this.isMobileDrawerOpen = false;
 		this.viewMode = '';

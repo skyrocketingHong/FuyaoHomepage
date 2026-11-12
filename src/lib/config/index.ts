@@ -227,6 +227,9 @@ export function getBackgroundPolicy(
 	pageData?: { blogPageKind?: BlogPageKind } | null,
 	routeId?: string | null
 ): BackgroundPolicy {
+	if (pathname.startsWith('/background/mtr')) return { mode: 'mosaic', switchable: false };
+	if (pathname.startsWith('/background/wallpaper')) return { mode: 'image', switchable: false };
+
 	const blogKind = getBlogPageKind(pageData, routeId ?? null);
 	if (blogKind === 'blog-article') return { mode: 'solid', switchable: false };
 	if (blogKind) return { mode: 'newsroom', switchable: false };

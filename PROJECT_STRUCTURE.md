@@ -180,7 +180,7 @@ The public repository contains only source code, `config/*.example.yaml` migrate
 │   │   │   │       └── SearchButton.svelte   # Search button
 │   │   │   ├── layout/       # Layout components
 │   │   │   │   ├── background/   # Background components
-│   │   │   │   │   ├── BackgroundInfoOverlay.svelte # Sequenced full-screen MTR browser and Bing original view
+│   │   │   │   │   ├── BackgroundInfoOverlay.svelte # Routed full-screen MTR browser, mobile drawer, and Bing original view
 │   │   │   │   │   └── BackgroundLayer.svelte # Route-aware wallpaper, Newsroom, and reader backgrounds
 │   │   │   │   ├── bottom-info/  # Footer information components
 │   │   │   │   │   ├── BottomInfo.svelte       # Unified desktop/mobile information container
@@ -201,7 +201,7 @@ The public repository contains only source code, `config/*.example.yaml` migrate
 │   │   │   │   ├── nav/          # Navigation
 │   │   │   │   │   ├── CategoryNav.svelte    # Top category navigation
 │   │   │   │   │   ├── MobileBottomDock.svelte # Two live-blurred pills, gap, and safe area
-│   │   │   │   │   └── MobileNav.svelte      # Six equal-width floating direct tabs
+│   │   │   │   │   └── MobileNav.svelte      # Six direct tabs plus an optional injected-list drawer tab
 │   │   │   │   ├── loader/       # Loading indicators
 │   │   │   │   │   ├── GlobalLoader.svelte   # Initial background and canvas-rebuild overlay
 │   │   │   │   │   └── spaFallbackLoader.ts  # Hydrate and outro the same loader in SPA fallback
@@ -286,6 +286,9 @@ The public repository contains only source code, `config/*.example.yaml` migrate
 │       ├── +layout.svelte    # Global Header and Sidebar layout
 │       ├── +layout.ts        # Client-compatible shared loading logic
 │       ├── +page.svelte      # Homepage entry point
+│       ├── background/       # Direct background-information routes
+│       │   ├── mtr/+page.svelte # MTR background-information entry
+│       │   └── wallpaper/+page.svelte # Bing wallpaper-information entry
 │       ├── albums/[...path]/ # Album lists, filters, and photo deep links
 │       │   ├── +page.svelte  # Grid, sidebar, and lightbox state
 │       │   └── +page.ts      # Path validation and yearly data loading

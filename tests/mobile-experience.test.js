@@ -25,7 +25,7 @@ test('移动端语言按钮保持 44px 且 Header 使用静态两级标题', () 
 	assert.match(header, /pointer-events-auto flex shrink-0 items-center/);
 });
 
-test('移动端导航始终展示六个等宽直达 Tab', () => {
+test('移动端主导航保持六项，注入列表时追加列表 Tab', () => {
 	const config = read('src/lib/config/index.ts');
 	const nav = read('src/lib/components/layout/nav/MobileNav.svelte');
 	const dock = read('src/lib/components/layout/nav/MobileBottomDock.svelte');
@@ -49,12 +49,15 @@ test('移动端导航始终展示六个等宽直达 Tab', () => {
 	assert.match(nav, /mobile-dock-capsule[^"]*!p-0/);
 	assert.match(nav, /<nav class="h-full w-full p-0">/);
 	assert.match(nav, /class="grid h-full w-full items-center p-0"/);
-	assert.match(nav, /repeat\(\{navItems\.length\}, minmax\(0, 1fr\)\)/);
+	assert.match(
+		nav,
+		/repeat\(\{navItems\.length \+\s*\(sidebarState\.listComponent \? 1 : 0\)\}, minmax\(0, 1fr\)\)/
+	);
 	assert.match(
 		nav,
 		/\{#each navItems as item \(item\.href\)\}[\s\S]*<a[\s\S]*href=\{resolve\(item\.href/
 	);
-	assert.doesNotMatch(nav, /MoreSheet|nav\.more|<button|overflow-x/);
+	assert.doesNotMatch(nav, /MoreSheet|nav\.more|overflow-x/);
 	assert.match(nav, /active:scale-\[0\.97\]/);
 	assert.match(
 		dock,

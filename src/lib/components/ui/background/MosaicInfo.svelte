@@ -7,6 +7,8 @@
 	 *
 	 * @prop size - 尺寸：'md' (默认/桌面端) | 'sm' (移动端紧凑)
 	 */
+	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import { mosaicState } from '$lib/stores/mosaic.svelte';
 	import { backgroundInfoState } from '$lib/stores/backgroundInfo.svelte';
 	import { locale, t } from '$lib/i18n/store';
@@ -28,7 +30,10 @@
 {#if station}
 	<button
 		type="button"
-		onclick={() => backgroundInfoState.open('mosaic')}
+		onclick={() => {
+			backgroundInfoState.returnUrl = `${window.location.pathname}${window.location.search}`;
+			void goto(resolve('/background/mtr/'));
+		}}
 		class="flex w-full min-w-0 cursor-pointer items-center justify-start gap-1.5 overflow-hidden rounded-sm whitespace-nowrap transition-colors duration-200 hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary/60"
 		title={detailLabel}
 		aria-label={detailLabel}
