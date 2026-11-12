@@ -6,8 +6,13 @@
 
 ## 未发布
 
+### 变更
+
+- 项目拆分：管理平台（后端、管理台、管理 OpenAPI 契约、平台部署模板）迁入独立的 FuyaoManager 仓库；本仓库保持独立公开站点项目与第一个主题（`fuyao-homepage`）定位，构建与测试不依赖任何平台、数据库或管理 API。
+
 ### 新增
 
+- 新增 `contracts/theme` 下受版本控制的主题契约生成式副本（含 `PROVENANCE.json` 摘要清单），由 `site/scripts/sync-theme-contracts.js` 维护，`npm run contracts:check` 在 CI 中校验漂移。
 - 增加不运行 Vite 的低内存 content-only release，覆盖文章、附件、数据 YAML、相册索引、favicon、RSS 和 Sitemap。
 - 增加全内容递归监听、待发布状态恢复、相册导入与缩略图生成、原子切换、健康检查及 release 变化后的页面自动刷新。
 
@@ -30,6 +35,20 @@
 - 修复高德代理路由并补充域名白名单配置说明；SDK 加载增加并发去重、超时恢复和可见失败状态。
 
 - 修复相册直达 URL 被误判为物理目录而未进入 SPA 回退的问题；fallback 页面在路由解析前直接水合真实 `GlobalLoader`，保留其 Crossfade 生命周期，并使加载文本相对整个视口居中。
+
+## 27.2 (2026-11-11)
+
+### 新增
+
+- 内容管理平台（admin）：CLI 一次性码认证（`init-admin`、`login-code`、`revoke-sessions`）、网页建站与目录供应、桌面式管理台外壳。
+- 唯一内容权威源：Markdown 文章、友链、社交链接、可视化站点配置（AMap 安全码只写不读）、带异步 EXIF/缩略图处理的相册与足迹点位全部位于平台之下并进入冻结快照构建；草稿绝不进入公开输出。
+- 受管发布边缘：按站点私网 IP:端口入口、Caddy 片段先校验后 reload、按站点 current 指针、真正重新绑定入口的公开/私有可见性，以及带显式关闭（撤销令牌、释放端口）的私有构建预览。
+- 发布与回滚带发布记录、失败后重试与引用检查式照片删除。
+
+### 变更
+
+- Passkey 端点保留为 localhost/域名兼容；控制台登录仅使用一次性码。
+- 仅 https origin 的站点 Cookie 带 `Secure` 标记。
 
 ## 27.1.1 (2026-07-29)
 

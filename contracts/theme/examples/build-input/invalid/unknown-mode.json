@@ -1,0 +1,11 @@
+{
+	"contract": "fuyao.theme.build-input/v1",
+	"preparedAt": "2026-11-11T09:30:00Z",
+	"mode": "staging",
+	"theme": { "id": "fuyao-homepage", "version": "27.1.1" },
+	"inputs": {
+		"contentDigest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+		"siteConfigDigest": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+		"themeConfigDigest": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+	}
+}

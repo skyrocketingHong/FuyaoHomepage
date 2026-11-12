@@ -18,9 +18,12 @@ jobs:
         with:
           node-version: 22
           cache: npm
+          cache-dependency-path: package-lock.json
       - run: npm ci
       - run: npm run audit:privacy
-      - run: npm run check
+      - name: theme-contract copy drift check
+        run: npm run contracts:check
+      - run: npm run check --workspace site
       - run: npm run lint
-      - run: npm test
-      - run: npm run build
+      - run: npm test --workspace site
+      - run: npm run build --workspace site

@@ -14,7 +14,7 @@ English | [简体中文](./CONFIGURATION_ZH.md)
 
 Treat every `VITE_*` value as browser-visible. Fuyao Homepage no longer uses `VITE_*` for site configuration, content paths, or secrets.
 
-Public fields from the former `.env` now live in `config/site.example.yaml`. Demonstration files from the former `static/data` and `static/posts` directories now live in `fixtures/content/`. Development and CI use these migrated public samples; production builds read only external YAML and content directories.
+Public fields from the former `.env` now live in `site/config/site.example.yaml`. Demonstration files from the former `static/data` and `static/posts` directories now live in `site/fixtures/content/`. Development and CI use these migrated public samples; production builds read only external YAML and content directories.
 
 ## 2. Server Layout
 
@@ -52,7 +52,7 @@ The `/srv/fuyao` tree below is the example root used by this repository's deploy
 
 ## 3. Public Site Configuration
 
-Use [config/site.example.yaml](./config/site.example.yaml) as the field template. The current `schemaVersion` is `1`.
+Use [site/config/site.example.yaml](./site/config/site.example.yaml) as the field template. The current `schemaVersion` is `1`.
 
 - `site`: site name, canonical URL, operating dates, and default locale
 - `profile`: public name, birth date, optional public email, avatar, bilingual roles, and quotes
@@ -96,7 +96,7 @@ Coding statistics use two optional public endpoints: `codingActivityProxyUrl` re
 
 Set `services.githubProxyUrl` to `https://<site-domain>/api/github/repos`; it serves up to six recently updated public repositories from the official GitHub REST API. Without a proxy, development uses the official API directly. The obsolete third-party pinned-repository service is not used. Keep the other public URLs at `/api/stats/cloudflare`, `/api/stats/wakatime/activity`, and `/api/stats/wakatime/languages` on the same site.
 
-The standalone Python standard-library service at `scripts/serve-public-data.py` listens only on `127.0.0.1:3191`. Create `/srv/fuyao/shared/config/public-data.json` with mode `0600`, using the real upstream URLs in this structure:
+The standalone Python standard-library service at `site/scripts/serve-public-data.py` listens only on `127.0.0.1:3191`. Create `/srv/fuyao/shared/config/public-data.json` with mode `0600`, using the real upstream URLs in this structure:
 
 ```json
 {
@@ -116,7 +116,7 @@ Private upstream URLs are supplied through systemd `LoadCredential`; only public
 
 ```bash
 sudo install -d -m 0755 /srv/fuyao/services/public-data
-sudo install -m 0644 scripts/serve-public-data.py /srv/fuyao/services/public-data/
+sudo install -m 0644 site/scripts/serve-public-data.py /srv/fuyao/services/public-data/
 sudo install -d -o caddy -g caddy -m 0700 /srv/fuyao/cache/public-data
 sudo install -m 0644 deploy/systemd/fuyao-public-data.service /etc/systemd/system/
 sudo systemctl daemon-reload
@@ -131,13 +131,13 @@ Caddy serves `.webmanifest` as `application/manifest+json` instead of SPA HTML. 
 
 ## 4. Content-Path Mapping
 
-Use [config/content.example.yaml](./config/content.example.yaml) as the template. Every value under `paths` is relative to `FUYAO_CONTENT_ROOT`; absolute paths are not allowed. The build resolves each path with `realpath` and rejects symbolic links or paths that escape the content root.
+Use [site/config/content.example.yaml](./site/config/content.example.yaml) as the template. Every value under `paths` is relative to `FUYAO_CONTENT_ROOT`; absolute paths are not allowed. The build resolves each path with `realpath` and rejects symbolic links or paths that escape the content root.
 
 Album media uses `external` mode. Metadata enters the build snapshot, while originals and thumbnails remain outside the Git repository and release.
 
 ## 5. Server Variables and Secrets
 
-`.env.example` lists only routine, non-secret deployment parameters. Production builds, deployments, migrations, and content services support the following external variables:
+`site/.env.example` lists only routine, non-secret deployment parameters. Production builds, deployments, migrations, and content services support the following external variables:
 
 | Variable                      | Required for                                     | Purpose                                                                      |
 | :---------------------------- | :----------------------------------------------- | :--------------------------------------------------------------------------- |
@@ -150,7 +150,7 @@ Album media uses `external` mode. Metadata enters the build snapshot, while orig
 | `FUYAO_DEPLOY_LOCK`           | Optional                                         | Build and deployment mutex path                                              |
 | `FUYAO_SECRETS_FILE`          | Optional                                         | Secret values that final artifact scanning must reject                       |
 | `FUYAO_REPOSITORY_URL`        | Deployment without a local source root           | Public source repository URL                                                 |
-| `FUYAO_SOURCE_ROOT`           | Optional                                         | Existing source directory, avoiding a fresh clone                            |
+| `FUYAO_SOURCE_ROOT`           | Optional                                         | Existing repository root containing `site/`, avoiding a fresh clone          |
 | `FUYAO_RELEASE_KEEP`          | Optional                                         | Number of successful releases to retain; default `5`                         |
 | `FUYAO_HEALTHCHECK_URL`       | Optional                                         | Site URL used to validate `release.json` after switching                     |
 | `FUYAO_POSTS_WATCH_DIR`       | Content watcher                                  | Article directory to watch                                                   |
@@ -181,6 +181,8 @@ GitHub tokens, deployment tokens, private keys, passwords, and webhook secrets b
 
 ### 6.1 Development and CI
 
+Run commands from the repository root. The root npm workspace installs dependencies together and forwards site commands to `site/`; the site build output is `site/build/`.
+
 ```bash
 npm ci
 npm run check
@@ -188,7 +190,7 @@ npm test
 npm run build
 ```
 
-These commands use `config/*.example.yaml` and `fixtures/content/`, copy the inputs to `.fuyao/build-inputs/current/`, generate indexes, and freeze the result as a read-only snapshot. Generated files are never written back to `static`.
+These commands use `site/config/*.example.yaml` and `site/fixtures/content/`, copy the inputs to `site/.fuyao/build-inputs/current/`, generate indexes, and freeze the result as a read-only snapshot. Generated files are never written back to `site/static`.
 
 ### 6.2 Production
 
@@ -196,7 +198,7 @@ These commands use `config/*.example.yaml` and `fixtures/content/`, copy the inp
 export FUYAO_CONFIG_ROOT=/srv/fuyao/shared/config
 export FUYAO_CONTENT_ROOT=/srv/fuyao/shared/content
 export FUYAO_FAVICON_ROOT=/srv/fuyao/shared/legacy/root-assets/favicon
-export FUYAO_DEPLOY_LOCK="$PWD/.fuyao/production-build.lock"
+export FUYAO_DEPLOY_LOCK="$PWD/site/.fuyao/production-build.lock"
 npm run build:production
 ```
 
@@ -207,17 +209,17 @@ For a local build, point `FUYAO_DEPLOY_LOCK` to a temporary file inside the curr
 Production templates live in `deploy/systemd/` and `deploy/caddy/`. `npm run deploy` performs the following transaction:
 
 1. Acquire the deployment lock.
-2. Clone public `main` into a temporary directory.
-3. Read external configuration and content without modifying them, then prepare a build snapshot.
+2. Use the repository root in `FUYAO_SOURCE_ROOT`, or clone public `main` into a temporary directory when it is unset; install workspace dependencies from the root lockfile.
+3. Run site operations from `site/`, read external configuration and content without modifying them, and prepare a build snapshot.
 4. Run checks, tests, the production build, and artifact scanning.
-5. Copy the build into a new `releases/<release-id>/` directory.
+5. Copy `site/build/` into a new `releases/<release-id>/` directory.
 6. Atomically switch `current`, then run the optional health check.
 7. Restore the old target if the health check fails; otherwise remove excess old releases according to the retention setting.
 
 Rollback command:
 
 ```bash
-node scripts/deploy.js --rollback=<release-id>
+node site/scripts/deploy.js --rollback=<release-id>
 ```
 
 Rollback switches only the release pointer. It does not modify persistent content.
@@ -237,7 +239,7 @@ Production uses `fuyao-content-watcher.service` in `content-only` mode to watch 
 
 Upload `jpg`, `jpeg`, `png`, `heic`, `webp`, `tiff`, or `tif` files directly to the root of `albums/photos/`. Do not write manually to `thumbnails/` or `metadata/`.
 
-The service runs verified source and dependencies from `/srv/fuyao/tooling/current` through `/opt/fuyao/node/bin/node`. Update tooling after releasing new code. Content changes neither clone the repository nor run Vite.
+`/srv/fuyao/tooling/current` contains the verified repository and workspace dependencies. The service uses `/srv/fuyao/tooling/current/site` as its working directory and runs site scripts through `/opt/fuyao/node/bin/node`. Update tooling after releasing new code. Content changes neither clone the repository nor run Vite.
 
 Before enabling `content-only` for the first time, perform one full code release with this version. That bootstrap installs the `200.html` SPA fallback, Service Worker bypass rules, and browser release polling into the active application bundle. Subsequent content events do not require a full build.
 
@@ -285,7 +287,7 @@ export FUYAO_MIGRATION_MANIFEST=/srv/fuyao/shared/backups/migration-<date>.json
 npm run content:migrate:apply
 ```
 
-The script does not overwrite a target file with different content or delete a source file. It records file count, total bytes, and SHA-256 for every file. Repository samples already live under `config/` and `fixtures/content/`. Before removing any future real YAML, article, media, or generated index from Git, create an external backup and verify a sample restoration.
+The script does not overwrite a target file with different content or delete a source file. It records file count, total bytes, and SHA-256 for every file. Repository samples already live under `site/config/` and `site/fixtures/content/`. Before removing any future real YAML, article, media, or generated index from Git, create an external backup and verify a sample restoration.
 
 If a secret ever entered Git history, rotate or revoke it at the provider before using a dedicated history-rewriting tool to remove every reference. Deleting only the latest copy is insufficient. Run the audits again after rewriting:
 
@@ -298,7 +300,7 @@ List personal names, domains, email addresses, usernames, and coordinates in an 
 
 ## 10. Version and Build Train
 
-`version.json` is the only manually maintained source. Versions use valid SemVer. The page omits a zero patch component and otherwise shows the full version. Version `27.1.1`, Build Train `4B`, and build sequence `116` appear as `27.1.1 (4B116)`. The build identifier concatenates the train and decimal sequence without leading zeroes.
+`site/version.json` is the only manually maintained source. Versions use valid SemVer. The page omits a zero patch component and otherwise shows the full version. Version `27.1.1`, Build Train `4B`, and build sequence `116` appear as `27.1.1 (4B116)`. The build identifier concatenates the train and decimal sequence without leading zeroes.
 
 ```bash
 npm run version:show
@@ -308,4 +310,20 @@ npm run build:bump
 npm run train:set -- 4C
 ```
 
-Development, checks, tests, and builds never change the version automatically. Only explicit version commands synchronize `version.json`, `package.json`, and `package-lock.json`.
+Development, checks, tests, and builds never change the version automatically. Only explicit version commands synchronize `site/version.json`, `site/package.json`, and the `packages['site']` entry in the root `package-lock.json`; the root orchestration package has no separate version.
+
+## 11. Theme Contracts and the Management Platform
+
+The management platform (FuyaoManager) lives in its own repository and
+registers this project's `site/` as an external theme; its environment
+variables (`FUYAO_ADMIN_*`) are documented there. This repository consumes
+the theme contracts through the generated copy under `contracts/theme`
+(maintained by `site/scripts/sync-theme-contracts.js`, recorded in
+`contracts/theme/PROVENANCE.json`). Theme builds resolve the contracts from
+`FUYAO_THEME_CONTRACTS` when the platform sets it, otherwise from the
+repository copy; a missing or broken contract directory fails the build.
+
+```bash
+node site/scripts/sync-theme-contracts.js --source /path/to/FuyaoManager/contracts/theme
+npm run contracts:check   # verify the copy against PROVENANCE digests (CI)
+```

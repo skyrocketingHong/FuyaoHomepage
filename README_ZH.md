@@ -67,7 +67,9 @@ npm ci
 npm run dev
 ```
 
-开发服务器使用 `config/*.example.yaml` 和 `fixtures/content/` 中的公开演示数据。启动后按终端输出的本地地址访问站点，不需要创建生产配置或复制个人内容。
+这些命令均在仓库根目录执行。根 npm 工作区将站点命令转发到 `site/`，并统一维护唯一的依赖锁文件。
+
+开发服务器使用 `site/config/*.example.yaml` 和 `site/fixtures/content/` 中的公开演示数据。启动后按终端输出的本地地址访问站点，不需要创建生产配置或复制个人内容。
 
 生成演示生产构建：
 
@@ -76,7 +78,7 @@ npm run build
 npm run preview
 ```
 
-构建结果位于 `build/`。`npm run build` 使用公开 fixture，适合本地检查和持续集成，不代表生产配置已经通过验证。
+构建结果位于 `site/build/`。`npm run build` 使用公开 fixture，适合本地检查和持续集成，不代表生产配置已经通过验证。
 
 ## 配置与内容
 
@@ -85,11 +87,11 @@ npm run preview
 开发模式使用仓库内的公开输入：
 
 ```text
-config/
+site/config/
 ├── site.example.yaml       # 公开站点配置样例
 └── content.example.yaml    # 内容目录映射样例
 
-fixtures/content/
+site/fixtures/content/
 ├── posts/                  # 演示文章
 ├── data/                   # 足迹、友链、支付及社交数据
 └── albums/                 # 演示相册元数据和空媒体目录
@@ -153,7 +155,7 @@ GitHub Actions 对 `main` 分支推送和 Pull Request 执行相同检查。构�
 export FUYAO_CONFIG_ROOT=/path/to/config
 export FUYAO_CONTENT_ROOT=/path/to/content
 export FUYAO_FAVICON_ROOT=/path/to/favicon
-export FUYAO_DEPLOY_LOCK="$PWD/.fuyao/production-build.lock"
+export FUYAO_DEPLOY_LOCK="$PWD/site/.fuyao/production-build.lock"
 npm run build:production
 ```
 
@@ -170,14 +172,14 @@ npm run build:production
                   ▼      ▼
           prepare-build-inputs
                   │
-        只读构建输入快照 .fuyao/
+        只读构建输入快照 site/.fuyao/
                   │
        ┌──────────┴──────────┐
        ▼                     ▼
   博客与相册索引          SvelteKit 预渲染
        └──────────┬──────────┘
                   ▼
-              build/
+              site/build/
                   │
        独立 release + 可选健康检查
                   │
@@ -193,10 +195,10 @@ npm run build:production
 
 仓库提供以下生产模板和脚本：
 
-- `scripts/deploy.js`：获取部署锁、读取或克隆源码、检查生产输入、构建独立 release、切换 `current` 并执行可选健康检查。
-- `scripts/deploy-content.js`：基于当前应用 release 创建低内存内容 release，替换可变公开内容、执行健康检查并原子切换 `current`，不运行 Vite。
-- `scripts/prepare-content-release.js`：校验并组装文章、附件、数据 YAML、相册元数据、favicon、RSS 和 Sitemap；相册事件会先导入照片并重新生成缩略图及 EXIF 索引。
-- `scripts/watch-content.js`：递归监听文章及附件、持久化 `images/` 与 `wp-content/`、相册原图、数据 YAML 和 favicon，合并短时间内的连续文件事件。
+- `site/scripts/deploy.js`：获取部署锁、读取或克隆源码、检查生产输入、构建独立 release、切换 `current` 并执行可选健康检查。
+- `site/scripts/deploy-content.js`：基于当前应用 release 创建低内存内容 release，替换可变公开内容、执行健康检查并原子切换 `current`，不运行 Vite。
+- `site/scripts/prepare-content-release.js`：校验并组装文章、附件、数据 YAML、相册元数据、favicon、RSS 和 Sitemap；相册事件会先导入照片并重新生成缩略图及 EXIF 索引。
+- `site/scripts/watch-content.js`：递归监听文章及附件、持久化 `images/` 与 `wp-content/`、相册原图、数据 YAML 和 favicon，合并短时间内的连续文件事件。
 - `deploy/systemd/`：部署任务和内容监听服务模板。
 - `deploy/caddy/`：静态 release 与外部相册媒体路由模板。
 
@@ -209,20 +211,43 @@ npm run build:production
 ## 项目结构
 
 ```text
-config/                    公开 YAML 配置样例
-deploy/                    systemd 与 Caddy 生产模板
-fixtures/content/          开发和 CI 使用的公开演示内容
-scripts/                   内容生成、迁移、审计、版本及部署脚本
-src/lib/components/        页面组件和通用 UI 组件
-src/lib/config/            配置 Schema、服务端加载及浏览器公开入口
-src/lib/i18n/              中文和英文语言资源
-src/lib/styles/            全局样式、主题和阅读器样式
-src/routes/                SvelteKit 页面与路由
-static/                    公开字体、favicon 和基础静态文件
-tests/                     自动化测试和构建验收
+package.json                 根 npm 工作区与兼容命令入口
+package-lock.json            唯一的 npm 依赖锁文件
+contracts/theme/             主题契约生成式副本（见 PROVENANCE.json）
+deploy/                      systemd 与 Caddy 生产模板
+site/config/                 公开 YAML 配置样例
+site/fixtures/content/       开发和 CI 使用的公开演示内容
+site/scripts/                内容生成、迁移、审计、版本、部署及契约同步脚本
+site/src/lib/components/     页面组件和通用 UI 组件
+site/src/lib/config/         配置 Schema、服务端加载及浏览器公开入口
+site/src/lib/i18n/           中文和英文语言资源
+site/src/lib/styles/         全局样式、主题和阅读器样式
+site/src/routes/             SvelteKit 页面与路由
+site/static/                 公开字体、favicon 和基础静态文件
+site/tests/                  自动化测试和构建验收
 ```
 
 完整目录树与模块职责见 [PROJECT_STRUCTURE_ZH.md](./PROJECT_STRUCTURE_ZH.md)。
+
+## 主题定位与管理平台
+
+本仓库是独立公开站点项目，也是
+[FuyaoManager](https://github.com/skyrocketingHong/FuyaoManager) 内容管理平台的
+第一个主题（主题 ID `fuyao-homepage`，适配器 `node22-sveltekit-static`）。平台
+（管理台、Go 后端、主题登记、构建/预览/发布管线）位于独立仓库，将本仓库的
+`site/` 作为外部主题登记；本仓库的构建、测试与访问不依赖任何运行中的平台、
+数据库或管理 API。
+
+主题契约经 `contracts/theme` 下受版本控制的生成式副本消费（来源与摘要记录于
+`contracts/theme/PROVENANCE.json`）。刷新方式：
+
+```bash
+node site/scripts/sync-theme-contracts.js --source /path/to/FuyaoManager/contracts/theme
+npm run contracts:check   # CI 使用的漂移检查
+```
+
+平台构建时通过 `FUYAO_THEME_CONTRACTS` 显式注入权威契约；契约损坏或不兼容时
+直接失败，不回退。
 
 ## 数据与隐私
 
@@ -234,14 +259,15 @@ tests/                     自动化测试和构建验收
 
 ## 版本与文档
 
-`version.json` 是版本、Build Train 和构建序号的唯一人工维护入口。发布版本差异记录在 [CHANGELOG_ZH.md](./CHANGELOG_ZH.md)。
+`site/version.json` 是公开站点版本、Build Train 和构建序号的唯一人工维护入口；显式版本命令同步 `site/package.json` 和根 `package-lock.json` 的 `packages['site']` 条目。根工作区编排包不单独维护版本。发布版本差异记录在 [CHANGELOG_ZH.md](./CHANGELOG_ZH.md)。
 
-| 文档                                                 | 内容                                        |
-| :--------------------------------------------------- | :------------------------------------------ |
-| [CONFIGURATION_ZH.md](./CONFIGURATION_ZH.md)         | 配置 Schema、环境变量、内容目录、构建和部署 |
-| [MIGRATION_3_TO_27_ZH.md](./MIGRATION_3_TO_27_ZH.md) | 从 3.0.0 迁移配置和内容到 27.0              |
-| [PROJECT_STRUCTURE_ZH.md](./PROJECT_STRUCTURE_ZH.md) | 完整项目目录和核心模块职责                  |
-| [CHANGELOG_ZH.md](./CHANGELOG_ZH.md)                 | 版本变更记录                                |
+| 文档                                                           | 内容                                              |
+| :------------------------------------------------------------- | :------------------------------------------------ |
+| [CONFIGURATION_ZH.md](./CONFIGURATION_ZH.md)                   | 配置 Schema、环境变量、内容目录、构建和部署       |
+| [MIGRATION_3_TO_27_ZH.md](./MIGRATION_3_TO_27_ZH.md)           | 从 3.0.0 迁移配置和内容到 27.0                    |
+| [PROJECT_STRUCTURE_ZH.md](./PROJECT_STRUCTURE_ZH.md)           | 完整项目目录和核心模块职责                        |
+| [CHANGELOG_ZH.md](./CHANGELOG_ZH.md)                           | 版本变更记录                                      |
+| [contracts/theme/README_ZH.md](./contracts/theme/README_ZH.md) | 主题契约规格（生成式副本；权威源在 FuyaoManager） |
 
 ## 鸣谢
 

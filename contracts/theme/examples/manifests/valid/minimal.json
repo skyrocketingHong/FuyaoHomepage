@@ -1,0 +1,13 @@
+{
+	"contract": "fuyao.theme.manifest/v1",
+	"id": "minimal-theme",
+	"version": "1.0.0",
+	"adapter": "node22-sveltekit-static",
+	"inputProtocol": "fuyao.theme.build-input/v1",
+	"capabilities": ["blog"],
+	"outputs": {
+		"spaFallback": null,
+		"urlConventions": ["posts", "data"],
+		"requiredArtifacts": []
+	}
+}

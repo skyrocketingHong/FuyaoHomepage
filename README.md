@@ -67,7 +67,9 @@ npm ci
 npm run dev
 ```
 
-The development server uses the public samples in `config/*.example.yaml` and `fixtures/content/`. Open the local URL printed by Vite; no production configuration or personal content is required.
+Run these commands from the repository root. The root npm workspace forwards site commands to `site/` and maintains the only dependency lockfile.
+
+The development server uses the public samples in `site/config/*.example.yaml` and `site/fixtures/content/`. Open the local URL printed by Vite; no production configuration or personal content is required.
 
 Create and preview a demonstration build:
 
@@ -76,7 +78,7 @@ npm run build
 npm run preview
 ```
 
-The output is written to `build/`. `npm run build` uses public fixtures and is suitable for local verification and CI; it does not validate production configuration.
+The output is written to `site/build/`. `npm run build` uses public fixtures and is suitable for local verification and CI; it does not validate production configuration.
 
 ## Configuration and Content
 
@@ -85,11 +87,11 @@ The output is written to `build/`. `npm run build` uses public fixtures and is s
 Development uses versioned public inputs from the repository:
 
 ```text
-config/
+site/config/
 ├── site.example.yaml       # Public site-configuration sample
 └── content.example.yaml    # Content-path mapping sample
 
-fixtures/content/
+site/fixtures/content/
 ├── posts/                  # Demonstration articles
 ├── data/                   # Footprint, friend, payment, and social data
 └── albums/                 # Demonstration metadata and empty media directories
@@ -153,7 +155,7 @@ Build from production inputs with:
 export FUYAO_CONFIG_ROOT=/path/to/config
 export FUYAO_CONTENT_ROOT=/path/to/content
 export FUYAO_FAVICON_ROOT=/path/to/favicon
-export FUYAO_DEPLOY_LOCK="$PWD/.fuyao/production-build.lock"
+export FUYAO_DEPLOY_LOCK="$PWD/site/.fuyao/production-build.lock"
 npm run build:production
 ```
 
@@ -170,14 +172,14 @@ Public source             External production inputs
                      ▼       ▼
              prepare-build-inputs
                      │
-        Read-only .fuyao/ input snapshot
+        Read-only site/.fuyao/ input snapshot
                      │
           ┌──────────┴──────────┐
           ▼                     ▼
      Blog/album indexes    SvelteKit prerender
           └──────────┬──────────┘
                      ▼
-                  build/
+                  site/build/
                      │
         Immutable release + optional health check
                      │
@@ -193,10 +195,10 @@ Configuration, content, and secrets remain in persistent storage such as `shared
 
 The repository includes the following production scripts and templates:
 
-- `scripts/deploy.js` acquires the deployment lock, reads or clones source, validates production inputs, builds an independent release, switches `current`, and performs an optional health check.
-- `scripts/deploy-content.js` creates a low-memory content release from the active application release, replaces mutable public content, performs health checks, and atomically switches `current` without running Vite.
-- `scripts/prepare-content-release.js` validates and assembles articles, attachments, data YAML, album metadata, favicons, RSS, and Sitemap; album events first import photos and regenerate thumbnails and EXIF indexes.
-- `scripts/watch-content.js` recursively watches articles and attachments, persistent `images/` and `wp-content/`, album originals, data YAML, and favicons, then coalesces rapid file events.
+- `site/scripts/deploy.js` acquires the deployment lock, reads or clones source, validates production inputs, builds an independent release, switches `current`, and performs an optional health check.
+- `site/scripts/deploy-content.js` creates a low-memory content release from the active application release, replaces mutable public content, performs health checks, and atomically switches `current` without running Vite.
+- `site/scripts/prepare-content-release.js` validates and assembles articles, attachments, data YAML, album metadata, favicons, RSS, and Sitemap; album events first import photos and regenerate thumbnails and EXIF indexes.
+- `site/scripts/watch-content.js` recursively watches articles and attachments, persistent `images/` and `wp-content/`, album originals, data YAML, and favicons, then coalesces rapid file events.
 - `deploy/systemd/` contains deployment and content-watcher service templates.
 - `deploy/caddy/` contains routing templates for static releases and external album media.
 
@@ -209,20 +211,47 @@ Adapt the templates to the actual server paths, service accounts, domain, and se
 ## Project Layout
 
 ```text
-config/                    Public YAML configuration samples
-deploy/                    systemd and Caddy production templates
-fixtures/content/          Public demonstration content for development and CI
-scripts/                   Content, migration, audit, version, and deployment tools
-src/lib/components/        Page components and shared UI components
-src/lib/config/            Schemas, server loaders, and the browser-safe public interface
-src/lib/i18n/              English and Simplified Chinese locale resources
-src/lib/styles/            Global, theme, and reader styles
-src/routes/                SvelteKit pages and routes
-static/                    Public fonts, favicons, and baseline static files
-tests/                     Automated tests and build acceptance checks
+package.json                 Root npm workspace and compatible command entry points
+package-lock.json            Single npm dependency lockfile
+contracts/theme/             Generated copy of the theme contracts (see PROVENANCE.json)
+deploy/                      systemd and Caddy production templates
+site/config/                 Public YAML configuration samples
+site/fixtures/content/       Public demonstration content for development and CI
+site/scripts/                Content, migration, audit, version, deployment, and contract-sync tools
+site/src/lib/components/     Page components and shared UI components
+site/src/lib/config/         Schemas, server loaders, and the browser-safe public interface
+site/src/lib/i18n/           English and Simplified Chinese locale resources
+site/src/lib/styles/         Global, theme, and reader styles
+site/src/routes/             SvelteKit pages and routes
+site/static/                 Public fonts, favicons, and baseline static files
+site/tests/                  Automated tests and build acceptance checks
 ```
 
 See [PROJECT_STRUCTURE.md](./PROJECT_STRUCTURE.md) for the complete tree and module responsibilities.
+
+## Theme Role and Management Platform
+
+This repository is the standalone public-site project and the first theme
+(`fuyao-homepage`, adapter `node22-sveltekit-static`) of the
+[FuyaoManager](https://github.com/skyrocketingHong/FuyaoManager) content
+management platform. The platform (management console, Go backend, theme
+registry, build/preview/publish pipeline) lives in its own repository and
+registers this project's `site/` as an external theme; this repository
+builds, tests, and serves independently of any running platform, database,
+or management API.
+
+Theme contracts are consumed through the version-controlled generated copy
+under `contracts/theme` (recorded in `contracts/theme/PROVENANCE.json`).
+Refresh it with:
+
+```bash
+node site/scripts/sync-theme-contracts.js --source /path/to/FuyaoManager/contracts/theme
+npm run contracts:check   # drift check used by CI
+```
+
+Platform-driven builds inject the authoritative contracts explicitly through
+`FUYAO_THEME_CONTRACTS`; a broken or incompatible contract directory fails
+the build instead of falling back.
 
 ## Data and Privacy
 
@@ -234,14 +263,15 @@ See [PROJECT_STRUCTURE.md](./PROJECT_STRUCTURE.md) for the complete tree and mod
 
 ## Versions and Documentation
 
-`version.json` is the only manually maintained source for the version, Build Train, and build sequence. Release changes are recorded in [CHANGELOG.md](./CHANGELOG.md).
+`site/version.json` is the only manually maintained source for the public site version, Build Train, and build sequence. Explicit version commands synchronize `site/package.json` and the `packages['site']` entry in the root `package-lock.json`; the root orchestration package has no separate version. Release changes are recorded in [CHANGELOG.md](./CHANGELOG.md).
 
-| Document                                       | Contents                                                                           |
-| :--------------------------------------------- | :--------------------------------------------------------------------------------- |
-| [CONFIGURATION.md](./CONFIGURATION.md)         | Configuration schema, environment variables, content paths, builds, and deployment |
-| [MIGRATION_3_TO_27.md](./MIGRATION_3_TO_27.md) | Migrating configuration and content from 3.0.0 to 27.0                             |
-| [PROJECT_STRUCTURE.md](./PROJECT_STRUCTURE.md) | Complete project tree and module responsibilities                                  |
-| [CHANGELOG.md](./CHANGELOG.md)                 | Release history                                                                    |
+| Document                                                 | Contents                                                                           |
+| :------------------------------------------------------- | :--------------------------------------------------------------------------------- |
+| [CONFIGURATION.md](./CONFIGURATION.md)                   | Configuration schema, environment variables, content paths, builds, and deployment |
+| [MIGRATION_3_TO_27.md](./MIGRATION_3_TO_27.md)           | Migrating configuration and content from 3.0.0 to 27.0                             |
+| [PROJECT_STRUCTURE.md](./PROJECT_STRUCTURE.md)           | Complete project tree and module responsibilities                                  |
+| [CHANGELOG.md](./CHANGELOG.md)                           | Release history                                                                    |
+| [contracts/theme/README.md](./contracts/theme/README.md) | Theme-contract specification (generated copy; authority in FuyaoManager)           |
 
 ## Acknowledgements
 

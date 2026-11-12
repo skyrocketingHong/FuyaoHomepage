@@ -8,36 +8,37 @@
 主要功能包括个人简介、GitHub 项目展示、足迹地图、友情链接、博客文章等。
 系统采用了 Svelte 5 (`runes` mode), TailwindCSS, 和 TypeScript 进行开发。
 
-公开仓库仅保存源码、由旧 `.env` 迁移得到的 `config/*.example.yaml` 和由旧 `static/` 内容迁移得到的 `fixtures/content/` 公开演示数据。生产配置、内容与密钥位于仓库外部；构建使用 `.fuyao/build-inputs/current/` 只读快照，输出到独立 release。
+公开仓库仅保存源码、由旧 `.env` 迁移得到的 `site/config/*.example.yaml` 和由旧 `static/` 内容迁移得到的 `site/fixtures/content/` 公开演示数据。生产配置、内容与密钥位于仓库外部；构建使用 `site/.fuyao/build-inputs/current/` 只读快照，输出到独立 release。
+
+仓库根目录负责 npm 工作区编排、统一依赖锁定、部署模板与用户文档；公开站点的源码、样例、脚本和测试位于 `site/`。根 `npm run` 命令兼容转发到站点工作区，构建输出为 `site/build/`。
 
 ## 目录结构
 
 ```text
 .
-├── .env.example          # 环境变量示例
 ├── .gitignore            # Git 忽略文件配置
 ├── .github/workflows/    # GitHub Actions 持续集成
 │   └── ci.yml            # 类型、格式、测试和构建检查
 ├── .npmrc                # NPM 配置文件
-├── .prettierignore       # Prettier 忽略文件配置
-├── .prettierrc           # Prettier 配置文件
-├── CHANGELOG.md          # 英文更新日志
+├── .prettierignore       # 仓库级格式检查忽略规则
+├── .prettierrc           # 仓库文档与编排文件格式配置
 ├── CHANGELOG_ZH.md       # 简体中文更新日志
-├── config/               # 仅跟踪版本化公开配置样例
-│   ├── site.example.yaml
-│   └── content.example.yaml
 ├── deploy/               # 生产服务与 Web 服务器配置模板
 │   ├── caddy/FuyaoHomepage.caddy.example
 │   └── systemd/
 │       ├── fuyao-deploy.service
 │       ├── fuyao-public-data.service # 使用私有配置凭据的本机数据缓存
 │       └── fuyao-content-watcher.service # 文章、相册、数据与 favicon 低内存自动发布
-├── fixtures/content/     # 开发与 CI 使用的公开演示内容
-│   ├── posts/            # 从旧 static 迁移的 Markdown 演示文章
-│   ├── data/             # 从旧 static 迁移的足迹、友链、付款及社交示例
-│   └── albums/           # 空媒体目录和版本化元数据
 ├── CONFIGURATION.md      # 英文配置与部署文档
 ├── CONFIGURATION_ZH.md   # 简体中文配置与部署文档
+├── contracts/
+│   └── theme/              # FuyaoManager 主题契约的生成式副本（由 site/scripts/sync-theme-contracts.js 维护）
+│       ├── manifest.schema.json     # theme.json：id、适配器、输入协议、能力、配置 schema、输出
+│       ├── build-input.schema.json  # 冻结构建输入快照元数据（private/input.json）
+│       ├── release.schema.json      # 发布元数据（release.json），兼容既有健康检查字段
+│       ├── README.md / README_ZH.md # 双语契约文档（生成式副本）
+│       ├── PROVENANCE.json          # 副本的来源仓库、commit 与逐文件摘要
+│       └── examples/                # 公开安全的正负例 fixture
 ├── LICENSE               # 项目许可证
 ├── MIGRATION_3_TO_27.md     # 英文 3.0.0 至 27.0 迁移手册
 ├── MIGRATION_3_TO_27_ZH.md  # 简体中文迁移手册
@@ -45,296 +46,315 @@
 ├── PROJECT_STRUCTURE_ZH.md  # 简体中文项目结构说明（本文档）
 ├── README.md             # 默认英文项目自述文件
 ├── README_ZH.md          # 简体中文项目自述文件
-├── eslint.config.js      # ESLint 配置文件
-├── package-lock.json     # NPM 依赖锁定文件
-├── package.json          # 项目依赖配置
-├── svelte.config.js      # SvelteKit 配置文件
-├── tsconfig.json         # TypeScript 配置文件
-├── version.json          # 营销版本、Build Train 与构建序号的唯一人工维护入口
-├── vite.config.ts        # Vite 构建配置
-├── scripts/              # 工具脚本及版本管理
-│   ├── lib/
-│   │   └── public-permissions.js # 公开构建及 release 权限归一化与校验
-│   ├── serve-public-data.py # 固定公开 JSON 端点与持久化成功响应缓存
-│   ├── generate-blog-index.js # 博客索引生成脚本 (支持 RSS/Sitemap)
-│   ├── generate-album-index.js# 相册 EXIF 索引及响应式缩略图生成脚本
-│   ├── prepare-build-inputs.js # 校验、复制外部 favicon/内容并冻结构建输入快照
-│   ├── prepare-content-update.js # 低内存相册整理与待发布状态写入
-│   ├── prepare-content-release.js # 不运行 Vite 的可变公开内容组装与校验
-│   ├── prepare-spa-fallback.js # 在 SPA fallback 中复用预渲染 GlobalLoader 标记
-│   ├── validate-deployment.js  # 构建输入与最终产物泄漏、公开读取权限检查
-│   ├── audit-repository.js     # 当前文件和完整 Git 历史隐私扫描
-│   ├── migrate-content.js      # 外部持久化内容复制与 SHA-256 清单
-│   ├── deploy.js               # 独立 release、原子切换与回滚
-│   ├── deploy-content.js       # 硬链接复用的低内存内容 release 与原子切换
-│   ├── watch-content.js       # 全内容递归监听、持久化事件合并及自动发布
-│   └── update-version.js      # 版本校验、更新、同步及 Build Train 格式化入口
-├── src/
-│   ├── app.d.ts          # TypeScript 类型定义
-│   ├── app.html          # HTML 模版
-│   ├── hooks.client.ts   # SPA 路由解析前水合真实 GlobalLoader
-│   ├── service-worker.ts # Service Worker
-│   ├── lib/              # 核心库代码
-│   │   ├── actions/          # Svelte Actions
-│   │   │   ├── linkEnhancer.svelte.ts        # 独立裸 URL 链接预览增强
-│   │   │   └── tableScrollEnhancer.svelte.ts # Markdown 表格滚轮与键盘横向滚动增强
-│   │   ├── config/           # 网站配置
-│   │   │   ├── index.ts      # 页面配置入口
-│   │   │   ├── schema.ts     # site/content Schema、类型与白名单校验
-│   │   │   ├── public.ts     # 浏览器可见配置单一入口
-│   │   │   ├── server.ts     # YAML、realpath 与构建端配置读取
-│   │   │   └── mosaic.ts     # 港铁颜色预设、线路区段与邻站查询
-│   │   ├── plugins/          # Vite 插件
-│   │   │   └── vite-plugin-blog-watcher.ts # 博客文件监听插件
-│   │   ├── hooks/            # Svelte Composable Hooks
-│   │   │   └── useBlogState.svelte.ts # 博客状态管理 Hook
-│   │   ├── stores/           # 全局状态管理
-│   │   │   ├── app.svelte.ts     # 应用级状态（含可重入背景加载事务与 Header 严格所有权插槽）
-│   │   │   ├── backgroundInfo.svelte.ts # 全屏背景信息可见性与来源状态
-│   │   │   ├── lightbox.svelte.ts# 灯箱全局状态 (Svelte 5 runes)
-│   │   │   ├── mosaic.svelte.ts  # 当前港铁站与用户选定车站状态
-│   │   │   └── search.svelte.ts  # 搜索状态
-│   │   ├── styles/           # 全局样式
-│   │   │   ├── app.css       # 全局样式入口
-│   │   │   ├── base.css      # 基础元素样式
-│   │   │   ├── components.css# 共用组件样式
-│   │   │   ├── fonts.css     # 字体定义
-│   │   │   ├── reader-syntax.css # 阅读器语法高亮样式
-│   │   │   ├── reader.css    # 阅读器排版样式
-│   │   │   ├── theme.css     # 主题与材质 Token
-│   │   │   └── utilities.css # 全局工具类
-│   │   ├── types/            # 类型定义
-│   │   │   ├── album.ts      # 相册类型 (Photo, AlbumIndex, YearGroup)
-│   │   │   ├── component.ts  # 运行期动态组件类型
-│   │   │   ├── sidebar.ts    # 侧边栏类型
-│   │   │   └── modules.d.ts  # 第三方模块类型声明
-│   │   ├── components/       # Svelte 组件库
-│   │   │   ├── albums/       # 相册页面组件
-│   │   │   │   ├── AlbumGrid.svelte       # 照片网格 (justified gallery 布局)
-│   │   │   │   ├── AlbumSidebar.svelte    # 相册侧边栏 (日期/设备模式)
-│   │   │   │   ├── BrandIcon.svelte       # 相机与镜头品牌图标
-│   │   │   │   ├── LightboxNavButton.svelte # 灯箱导航按钮 (复用组件)
-│   │   │   │   ├── PhotoLightbox.svelte   # 照片灯箱 (全屏预览 + EXIF)
-│   │   │   │   └── YearNav.svelte         # 年份导航 (SegmentedControl)
-│   │   │   ├── footprint/    # 足迹页面组件
-│   │   │   │   ├── FootprintActions.svelte   # 足迹操作按钮
-│   │   │   │   ├── FootprintList.svelte      # 足迹列表展示
-│   │   │   │   ├── GeneratorModal.svelte     # YAML 数据生成器弹窗
-│   │   │   │   ├── PlaceSearchDropdown.svelte# 地点搜索下拉框
-│   │   │   │   └── map/                      # 地图子组件
-│   │   │   │       ├── AMap.svelte           # 原生标点、控件及加载状态
-│   │   │   │       ├── MapCopyright.svelte   # 地图版权信息
-│   │   │   │       ├── MapInfoWindow.svelte  # 高德原生信息窗内的地点内容
-│   │   │   │       ├── types.ts              # 地图类型定义
-│   │   │   │       └── core/                 # 地图核心逻辑
-│   │   │   │           ├── copyright.ts          # 版权工具
-│   │   │   │           ├── infoWindowController.svelte.ts # 信息窗口控制器
-│   │   │   │           ├── loader.ts             # SDK 共享加载、超时及重试
-│   │   │   │           ├── markers.ts            # 标记点管理
-│   │   │   │           ├── placeSearch.ts        # 地点搜索
-│   │   │   │           ├── view.ts               # 视图工具
-│   │   │   │           └── viewController.svelte.ts # 原生非线性相机与减少动态效果
-│   │   │   ├── friends/      # 友链页面组件
-│   │   │   │   ├── FriendCard.svelte        # 友链卡片
-│   │   │   │   └── ProfileCard.svelte       # 个人信息卡片
-│   │   │   ├── home/         # 首页专用组件
-│   │   │   │   ├── Hero.svelte              # 首页主组件
-│   │   │   │   └── content/                 # 首页内容组件
-│   │   │   │       ├── CloudflareAnalytics.svelte # 访问统计
-│   │   │   │       ├── CodingActivity.svelte # 编程活动统计 (真实每日语言堆叠与无明细中性回退)
-│   │   │   │       ├── GithubProjects.svelte # GitHub 项目展示
-│   │   │   │       ├── LatestPosts.svelte    # 最新文章
-│   │   │   │       ├── ProfileSection.svelte # 个人信息展示
-│   │   │   │       ├── SocialLinks.svelte    # 社交链接列表
-│   │   │   │       ├── TimeCapsule.svelte    # 时间胶囊/个人状态
-│   │   │   │       └── common/               # 首页共用卡片与标题
-│   │   │   │           ├── ContentCard.svelte
-│   │   │   │           └── SectionHeader.svelte
-│   │   │   ├── blog/         # Newsroom 风格博客组件
-│   │   │   │   ├── card/         # 卡片组件
-│   │   │   │   │   ├── FeaturedPostCard.svelte # 整宽 Newsroom 主报道卡片
-│   │   │   │   │   ├── GridPostCard.svelte  # 次级与标准 Newsroom 网格卡片
-│   │   │   │   │   ├── ListPostCard.svelte  # Newsroom 紧凑文章行
-│   │   │   │   │   └── PostCard.svelte      # 四种变体的文章卡片入口
-│   │   │   │   ├── common/       # 公共小组件
-│   │   │   │   │   ├── CategoryBadge.svelte # 分类标签
-│   │   │   │   │   └── TagBadge.svelte      # Newsroom 中性标签控件
-│   │   │   │   ├── home/         # 首页视图
-│   │   │   │   │   ├── EmptyState.svelte    # Newsroom 文章空状态
-│   │   │   │   │   └── Home.svelte          # Newsroom 1+2+3 文章栅格
-│   │   │   │   ├── search/       # 搜索视图
-│   │   │   │   │   └── Search.svelte        # Newsroom 搜索框与分隔结果列表
-│   │   │   │   ├── sidebar/      # 侧边栏
-│   │   │   │   │   ├── Sidebar.svelte       # 博客归档/分类列表
-│   │   │   │   │   └── TagCloud.svelte      # 标签云展示
-│   │   │   │   ├── viewer/       # 文章阅读器
-│   │   │   │   │   ├── BackButton.svelte    # 返回列表按钮
-│   │   │   │   │   ├── Header.svelte        # Newsroom 标题、元数据、分享与封面
-│   │   │   │   │   ├── LinkPreview.svelte   # Newsroom 平面链接预览
-│   │   │   │   │   ├── MarkdownRenderer.svelte # Markdown 内容渲染器
-│   │   │   │   │   ├── TableOfContents.svelte # 按标题深度缩进的文章目录
-│   │   │   │   │   └── Viewer.svelte        # Newsroom 阅读器主入口
-│   │   │   │   └── header/       # 头部集成
-│   │   │   │       ├── Actions.svelte        # 博客操作胶囊 (搜索 + RSS)
-│   │   │   │       ├── RssButton.svelte      # RSS 订阅按钮
-│   │   │   │       └── SearchButton.svelte   # 搜索按钮
-│   │   │   ├── layout/       # 布局组件
-│   │   │   │   ├── background/   # 背景组件
-│   │   │   │   │   ├── BackgroundInfoOverlay.svelte # 路由驱动的全屏港铁背景、移动端抽屉与 Bing 原图信息
-│   │   │   │   │   └── BackgroundLayer.svelte # 按路由绘制壁纸、Newsroom 列表与文章阅读背景
-│   │   │   │   ├── bottom-info/  # 底部信息组件
-│   │   │   │   │   ├── BottomInfo.svelte       # 底部信息容器 (统一前景色、桌面侧栏/移动端紧凑两列四条静态单行)
-│   │   │   │   │   ├── BackgroundInfo.svelte   # 统一颜色的背景地点单行展示、完整语义与静态省略
-│   │   │   │   │   ├── CopyrightText.svelte    # 统一颜色的版权、仓库与版本信息
-│   │   │   │   │   └── ServiceStatus.svelte    # 统一颜色的服务状态与部署平台静态单行信息
-│   │   │   │   ├── content/      # 内容区域组件
-│   │   │   │   │   └── MainContent.svelte    # 主内容区域容器 (统一水平边距、滚动行为与 viewport 状态声明式居中)
-│   │   │   │   ├── header/       # 头部组件
-│   │   │   │   │   ├── Header.svelte         # 统一网站 Header (移动端站点主标题与页面副标题)
-│   │   │   │   │   ├── HeaderChrome.svelte   # 顶栏连续 chrome 背景层 (liveBackdrop 实时模糊, 内容进入 Header 后方时显示; 移动端覆盖控件区及 12px 底部间距, 单行 64px/双行 108px)
-│   │   │   │   │   ├── Actions.svelte        # 全局操作区 (背景/主题/语言分组)
-│   │   │   │   │   ├── BackgroundSwitcher.svelte # 背景模式切换 (桌面端嵌入 chrome 分段胶囊 / 移动端循环按钮)
-│   │   │   │   │   ├── ActionButton.svelte   # 统一按钮外观 (独立玻璃 / bare 分段两种模式)
-│   │   │   │   │   ├── ActionGroup.svelte    # 分段胶囊容器 (轻量静态材质, hairline 分隔, 柔和外投影)
-│   │   │   │   │   └── drawer/               # 移动端菜单
-│   │   │   │   │       └── Drawer.svelte         # 移动端侧栏抽屉
-│   │   │   │   ├── nav/          # 导航
-│   │   │   │   │   ├── CategoryNav.svelte    # 顶部分类导航
-│   │   │   │   │   ├── MobileBottomDock.svelte # 编排两个独立同材质实时模糊胶囊、5px 间距与安全区
-│   │   │   │   │   └── MobileNav.svelte      # 六项直达及可选注入列表抽屉 Tab，复用 Dock 胶囊材质
-│   │   │   │   ├── loader/       # 加载指示器
-│   │   │   │   │   ├── GlobalLoader.svelte   # 首次背景加载与画布尺寸重建的全局遮罩
-│   │   │   │   │   └── spaFallbackLoader.ts  # SPA fallback 中同一加载器的水合与退场
-│   │   │   │   └── sidebar/      # 全局侧边栏
-│   │   │   │       ├── Sidebar.svelte        # PC端侧边栏容器
-│   │   │   │       ├── SidebarTree.svelte    # 递归导航树
-│   │   │   │       └── Item.svelte           # 导航项/菜单项
-│   │   │   ├── pay/          # 支付/赞赏组件
-│   │   │   │   ├── pass/                       # 通用三段式 Pass 原子组件
-│   │   │   │   │   ├── PassCard.svelte        # 卡片表面、圆角裁切、阴影与三段布局外壳
-│   │   │   │   │   ├── PassIdentityBar.svelte # 图标、标题、描述与 aria-expanded 展开控制器
-│   │   │   │   │   ├── PassContentArea.svelte # start/center/fill 可伸缩无滚动内容区
-│   │   │   │   │   └── PassActionArea.svelte  # text/link/status 固定高度操作区
-│   │   │   │   ├── PaymentIntro.svelte       # 纯白“支持本站”说明、用途与隐私信息 Pass
-│   │   │   │   ├── QRCodeCard.svelte         # 稳定 ID 展开状态、固定层级、底部轨道与可见空间尺寸控制器
-│   │   │   │   └── WalletPass.svelte         # 无扫描提示、动态高分辨率二维码的品牌支付 Pass
-│   │   │   ├── seo/          # SEO 组件
-│   │   │   │   └── SeoHead.svelte            # HTML Meta 管理
-│   │   │   └── ui/           # 基础 UI 原子组件
-│   │   │       ├── background/   # 背景特效与来源信息
-│   │   │       │   ├── BingWallpaperInfo.svelte # Bing 来源与全屏原图信息入口
-│   │   │       │   ├── FlowingBackground.svelte # 流动渐变
-│   │   │       │   ├── MosaicBackground.svelte  # 马赛克绘制、固定车站切换与故障回退
-│   │   │       │   ├── MosaicInfo.svelte        # 交叉淡化的车站来源与全部背景浏览入口
-│   │   │       │   └── SolidBackground.svelte   # 纯色/基础背景
-│   │   │       ├── display/      # 内容展示
-│   │   │       │   ├── Avatar.svelte         # 头像
-│   │   │       │   ├── LazyImage.svelte      # 支持 picture source 与可配置加载优先级的图片组件（默认懒加载）
-│   │   │       │   ├── Marquee.svelte        # 按需溢出滚动、可关闭边缘渐隐的跑马灯
-│   │   │       │   └── SegmentedControl.svelte # 分段切换按钮
-│   │   │       ├── effect/       # 视觉效果
-│   │   │       │   ├── Crossfade.svelte      # 交叉淡入淡出动画
-│   │   │       │   ├── FadeEdge.svelte       # 边缘淡出 (CSS Mask, 支持起止独立渐隐尺寸)
-│   │   │       │   ├── GlassCompositor.svelte # 共享玻璃合成器画布 (WebGL2)
-│   │   │       │   ├── LiquidGlass.svelte    # 流体玻璃态背景 (panel/card/control/chrome/icon 材质变体, chromeEdge 顶/底栏边缘, 单层方向性边界, liveBackdrop 实时模糊, contentLayout 内容布局)
-│   │   │       │   └── TextEffect.svelte     # 文本打字/特效
-│   │   │       ├── feedback/     # 反馈/状态
-│   │   │       │   ├── LoadingSpinner.svelte # 加载转圈
-│   │   │       │   ├── LoadingState.svelte   # 加载状态（全屏模式复用统一可用视口区域）
-│   │   │       │   ├── Skeleton.svelte       # 骨架屏占位
-│   │   │       │   └── StatusState.svelte    # viewport/embedded 错误与空数据状态卡及语言过渡
-│   │   │       └── layout/       # 布局辅助
-│   │   │           └── ScrollContainer.svelte# 统一滚动容器
-│   │   ├── i18n/             # 国际化支持
-│   │   │   ├── index.ts      # i18n 配置入口
-│   │   │   ├── store.ts      # 语言切换状态管理
-│   │   │   └── locales/      # 翻译语言包
-│   │   │       ├── en-US.json
-│   │   │       └── zh-CN.json
-│   │   └── utils/            # 实用工具函数
-│   │       ├── datetime/     # 时间处理
-│   │       │   ├── age.ts            # 年龄计算
-│   │       │   └── date.ts           # 日期格式化
-│   │       ├── domain/       # 业务逻辑
-│   │       │   ├── blog.ts           # 博客数据处理
-│   │       │   ├── blogRoute.ts      # 统一博客 catch-all 分类、标签与文章路径解析
-│   │       │   ├── github.ts         # 公开仓库校验与去重
-│   │       │   ├── statistics.ts     # 日期、语言与统计汇总规范化
-│   │       │   ├── exif.ts           # EXIF 参数格式化 (相册网格/灯箱共用)
-│   │       │   ├── footprintYaml.ts  # 足迹 YAML 生成
-│   │       │   ├── footprints.ts     # 足迹数据处理
-│   │       │   ├── loader.ts         # 数据加载器
-│   │       │   ├── map.ts            # 地图链接工具 (GCJ-02/WGS-84 坐标转换)
-│   │       │   ├── markdown.ts       # Markdown AST 解析、HTML 净化与内容结构增强
-│   │       │   ├── nav.ts            # 导航工具
-│   │       │   └── wallpaper.ts      # Bing 元数据校验、规范化与语言市场 URL
-│   │       ├── effect/       # 视觉效果工具
-│   │       │   ├── appearanceTransition.svelte.ts # 外观过渡统一入口 (View Transition 能力检测 + Crossfade 回退, reduced-motion 直切)
-│   │       │   ├── glassCompositor.svelte.ts # 共享 WebGL2 玻璃合成器 (单例, 两级高斯模糊, 按需渲染)
-│   │       │   └── liquidGlass.ts # 尺寸感知的单通道 SVG 折射滤镜生成器
-│   │       ├── format/       # 内容格式化
-│   │       │   ├── number.ts         # 数字格式化
-│   │       │   └── slugify.ts        # Slug 规范化
-│   │       ├── network/      # 网络与加载
-│   │       │   ├── jsonResource.ts # 有界请求及最近成功结果的校验缓存
-│   │       │   ├── loading.ts        # 请求加载状态
-│   │       │   └── urlMetadata.ts    # URL 元数据获取
-│   │       ├── state/        # 状态所有权工具
-│   │       │   └── headerOwnership.ts # Header 插槽非空注册 ID 所有权校验
-│   │       └── index.ts      # 工具出口
-│   └── routes/               # 路由定义 (SvelteKit)
-│       ├── +layout.svelte    # 全局布局 (Header, Sidebar)
-│       ├── +layout.ts        # 客户端适配加载 logic
-│       ├── +page.svelte      # 首页入口
-│       ├── background/       # 背景信息直达路由
-│       │   ├── mtr/+page.svelte # 港铁背景信息入口
-│       │   └── wallpaper/+page.svelte # Bing 壁纸信息入口
-│       ├── albums/[...path]/ # 相册列表、筛选和照片深链接
-│       │   ├── +page.svelte  # 照片网格、侧边栏与灯箱状态
-│       │   └── +page.ts      # 路径校验及按年数据加载
-│       ├── blog/             # 博客模块
-│       │   ├── (main)/       # 博客 Layout Group
-│       │   │   ├── +layout.ts    # 共享数据加载
-│       │   │   ├── +page.ts      # 博客首页类型标记
-│       │   │   ├── +page.svelte  # 博客首页 (列表)
-│       │   │   ├── search/       # 搜索页
-│       │   │   │   ├── +page.ts      # 搜索页类型标记
-│       │   │   │   └── +page.svelte
-│       │   │   └── [...path]/    # 任意深度分类、标签与文章统一路由
-│       │   │       ├── +page.ts      # 路径验证及 Markdown 服务端渲染
-│       │   │       └── +page.svelte  # 分类列表、标签筛选与文章详情
-│       ├── footprint/        # 足迹页面路由
-│       │   └── +page.svelte
-│       ├── friends/          # 友链页面路由
-│       │   └── +page.svelte
-│       ├── pay/              # 赞赏页面路由
-│       │   └── +page.svelte
-│       └── +error.svelte     # 全局错误页面
-├── static/                   # 仅允许公开白名单静态资产
-│   ├── favicon/              # 开发与 CI favicon 样例，生产使用服务器持久化目录
-│   ├── fonts/                # 可公开分发的字体
-│   └── robots.txt            # 搜索引擎协议
-├── tests/                    # Node.js 项目完整性测试
-│   ├── amap-loader.test.js # SDK 加载去重、失败恢复及代理配置
-│   ├── background-info.test.js # 港铁拓扑、车站切换、顺序全屏过渡与 Bing 元数据测试
-│   ├── background-loading.test.js # 底部信息对齐、背景加载事务与尺寸重建回归测试
-│   ├── blog-newsroom.test.js # Newsroom 栅格、平面卡片、阅读排版与背景回归测试
-│   ├── config-boundary.test.js # 配置、占位值、重复字段与 realpath 越界测试
-│   ├── content-deploy.test.js # 内容 release 替换、硬链接复用与原子切换测试
-│   ├── content-watcher.test.js # 内容监听、GPS 保留与部署约束回归测试
-│   ├── footprint-map.test.js # 原生相机、动画中断及重合地点
-│   ├── github-repositories.test.js # 仓库数据、链接与重复标识校验
-│   ├── json-resource.test.js # 超时、取消、重试及有效缓存回退
-│   ├── statistics.test.js # 重复记录、Other 分组及有效汇总
-│   ├── public-data-cache.test.js # 标准库缓存行为测试的 Node 入口
-│   ├── public_data_cache_test.py # 刷新合并、持久化、过期恢复及固定路由
-│   ├── home-components.test.js # 首页组件布局回归测试
-│   ├── markdown-rendering.test.js # Markdown HTML、链接、公式与表格回归测试
-│   ├── mobile-experience.test.js # Header、底部 Dock、Wallet 与编程统计回归测试
-│   ├── navigation-state.test.js # Header 插槽所有权及博客路由、背景策略回归测试
-│   ├── public-permissions.test.js # 私有源权限与公开产物读取权限回归测试
-│   ├── project-integrity.test.js
-│   └── verify-build.js       # 生产构建正文、Newsroom/阅读背景及 Header 背景切换器验证
+├── package-lock.json     # 唯一的 npm 依赖锁文件
+├── package.json          # 根 npm 工作区与兼容命令入口
+└── site/                 # 公开站点源码与独立构建入口
+    ├── .env.example          # 环境变量示例
+    ├── .prettierignore       # Prettier 忽略文件配置
+    ├── .prettierrc           # Prettier 配置文件
+    ├── config/               # 仅跟踪版本化公开配置样例
+    │   ├── site.example.yaml
+    │   └── content.example.yaml
+    ├── fixtures/content/     # 开发与 CI 使用的公开演示内容
+    │   ├── posts/            # 从旧 static 迁移的 Markdown 演示文章
+    │   ├── data/             # 从旧 static 迁移的足迹、友链、付款及社交示例
+    │   └── albums/           # 空媒体目录和版本化元数据
+    ├── eslint.config.js      # ESLint 配置文件
+    ├── package.json          # 项目依赖配置
+    ├── theme.config.schema.json # 首主题配置 schema（draft 2020-12）
+    ├── theme.json            # fuyao-homepage 主题清单（contracts/theme）
+    ├── svelte.config.js      # SvelteKit 配置文件
+    ├── tsconfig.json         # TypeScript 配置文件
+    ├── version.json          # 营销版本、Build Train 与构建序号的唯一人工维护入口
+    ├── vite.config.ts        # Vite 构建配置
+    ├── scripts/              # 工具脚本及版本管理
+    │   ├── lib/
+    │   │   ├── public-permissions.js # 公开构建及 release 权限归一化与校验
+    │   │   └── theme-input.js    # 主题清单校验、快照摘要与冻结快照消费校验
+    │   ├── serve-public-data.py # 固定公开 JSON 端点与持久化成功响应缓存
+    │   ├── generate-blog-index.js # 博客索引生成脚本 (支持 RSS/Sitemap)
+    │   ├── generate-album-index.js# 相册 EXIF 索引及响应式缩略图生成脚本
+    │   ├── prepare-build-inputs.js # 校验、复制外部 favicon/内容并冻结构建输入快照
+    │   ├── prepare-content-update.js # 低内存相册整理与待发布状态写入
+    │   ├── prepare-content-release.js # 不运行 Vite 的可变公开内容组装与校验
+    │   ├── prepare-spa-fallback.js # 在 SPA fallback 中复用预渲染 GlobalLoader 标记
+    │   ├── validate-deployment.js  # 构建输入与最终产物泄漏、公开读取权限检查
+    │   ├── audit-repository.js     # 当前文件和完整 Git 历史隐私扫描
+    │   ├── migrate-content.js      # 外部持久化内容复制与 SHA-256 清单
+    │   ├── deploy.js               # 独立 release、原子切换与回滚
+    │   ├── deploy-content.js       # 硬链接复用的低内存内容 release 与原子切换
+    │   ├── watch-content.js       # 全内容递归监听、持久化事件合并及自动发布
+    │   ├── sync-theme-contracts.js # 重建并校验 contracts/theme 副本（PROVENANCE 摘要）
+    │   └── update-version.js      # 版本校验、更新、同步及 Build Train 格式化入口
+    ├── src/
+    │   ├── app.d.ts          # TypeScript 类型定义
+    │   ├── app.html          # HTML 模版
+    │   ├── hooks.client.ts   # SPA 路由解析前水合真实 GlobalLoader
+    │   ├── service-worker.ts # Service Worker
+    │   ├── lib/              # 核心库代码
+    │   │   ├── actions/          # Svelte Actions
+    │   │   │   ├── linkEnhancer.svelte.ts        # 独立裸 URL 链接预览增强
+    │   │   │   └── tableScrollEnhancer.svelte.ts # Markdown 表格滚轮与键盘横向滚动增强
+    │   │   ├── config/           # 网站配置
+    │   │   │   ├── index.ts      # 页面配置入口
+    │   │   │   ├── schema.ts     # site/content Schema、类型与白名单校验
+    │   │   │   ├── public.ts     # 浏览器可见配置单一入口
+    │   │   │   ├── server.ts     # YAML、realpath 与构建端配置读取
+    │   │   │   └── mosaic.ts     # 港铁颜色预设、线路区段与邻站查询
+    │   │   ├── plugins/          # Vite 插件
+    │   │   │   └── vite-plugin-blog-watcher.ts # 博客文件监听插件
+    │   │   ├── hooks/            # Svelte Composable Hooks
+    │   │   │   └── useBlogState.svelte.ts # 博客状态管理 Hook
+    │   │   ├── stores/           # 全局状态管理
+    │   │   │   ├── app.svelte.ts     # 应用级状态（含可重入背景加载事务与 Header 严格所有权插槽）
+    │   │   │   ├── backgroundInfo.svelte.ts # 全屏背景信息可见性与来源状态
+    │   │   │   ├── lightbox.svelte.ts# 灯箱全局状态 (Svelte 5 runes)
+    │   │   │   ├── mosaic.svelte.ts  # 当前港铁站与用户选定车站状态
+    │   │   │   └── search.svelte.ts  # 搜索状态
+    │   │   ├── styles/           # 全局样式
+    │   │   │   ├── app.css       # 全局样式入口
+    │   │   │   ├── base.css      # 基础元素样式
+    │   │   │   ├── components.css# 共用组件样式
+    │   │   │   ├── fonts.css     # 字体定义
+    │   │   │   ├── reader-syntax.css # 阅读器语法高亮样式
+    │   │   │   ├── reader.css    # 阅读器排版样式
+    │   │   │   ├── theme.css     # 主题与材质 Token
+    │   │   │   └── utilities.css # 全局工具类
+    │   │   ├── types/            # 类型定义
+    │   │   │   ├── album.ts      # 相册类型 (Photo, AlbumIndex, YearGroup)
+    │   │   │   ├── component.ts  # 运行期动态组件类型
+    │   │   │   ├── sidebar.ts    # 侧边栏类型
+    │   │   │   └── modules.d.ts  # 第三方模块类型声明
+    │   │   ├── components/       # Svelte 组件库
+    │   │   │   ├── albums/       # 相册页面组件
+    │   │   │   │   ├── AlbumGrid.svelte       # 照片网格 (justified gallery 布局)
+    │   │   │   │   ├── AlbumSidebar.svelte    # 相册侧边栏 (日期/设备模式)
+    │   │   │   │   ├── BrandIcon.svelte       # 相机与镜头品牌图标
+    │   │   │   │   ├── LightboxNavButton.svelte # 灯箱导航按钮 (复用组件)
+    │   │   │   │   ├── PhotoLightbox.svelte   # 照片灯箱 (全屏预览 + EXIF)
+    │   │   │   │   └── YearNav.svelte         # 年份导航 (SegmentedControl)
+    │   │   │   ├── footprint/    # 足迹页面组件
+    │   │   │   │   ├── FootprintActions.svelte   # 足迹操作按钮
+    │   │   │   │   ├── FootprintList.svelte      # 足迹列表展示
+    │   │   │   │   ├── GeneratorModal.svelte     # YAML 数据生成器弹窗
+    │   │   │   │   ├── PlaceSearchDropdown.svelte# 地点搜索下拉框
+    │   │   │   │   └── map/                      # 地图子组件
+    │   │   │   │       ├── AMap.svelte           # 原生标点、控件及加载状态
+    │   │   │   │       ├── MapCopyright.svelte   # 地图版权信息
+    │   │   │   │       ├── MapInfoWindow.svelte  # 高德原生信息窗内的地点内容
+    │   │   │   │       ├── types.ts              # 地图类型定义
+    │   │   │   │       └── core/                 # 地图核心逻辑
+    │   │   │   │           ├── copyright.ts          # 版权工具
+    │   │   │   │           ├── infoWindowController.svelte.ts # 信息窗口控制器
+    │   │   │   │           ├── loader.ts             # SDK 共享加载、超时及重试
+    │   │   │   │           ├── markers.ts            # 标记点管理
+    │   │   │   │           ├── placeSearch.ts        # 地点搜索
+    │   │   │   │           ├── view.ts               # 视图工具
+    │   │   │   │           └── viewController.svelte.ts # 原生非线性相机与减少动态效果
+    │   │   │   ├── friends/      # 友链页面组件
+    │   │   │   │   ├── FriendCard.svelte        # 友链卡片
+    │   │   │   │   └── ProfileCard.svelte       # 个人信息卡片
+    │   │   │   ├── home/         # 首页专用组件
+    │   │   │   │   ├── Hero.svelte              # 首页主组件
+    │   │   │   │   └── content/                 # 首页内容组件
+    │   │   │   │       ├── CloudflareAnalytics.svelte # 访问统计
+    │   │   │   │       ├── CodingActivity.svelte # 编程活动统计 (真实每日语言堆叠与无明细中性回退)
+    │   │   │   │       ├── GithubProjects.svelte # GitHub 项目展示
+    │   │   │   │       ├── LatestPosts.svelte    # 最新文章
+    │   │   │   │       ├── ProfileSection.svelte # 个人信息展示
+    │   │   │   │       ├── SocialLinks.svelte    # 社交链接列表
+    │   │   │   │       ├── TimeCapsule.svelte    # 时间胶囊/个人状态
+    │   │   │   │       └── common/               # 首页共用卡片与标题
+    │   │   │   │           ├── ContentCard.svelte
+    │   │   │   │           └── SectionHeader.svelte
+    │   │   │   ├── blog/         # Newsroom 风格博客组件
+    │   │   │   │   ├── card/         # 卡片组件
+    │   │   │   │   │   ├── FeaturedPostCard.svelte # 整宽 Newsroom 主报道卡片
+    │   │   │   │   │   ├── GridPostCard.svelte  # 次级与标准 Newsroom 网格卡片
+    │   │   │   │   │   ├── ListPostCard.svelte  # Newsroom 紧凑文章行
+    │   │   │   │   │   └── PostCard.svelte      # 四种变体的文章卡片入口
+    │   │   │   │   ├── common/       # 公共小组件
+    │   │   │   │   │   ├── CategoryBadge.svelte # 分类标签
+    │   │   │   │   │   └── TagBadge.svelte      # Newsroom 中性标签控件
+    │   │   │   │   ├── home/         # 首页视图
+    │   │   │   │   │   ├── EmptyState.svelte    # Newsroom 文章空状态
+    │   │   │   │   │   └── Home.svelte          # Newsroom 1+2+3 文章栅格
+    │   │   │   │   ├── search/       # 搜索视图
+    │   │   │   │   │   └── Search.svelte        # Newsroom 搜索框与分隔结果列表
+    │   │   │   │   ├── sidebar/      # 侧边栏
+    │   │   │   │   │   ├── Sidebar.svelte       # 博客归档/分类列表
+    │   │   │   │   │   └── TagCloud.svelte      # 标签云展示
+    │   │   │   │   ├── viewer/       # 文章阅读器
+    │   │   │   │   │   ├── BackButton.svelte    # 返回列表按钮
+    │   │   │   │   │   ├── Header.svelte        # Newsroom 标题、元数据、分享与封面
+    │   │   │   │   │   ├── LinkPreview.svelte   # Newsroom 平面链接预览
+    │   │   │   │   │   ├── MarkdownRenderer.svelte # Markdown 内容渲染器
+    │   │   │   │   │   ├── TableOfContents.svelte # 按标题深度缩进的文章目录
+    │   │   │   │   │   └── Viewer.svelte        # Newsroom 阅读器主入口
+    │   │   │   │   └── header/       # 头部集成
+    │   │   │   │       ├── Actions.svelte        # 博客操作胶囊 (搜索 + RSS)
+    │   │   │   │       ├── RssButton.svelte      # RSS 订阅按钮
+    │   │   │   │       └── SearchButton.svelte   # 搜索按钮
+    │   │   │   ├── layout/       # 布局组件
+    │   │   │   │   ├── background/   # 背景组件
+    │   │   │   │   │   ├── BackgroundInfoOverlay.svelte # 路由驱动的全屏港铁背景、移动端抽屉与 Bing 原图信息
+    │   │   │   │   │   └── BackgroundLayer.svelte # 按路由绘制壁纸、Newsroom 列表与文章阅读背景
+    │   │   │   │   ├── bottom-info/  # 底部信息组件
+    │   │   │   │   │   ├── BottomInfo.svelte       # 底部信息容器 (统一前景色、桌面侧栏/移动端紧凑两列四条静态单行)
+    │   │   │   │   │   ├── BackgroundInfo.svelte   # 统一颜色的背景地点单行展示、完整语义与静态省略
+    │   │   │   │   │   ├── CopyrightText.svelte    # 统一颜色的版权、仓库与版本信息
+    │   │   │   │   │   └── ServiceStatus.svelte    # 统一颜色的服务状态与部署平台静态单行信息
+    │   │   │   │   ├── content/      # 内容区域组件
+    │   │   │   │   │   └── MainContent.svelte    # 主内容区域容器 (统一水平边距、滚动行为与 viewport 状态声明式居中)
+    │   │   │   │   ├── header/       # 头部组件
+    │   │   │   │   │   ├── Header.svelte         # 统一网站 Header (移动端站点主标题与页面副标题)
+    │   │   │   │   │   ├── HeaderChrome.svelte   # 顶栏连续 chrome 背景层 (liveBackdrop 实时模糊, 内容进入 Header 后方时显示; 移动端覆盖控件区及 12px 底部间距, 单行 64px/双行 108px)
+    │   │   │   │   │   ├── Actions.svelte        # 全局操作区 (背景/主题/语言分组)
+    │   │   │   │   │   ├── BackgroundSwitcher.svelte # 背景模式切换 (桌面端嵌入 chrome 分段胶囊 / 移动端循环按钮)
+    │   │   │   │   │   ├── ActionButton.svelte   # 统一按钮外观 (独立玻璃 / bare 分段两种模式)
+    │   │   │   │   │   ├── ActionGroup.svelte    # 分段胶囊容器 (轻量静态材质, hairline 分隔, 柔和外投影)
+    │   │   │   │   │   └── drawer/               # 移动端菜单
+    │   │   │   │   │       └── Drawer.svelte         # 移动端侧栏抽屉
+    │   │   │   │   ├── nav/          # 导航
+    │   │   │   │   │   ├── CategoryNav.svelte    # 顶部分类导航
+    │   │   │   │   │   ├── MobileBottomDock.svelte # 编排两个独立同材质实时模糊胶囊、5px 间距与安全区
+    │   │   │   │   │   └── MobileNav.svelte      # 六项直达及可选注入列表抽屉 Tab，复用 Dock 胶囊材质
+    │   │   │   │   ├── loader/       # 加载指示器
+    │   │   │   │   │   ├── GlobalLoader.svelte   # 首次背景加载与画布尺寸重建的全局遮罩
+    │   │   │   │   │   └── spaFallbackLoader.ts  # SPA fallback 中同一加载器的水合与退场
+    │   │   │   │   └── sidebar/      # 全局侧边栏
+    │   │   │   │       ├── Sidebar.svelte        # PC端侧边栏容器
+    │   │   │   │       ├── SidebarTree.svelte    # 递归导航树
+    │   │   │   │       └── Item.svelte           # 导航项/菜单项
+    │   │   │   ├── pay/          # 支付/赞赏组件
+    │   │   │   │   ├── pass/                       # 通用三段式 Pass 原子组件
+    │   │   │   │   │   ├── PassCard.svelte        # 卡片表面、圆角裁切、阴影与三段布局外壳
+    │   │   │   │   │   ├── PassIdentityBar.svelte # 图标、标题、描述与 aria-expanded 展开控制器
+    │   │   │   │   │   ├── PassContentArea.svelte # start/center/fill 可伸缩无滚动内容区
+    │   │   │   │   │   └── PassActionArea.svelte  # text/link/status 固定高度操作区
+    │   │   │   │   ├── PaymentIntro.svelte       # 纯白“支持本站”说明、用途与隐私信息 Pass
+    │   │   │   │   ├── QRCodeCard.svelte         # 稳定 ID 展开状态、固定层级、底部轨道与可见空间尺寸控制器
+    │   │   │   │   └── WalletPass.svelte         # 无扫描提示、动态高分辨率二维码的品牌支付 Pass
+    │   │   │   ├── seo/          # SEO 组件
+    │   │   │   │   └── SeoHead.svelte            # HTML Meta 管理
+    │   │   │   └── ui/           # 基础 UI 原子组件
+    │   │   │       ├── background/   # 背景特效与来源信息
+    │   │   │       │   ├── BingWallpaperInfo.svelte # Bing 来源与全屏原图信息入口
+    │   │   │       │   ├── FlowingBackground.svelte # 流动渐变
+    │   │   │       │   ├── MosaicBackground.svelte  # 马赛克绘制、固定车站切换与故障回退
+    │   │   │       │   ├── MosaicInfo.svelte        # 交叉淡化的车站来源与全部背景浏览入口
+    │   │   │       │   └── SolidBackground.svelte   # 纯色/基础背景
+    │   │   │       ├── display/      # 内容展示
+    │   │   │       │   ├── Avatar.svelte         # 头像
+    │   │   │       │   ├── LazyImage.svelte      # 支持 picture source 与可配置加载优先级的图片组件（默认懒加载）
+    │   │   │       │   ├── Marquee.svelte        # 按需溢出滚动、可关闭边缘渐隐的跑马灯
+    │   │   │       │   └── SegmentedControl.svelte # 分段切换按钮
+    │   │   │       ├── effect/       # 视觉效果
+    │   │   │       │   ├── Crossfade.svelte      # 交叉淡入淡出动画
+    │   │   │       │   ├── FadeEdge.svelte       # 边缘淡出 (CSS Mask, 支持起止独立渐隐尺寸)
+    │   │   │       │   ├── GlassCompositor.svelte # 共享玻璃合成器画布 (WebGL2)
+    │   │   │       │   ├── LiquidGlass.svelte    # 流体玻璃态背景 (panel/card/control/chrome/icon 材质变体, chromeEdge 顶/底栏边缘, 单层方向性边界, liveBackdrop 实时模糊, contentLayout 内容布局)
+    │   │   │       │   └── TextEffect.svelte     # 文本打字/特效
+    │   │   │       ├── feedback/     # 反馈/状态
+    │   │   │       │   ├── LoadingSpinner.svelte # 加载转圈
+    │   │   │       │   ├── LoadingState.svelte   # 加载状态（全屏模式复用统一可用视口区域）
+    │   │   │       │   ├── Skeleton.svelte       # 骨架屏占位
+    │   │   │       │   └── StatusState.svelte    # viewport/embedded 错误与空数据状态卡及语言过渡
+    │   │   │       └── layout/       # 布局辅助
+    │   │   │           └── ScrollContainer.svelte# 统一滚动容器
+    │   │   ├── i18n/             # 国际化支持
+    │   │   │   ├── index.ts      # i18n 配置入口
+    │   │   │   ├── store.ts      # 语言切换状态管理
+    │   │   │   └── locales/      # 翻译语言包
+    │   │   │       ├── en-US.json
+    │   │   │       └── zh-CN.json
+    │   │   └── utils/            # 实用工具函数
+    │   │       ├── datetime/     # 时间处理
+    │   │       │   ├── age.ts            # 年龄计算
+    │   │       │   └── date.ts           # 日期格式化
+    │   │       ├── domain/       # 业务逻辑
+    │   │       │   ├── blog.ts           # 博客数据处理
+    │   │       │   ├── blogRoute.ts      # 统一博客 catch-all 分类、标签与文章路径解析
+    │   │       │   ├── github.ts         # 公开仓库校验与去重
+    │   │       │   ├── statistics.ts     # 日期、语言与统计汇总规范化
+    │   │       │   ├── exif.ts           # EXIF 参数格式化 (相册网格/灯箱共用)
+    │   │       │   ├── footprintYaml.ts  # 足迹 YAML 生成
+    │   │       │   ├── footprints.ts     # 足迹数据处理
+    │   │       │   ├── loader.ts         # 数据加载器
+    │   │       │   ├── map.ts            # 地图链接工具 (GCJ-02/WGS-84 坐标转换)
+    │   │       │   ├── markdown.ts       # Markdown AST 解析、HTML 净化与内容结构增强
+    │   │       │   ├── nav.ts            # 导航工具
+    │   │       │   └── wallpaper.ts      # Bing 元数据校验、规范化与语言市场 URL
+    │   │       ├── effect/       # 视觉效果工具
+    │   │       │   ├── appearanceTransition.svelte.ts # 外观过渡统一入口 (View Transition 能力检测 + Crossfade 回退, reduced-motion 直切)
+    │   │       │   ├── glassCompositor.svelte.ts # 共享 WebGL2 玻璃合成器 (单例, 两级高斯模糊, 按需渲染)
+    │   │       │   └── liquidGlass.ts # 尺寸感知的单通道 SVG 折射滤镜生成器
+    │   │       ├── format/       # 内容格式化
+    │   │       │   ├── number.ts         # 数字格式化
+    │   │       │   └── slugify.ts        # Slug 规范化
+    │   │       ├── network/      # 网络与加载
+    │   │       │   ├── jsonResource.ts # 有界请求及最近成功结果的校验缓存
+    │   │       │   ├── loading.ts        # 请求加载状态
+    │   │       │   └── urlMetadata.ts    # URL 元数据获取
+    │   │       ├── state/        # 状态所有权工具
+    │   │       │   └── headerOwnership.ts # Header 插槽非空注册 ID 所有权校验
+    │   │       └── index.ts      # 工具出口
+    │   └── routes/               # 路由定义 (SvelteKit)
+    │       ├── +layout.svelte    # 全局布局 (Header, Sidebar)
+    │       ├── +layout.ts        # 客户端适配加载 logic
+    │       ├── +page.svelte      # 首页入口
+    │       ├── background/       # 背景信息直达路由
+    │       │   ├── mtr/+page.svelte # 港铁背景信息入口
+    │       │   └── wallpaper/+page.svelte # Bing 壁纸信息入口
+    │       ├── albums/[...path]/ # 相册列表、筛选和照片深链接
+    │       │   ├── +page.svelte  # 照片网格、侧边栏与灯箱状态
+    │       │   └── +page.ts      # 路径校验及按年数据加载
+    │       ├── blog/             # 博客模块
+    │       │   ├── (main)/       # 博客 Layout Group
+    │       │   │   ├── +layout.ts    # 共享数据加载
+    │       │   │   ├── +page.ts      # 博客首页类型标记
+    │       │   │   ├── +page.svelte  # 博客首页 (列表)
+    │       │   │   ├── search/       # 搜索页
+    │       │   │   │   ├── +page.ts      # 搜索页类型标记
+    │       │   │   │   └── +page.svelte
+    │       │   │   └── [...path]/    # 任意深度分类、标签与文章统一路由
+    │       │   │       ├── +page.ts      # 路径验证及 Markdown 服务端渲染
+    │       │   │       └── +page.svelte  # 分类列表、标签筛选与文章详情
+    │       ├── footprint/        # 足迹页面路由
+    │       │   └── +page.svelte
+    │       ├── friends/          # 友链页面路由
+    │       │   └── +page.svelte
+    │       ├── pay/              # 赞赏页面路由
+    │       │   └── +page.svelte
+    │       └── +error.svelte     # 全局错误页面
+    ├── static/                   # 仅允许公开白名单静态资产
+    │   ├── favicon/              # 开发与 CI favicon 样例，生产使用服务器持久化目录
+    │   ├── fonts/                # 可公开分发的字体
+    │   └── robots.txt            # 搜索引擎协议
+    └── tests/                    # Node.js 项目完整性测试
+        ├── amap-loader.test.js # SDK 加载去重、失败恢复及代理配置
+        ├── background-info.test.js # 港铁拓扑、车站切换、顺序全屏过渡与 Bing 元数据测试
+        ├── background-loading.test.js # 底部信息对齐、背景加载事务与尺寸重建回归测试
+        ├── blog-newsroom.test.js # Newsroom 栅格、平面卡片、阅读排版与背景回归测试
+        ├── config-boundary.test.js # 配置、占位值、重复字段与 realpath 越界测试
+        ├── content-deploy.test.js # 内容 release 替换、硬链接复用与原子切换测试
+        ├── content-watcher.test.js # 内容监听、GPS 保留与部署约束回归测试
+        ├── footprint-map.test.js # 原生相机、动画中断及重合地点
+        ├── github-repositories.test.js # 仓库数据、链接与重复标识校验
+        ├── json-resource.test.js # 超时、取消、重试及有效缓存回退
+        ├── spa-fallback.test.js # SPA 回退加载器标记与安全外壳生成
+        ├── statistics.test.js # 重复记录、Other 分组及有效汇总
+        ├── theme-input.test.js # 主题身份绑定、快照摘要与冻结快照拒绝
+        ├── version-sync.test.js    # package.json、theme.json 与锁文件的派生版本同步
+        ├── public-data-cache.test.js # 标准库缓存行为测试的 Node 入口
+        ├── public_data_cache_test.py # 刷新合并、持久化、过期恢复及固定路由
+        ├── home-components.test.js # 首页组件布局回归测试
+        ├── markdown-rendering.test.js # Markdown HTML、链接、公式与表格回归测试
+        ├── mobile-experience.test.js # Header、底部 Dock、Wallet 与编程统计回归测试
+        ├── navigation-state.test.js # Header 插槽所有权及博客路由、背景策略回归测试
+        ├── public-permissions.test.js # 私有源权限与公开产物读取权限回归测试
+        ├── project-integrity.test.js
+        └── verify-build.js       # 生产构建正文、Newsroom/阅读背景及 Header 背景切换器验证
 ```
 
 ## 组件调用与规范
@@ -342,12 +362,12 @@
 ### 组件命名与组织
 
 1. **高内聚低耦合**：组件应尽可能自包含，通过 props 传递数据，减少对全局状态的依赖。
-2. **复用原则**：通用 UI 效果请使用 `src/lib/components/ui` 下的原子组件，如 `LiquidGlass` 或 `TextEffect`。
+2. **复用原则**：通用 UI 效果请使用 `site/src/lib/components/ui` 下的原子组件，如 `LiquidGlass` 或 `TextEffect`。
 3. **样式管理**：优先使用 TailwindCSS 类名，复杂的动画或效果可以在组件内部使用 `<style>` 块，但应避免全局污染。
 
 ### Z-Index 层级策略
 
-所有 z-index 均在 `src/lib/styles/app.css` 中以类名形式统一管理，**禁止**在组件样式中硬编码数值。
+所有 z-index 均在 `site/src/lib/styles/app.css` 中以类名形式统一管理，**禁止**在组件样式中硬编码数值。
 
 | 层级 (Layer)   | 类名 (Class)    | Value | 说明                    |
 | :------------- | :-------------- | :---- | :---------------------- |

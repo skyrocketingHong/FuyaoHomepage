@@ -1,0 +1,78 @@
+{
+	"$schema": "https://json-schema.org/draft/2020-12/schema",
+	"$id": "https://fuyaoskyrocket.ing/contracts/theme/build-input-v1.json",
+	"title": "Fuyao build-input snapshot metadata (protocol v1)",
+	"description": "Authoritative schema for private/input.json at the root of a frozen build-input snapshot. The snapshot tree itself (public/ and private/ layout) is specified in the contract README; this file records what was frozen, for which theme, and the digests of the three independently versioned inputs: platform content, site configuration, and theme configuration.",
+	"type": "object",
+	"additionalProperties": false,
+	"required": ["contract", "preparedAt", "mode", "theme", "inputs"],
+	"properties": {
+		"contract": {
+			"const": "fuyao.theme.build-input/v1",
+			"description": "Self-identifying protocol constant. Must match the theme manifest inputProtocol."
+		},
+		"preparedAt": {
+			"$ref": "#/$defs/dateTime",
+			"description": "When the snapshot was frozen."
+		},
+		"mode": {
+			"enum": ["ci", "development", "preview", "production"],
+			"description": "Snapshot purpose: ci builds, local development, private platform preview, or production publication."
+		},
+		"theme": {
+			"type": "object",
+			"additionalProperties": false,
+			"required": ["id", "version"],
+			"properties": {
+				"id": { "$ref": "#/$defs/themeId" },
+				"version": { "$ref": "#/$defs/semver" }
+			},
+			"description": "The theme this snapshot is prepared for. Must equal the id and version of the manifest the platform pairs it with."
+		},
+		"themeConfig": {
+			"type": "object",
+			"description": "Theme-specific configuration values validated against the theme's configSchema. Absent means an empty configuration."
+		},
+		"inputs": {
+			"type": "object",
+			"additionalProperties": false,
+			"required": ["contentDigest", "siteConfigDigest", "themeConfigDigest"],
+			"properties": {
+				"contentDigest": {
+					"$ref": "#/$defs/sha256Digest",
+					"description": "Digest over the public content tree (posts, data, albums, favicon, fonts, robots.txt)."
+				},
+				"siteConfigDigest": {
+					"$ref": "#/$defs/sha256Digest",
+					"description": "Digest over the normalized site configuration (site-config.json)."
+				},
+				"themeConfigDigest": {
+					"$ref": "#/$defs/sha256Digest",
+					"description": "Digest over the themeConfig object. Equals the digest of the empty object when absent."
+				}
+			}
+		}
+	},
+	"$defs": {
+		"themeId": {
+			"type": "string",
+			"minLength": 3,
+			"maxLength": 63,
+			"pattern": "^[a-z][a-z0-9-]*[a-z0-9]$"
+		},
+		"semver": {
+			"type": "string",
+			"pattern": "^(?:0|[1-9]\\d*)\\.(?:0|[1-9]\\d*)\\.(?:0|[1-9]\\d*)(?:-(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*)?(?:\\+[0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*)?$"
+		},
+		"sha256Digest": {
+			"type": "string",
+			"pattern": "^sha256:[0-9a-f]{64}$"
+		},
+		"dateTime": {
+			"type": "string",
+			"pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?(?:Z|[+-]\\d{2}:\\d{2})$",
+			"format": "date-time",
+			"description": "RFC 3339 timestamp. The pattern checks the shape; format: date-time (enforced by the Go validator via AssertFormat) rejects impossible calendar dates."
+		}
+	}
+}

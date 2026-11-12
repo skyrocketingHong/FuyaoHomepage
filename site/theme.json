@@ -1,0 +1,27 @@
+{
+	"contract": "fuyao.theme.manifest/v1",
+	"id": "fuyao-homepage",
+	"version": "27.2.0",
+	"name": "Fuyao Homepage",
+	"description": "The original SvelteKit public site registered as the first theme.",
+	"adapter": "node22-sveltekit-static",
+	"inputProtocol": "fuyao.theme.build-input/v1",
+	"capabilities": ["blog", "albums", "footprint", "friends", "pay", "favicon"],
+	"configSchema": {
+		"file": "theme.config.schema.json",
+		"format": "json-schema-2020-12"
+	},
+	"outputs": {
+		"spaFallback": "200.html",
+		"urlConventions": [
+			"release.json",
+			"posts",
+			"data",
+			"media-albums",
+			"sitemap",
+			"blog-rss",
+			"blog-search"
+		],
+		"requiredArtifacts": ["sitemap.xml", "blog/rss.xml"]
+	}
+}

@@ -13,7 +13,7 @@ ConditionPathIsDirectory=/srv/fuyao/shared/legacy/root-assets/favicon
 Type=simple
 User=root
 Group=root
-WorkingDirectory=/srv/fuyao/tooling/current
+WorkingDirectory=/srv/fuyao/tooling/current/site
 Environment=PATH=/opt/fuyao/node/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 EnvironmentFile=/srv/fuyao/shared/config/deployment.env
 Environment=FUYAO_WATCH_MODE=content-only

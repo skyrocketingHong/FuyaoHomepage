@@ -1,12 +1,6 @@
-# Package Managers
 package-lock.json
-pnpm-lock.yaml
-yarn.lock
-bun.lock
-bun.lockb
-
-# Miscellaneous
-/static/
-
-# 内容 fixture 保持迁移源格式，不由代码格式化工具改写
-/fixtures/content/
+/site/static/
+/site/fixtures/content/
+/site/.svelte-kit/
+/site/.fuyao/
+/site/build/

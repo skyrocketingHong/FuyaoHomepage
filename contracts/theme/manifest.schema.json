@@ -1,0 +1,128 @@
+{
+	"$schema": "https://json-schema.org/draft/2020-12/schema",
+	"$id": "https://fuyaoskyrocket.ing/contracts/theme/manifest-v1.json",
+	"title": "Fuyao theme manifest (contract v1)",
+	"description": "Authoritative schema for a theme's theme.json. A theme declares its identity, the trusted build adapter it requires, the input protocol it consumes, the content capabilities it supports, its own configuration schema, and the output conventions the platform may rely on. The platform rejects publication when a site's required capabilities or URL conventions are not covered by the manifest.",
+	"type": "object",
+	"additionalProperties": false,
+	"required": ["contract", "id", "version", "adapter", "inputProtocol", "capabilities", "outputs"],
+	"properties": {
+		"contract": {
+			"const": "fuyao.theme.manifest/v1",
+			"description": "Self-identifying contract constant. Must match exactly."
+		},
+		"id": {
+			"$ref": "#/$defs/themeId",
+			"description": "Stable unique theme identifier (lowercase kebab-case)."
+		},
+		"version": {
+			"$ref": "#/$defs/semver",
+			"description": "Theme version, SemVer 2.0.0. The first theme uses the site package version."
+		},
+		"name": {
+			"type": "string",
+			"minLength": 1,
+			"maxLength": 100,
+			"description": "Optional human-readable display name."
+		},
+		"description": {
+			"type": "string",
+			"maxLength": 500,
+			"description": "Optional short description shown in the admin console."
+		},
+		"adapter": {
+			"enum": ["node22-sveltekit-static"],
+			"description": "Trusted build adapter this theme requires. Adapters are platform-built, enumerated execution units; manifests can never name shell commands, scripts, or arbitrary Git sources."
+		},
+		"inputProtocol": {
+			"enum": ["fuyao.theme.build-input/v1"],
+			"description": "Build-input snapshot protocol the theme consumes. The platform only pairs a theme with snapshots of a protocol it declares."
+		},
+		"capabilities": {
+			"type": "array",
+			"minItems": 1,
+			"uniqueItems": true,
+			"items": {
+				"enum": ["blog", "albums", "footprint", "friends", "pay", "favicon"],
+				"description": "Content domain the theme can render."
+			},
+			"description": "Content capabilities the theme supports. Publication is blocked (with an explicit incompatibility list) when a site requires a capability the theme does not declare."
+		},
+		"configSchema": {
+			"type": "object",
+			"additionalProperties": false,
+			"required": ["file", "format"],
+			"properties": {
+				"file": {
+					"$ref": "#/$defs/safeRelativePath",
+					"description": "JSON Schema (2020-12) describing valid values of the site's themeConfig. Resolved relative to the theme root; must exist and compile."
+				},
+				"format": {
+					"const": "json-schema-2020-12",
+					"description": "Configuration schema dialect. Only JSON Schema draft 2020-12 is accepted."
+				}
+			},
+			"description": "Optional declaration of the theme's own configuration schema. When omitted, the only valid themeConfig is an empty object."
+		},
+		"outputs": {
+			"type": "object",
+			"additionalProperties": false,
+			"required": ["spaFallback", "urlConventions", "requiredArtifacts"],
+			"properties": {
+				"spaFallback": {
+					"oneOf": [{ "$ref": "#/$defs/safeRelativePath" }, { "type": "null" }],
+					"description": "Single-page-application fallback page inside the release (e.g. 200.html), or null when the theme prerenders every route. Themes are not required to provide one."
+				},
+				"urlConventions": {
+					"type": "array",
+					"minItems": 1,
+					"uniqueItems": true,
+					"items": {
+						"enum": [
+							"release.json",
+							"posts",
+							"data",
+							"media-albums",
+							"sitemap",
+							"blog-rss",
+							"blog-search"
+						]
+					},
+					"description": "Site URL conventions the theme honors. The platform computes the gap between what a site needs and what the theme declares, and blocks publication on any gap."
+				},
+				"requiredArtifacts": {
+					"type": "array",
+					"maxItems": 100,
+					"uniqueItems": true,
+					"items": { "$ref": "#/$defs/safeRelativePath" },
+					"description": "Files that must exist in every release produced by the theme (verified before switching traffic). The platform writes release.json itself; themes must not list it here."
+				}
+			}
+		}
+	},
+	"$defs": {
+		"themeId": {
+			"type": "string",
+			"minLength": 3,
+			"maxLength": 63,
+			"pattern": "^[a-z][a-z0-9-]*[a-z0-9]$"
+		},
+		"semver": {
+			"type": "string",
+			"pattern": "^(?:0|[1-9]\\d*)\\.(?:0|[1-9]\\d*)\\.(?:0|[1-9]\\d*)(?:-(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*)?(?:\\+[0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*)?$"
+		},
+		"safeRelativePath": {
+			"description": "Relative path inside the theme root or a release. No absolute paths, no drive letters, no backslashes, no empty, dot, or dot-dot segments, no trailing slash.",
+			"type": "string",
+			"minLength": 1,
+			"maxLength": 255,
+			"pattern": "^[A-Za-z0-9][A-Za-z0-9._/-]*$",
+			"allOf": [
+				{ "not": { "pattern": "/$" } },
+				{ "not": { "pattern": "//" } },
+				{ "not": { "pattern": "(^|/)\\.\\.(/|$)" } },
+				{ "not": { "pattern": "(^|/)\\.(/|$)" } }
+			]
+		}
+	}
+}

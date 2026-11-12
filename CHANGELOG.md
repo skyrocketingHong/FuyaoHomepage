@@ -6,8 +6,13 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## Unreleased
 
+### Changed
+
+- Project split: the management platform (backend, console, management OpenAPI contract, platform deployment templates) moved to the standalone FuyaoManager repository; this repository remains the standalone public-site project and the first theme (`fuyao-homepage`), building and testing without any platform, database, or management API present.
+
 ### Added
 
+- Added a version-controlled generated copy of the theme contracts under `contracts/theme` with a `PROVENANCE.json` digest manifest, maintained by `site/scripts/sync-theme-contracts.js` (`npm run contracts:check` verifies drift in CI).
 - Added low-memory content-only releases for articles, attachments, data YAML, album indexes, favicons, RSS, and Sitemap without running Vite.
 - Added recursive content watching with durable pending-state recovery, album import and thumbnail generation, atomic switching, health checks, and automatic page reload after a release change.
 
@@ -30,6 +35,20 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Fixed AMap proxy routing and documented domain allowlists; deduplicated SDK loading with timeout recovery and visible load failures.
 
 - Fixed direct album URLs being treated as physical directories instead of SPA routes; fallback pages now hydrate the real `GlobalLoader` before route resolution, preserving its Crossfade lifecycle and true viewport-centered text.
+
+## 27.2 (2026-11-11)
+
+### Added
+
+- Content management platform (admin): CLI-issued one-time-code authentication (`init-admin`, `login-code`, `revoke-sessions`), in-browser site creation with directory provisioning, and a desktop-style console shell.
+- Single content authority: markdown posts, friends, social links, visual site configuration (write-only AMap security code), albums with async EXIF/thumbnail processing, and footprint points all live under the platform and feed the frozen-snapshot builds; drafts never reach public output.
+- Managed published-site edge: per-site IP:port entries on the private network address, Caddy snippet management with validate-then-reload, per-site `current` pointers, public/private visibility that actually re-binds entries, and private build previews with an explicit close that revokes tokens and releases ports.
+- Publish and rollback with release records, retry after failure, and reference-checked photo deletion.
+
+### Changed
+
+- Passkey endpoints remain as localhost/domain compatibility; console login uses one-time codes exclusively.
+- Site cookies are only marked `Secure` for https origins.
 
 ## 27.1.1 (2026-07-29)
 

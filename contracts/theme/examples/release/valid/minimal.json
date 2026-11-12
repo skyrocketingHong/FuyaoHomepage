@@ -1,0 +1,18 @@
+{
+	"contract": "fuyao.theme.release/v1",
+	"schemaVersion": 1,
+	"releaseId": "fuyao-auto-20261111T101500Z",
+	"createdAt": "2026-11-11T10:15:00Z",
+	"reasons": ["posts", "static"],
+	"theme": {
+		"id": "minimal-theme",
+		"version": "1.0.0",
+		"manifestDigest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+	},
+	"inputs": {
+		"contentDigest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+		"siteConfigDigest": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+		"themeConfigDigest": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+	},
+	"routes": { "spaFallback": null, "urlConventions": ["posts"] }
+}

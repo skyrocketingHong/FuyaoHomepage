@@ -2,7 +2,7 @@
 
 # 从 3.0.0 迁移到 27.0
 
-本手册用于把 3.0.0 的站点配置和 `static/` 私有内容迁移到 27.0。迁移过程不会修改旧站目录，也不会迁移可重新生成的索引文件。
+本手册用于把 3.0.0 的站点配置和 `static/` 私有内容迁移到 27.0。迁移过程不会修改旧站目录，也不会迁移可重新生成的索引文件。下列命令按当前仓库布局给出：公开站点源码位于 `site/`，命令从仓库根目录执行；3.0.0 源目录中的 `static/` 路径保持不变。
 
 ## 1. 先理解 `/srv/fuyao/shared/config/`
 
@@ -54,7 +54,7 @@
 
 开始前确认：
 
-1. **27.0 源码目录**：已检出 27.0 代码并完成 `npm ci`，后续 `npm run` 命令均在这里执行。
+1. **当前源码仓库根目录**：已检出目标新版代码并完成 `npm ci`，其中包含 `site/` 工作区；后续 `npm run` 命令均在仓库根目录执行。
 2. **3.0.0 源目录**：旧站的完整副本，至少包含 `.env` 和需要迁移的 `static/` 内容。
 3. **27.0 持久化目录**：用于长期保存生产配置和内容，不在 Git 仓库内。
 
@@ -124,16 +124,16 @@ sudo install -d -o "$FUYAO_SERVICE_USER" -g "$FUYAO_SERVICE_GROUP" -m 0700 \
 
 ### 4.1 从模板创建两个 YAML 文件
 
-在 27.0 源码目录执行：
+在当前源码仓库根目录执行：
 
 以下命令会创建新文件。目标文件已经存在时，不要覆盖；先确认它是否为当前生产配置。
 
 ```bash
 sudo install -o "$FUYAO_SERVICE_USER" -g "$FUYAO_SERVICE_GROUP" -m 0640 \
-  config/site.example.yaml "$FUYAO_CONFIG_ROOT/site.yaml"
+  site/config/site.example.yaml "$FUYAO_CONFIG_ROOT/site.yaml"
 
 sudo install -o "$FUYAO_SERVICE_USER" -g "$FUYAO_SERVICE_GROUP" -m 0640 \
-  config/content.example.yaml "$FUYAO_CONFIG_ROOT/content.yaml"
+  site/config/content.example.yaml "$FUYAO_CONFIG_ROOT/content.yaml"
 ```
 
 然后编辑 `site.yaml`：
@@ -289,7 +289,7 @@ export FUYAO_MIGRATION_TYPES=posts,footprints
 
 ### 5.2 先做只读预检
 
-在 27.0 源码目录执行：
+在当前源码仓库根目录执行：
 
 ```bash
 npm run content:migrate:plan
@@ -329,10 +329,10 @@ npm run content:migrate:apply
 
 ### 6.1 验证生产输入和构建
 
-在 27.0 源码目录执行：
+在当前源码仓库根目录执行：
 
 ```bash
-export FUYAO_DEPLOY_LOCK="$PWD/.fuyao/migration-build.lock"
+export FUYAO_DEPLOY_LOCK="$PWD/site/.fuyao/migration-build.lock"
 npm run inputs:prepare:production
 npm run build:production
 ```
@@ -372,7 +372,7 @@ npm test
 如果已经切换到 27.0，并且旧版本本身已保存在实际的 `FUYAO_RELEASE_ROOT` 下，可在生产部署变量齐全时执行：
 
 ```bash
-node scripts/deploy.js --rollback=<release-id>
+node site/scripts/deploy.js --rollback=<release-id>
 ```
 
 该命令只切换 `current` 指向的代码 release，不会恢复 `shared/` 中的配置和内容。如果 3.0.0 没有按 27.0 的 release 结构保存，就不能使用此命令回滚到 3.0.0，应恢复迁移前的 Web 服务配置和旧站目录。

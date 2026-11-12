@@ -2,7 +2,7 @@ English | [简体中文](./MIGRATION_3_TO_27_ZH.md)
 
 # Migrating from 3.0.0 to 27.0
 
-This guide migrates public site configuration and private `static/` content from 3.0.0 to 27.0. It does not modify the old site tree or copy indexes that 27.0 can regenerate.
+This guide migrates public site configuration and private `static/` content from 3.0.0 to 27.0. It does not modify the old site tree or copy indexes that 27.0 can regenerate. The commands below use the current repository layout: public site source is in `site/`, and commands run from the repository root. The `static/` paths in the 3.0.0 source tree remain unchanged.
 
 ## 1. Understand `/srv/fuyao/shared/config/`
 
@@ -54,7 +54,7 @@ The migration script excludes `all.json`, `categories.json`, `search.json`, `map
 
 Confirm the following before making changes:
 
-1. **27.0 source directory**: checkout the 27.0 code and run `npm ci`. Run every later `npm run` command from this directory.
+1. **Current source repository root**: check out the target version and run `npm ci`. This checkout contains the `site/` workspace. Run every later `npm run` command from the repository root.
 2. **3.0.0 source directory**: keep a complete copy of the old site, including `.env` and every `static/` item to migrate.
 3. **27.0 persistent directory**: store long-lived production configuration and content outside the Git repository.
 
@@ -124,16 +124,16 @@ sudo install -d -o "$FUYAO_SERVICE_USER" -g "$FUYAO_SERVICE_GROUP" -m 0700 \
 
 ### 4.1 Create the Two YAML Files
 
-Run these commands from the 27.0 source directory.
+Run these commands from the current source repository root.
 
 The commands create new files. If either target already exists, do not overwrite it until you have confirmed whether it is the active production configuration.
 
 ```bash
 sudo install -o "$FUYAO_SERVICE_USER" -g "$FUYAO_SERVICE_GROUP" -m 0640 \
-  config/site.example.yaml "$FUYAO_CONFIG_ROOT/site.yaml"
+  site/config/site.example.yaml "$FUYAO_CONFIG_ROOT/site.yaml"
 
 sudo install -o "$FUYAO_SERVICE_USER" -g "$FUYAO_SERVICE_GROUP" -m 0640 \
-  config/content.example.yaml "$FUYAO_CONFIG_ROOT/content.yaml"
+  site/config/content.example.yaml "$FUYAO_CONFIG_ROOT/content.yaml"
 ```
 
 Edit `site.yaml`:
@@ -289,7 +289,7 @@ Without this variable, the script attempts every supported type. Missing individ
 
 ### 5.2 Run the Read-Only Plan
 
-From the 27.0 source directory, run:
+From the current source repository root, run:
 
 ```bash
 npm run content:migrate:plan
@@ -329,10 +329,10 @@ The migration is not transactional across all files. Back up the target content 
 
 ### 6.1 Validate Production Inputs and Build
 
-From the 27.0 source directory, run:
+From the current source repository root, run:
 
 ```bash
-export FUYAO_DEPLOY_LOCK="$PWD/.fuyao/migration-build.lock"
+export FUYAO_DEPLOY_LOCK="$PWD/site/.fuyao/migration-build.lock"
 npm run inputs:prepare:production
 npm run build:production
 ```
@@ -372,7 +372,7 @@ The migration script never deletes the 3.0.0 source. If validation fails:
 If 27.0 is already active and the old version exists under the configured `FUYAO_RELEASE_ROOT`, run this command with the complete production deployment environment:
 
 ```bash
-node scripts/deploy.js --rollback=<release-id>
+node site/scripts/deploy.js --rollback=<release-id>
 ```
 
 The command switches only the code release referenced by `current`; it does not restore configuration or content under `shared/`. If 3.0.0 was never stored in the 27.0 release layout, this command cannot return to 3.0.0. Restore the old web-server configuration and site directory instead.

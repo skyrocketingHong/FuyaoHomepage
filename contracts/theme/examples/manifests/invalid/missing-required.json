@@ -1,0 +1,8 @@
+{
+	"contract": "fuyao.theme.manifest/v1",
+	"id": "fuyao-homepage",
+	"version": "27.1.1",
+	"adapter": "node22-sveltekit-static",
+	"inputProtocol": "fuyao.theme.build-input/v1",
+	"capabilities": ["blog"]
+}

@@ -152,6 +152,9 @@ AGENTS.md
 config/*
 !config/*.example.yaml
 !config/*.sample.yaml
+site/config/*
+!site/config/*.example.yaml
+!site/config/*.sample.yaml
 
 # 个人内容、构建输入快照与临时发布目录。
 .fuyao/
@@ -166,6 +169,12 @@ static/albums/**
 static/blog/rss.xml
 static/sitemap.xml
 static/wp-content/**
+site/static/data/**
+site/static/posts/**
+site/static/albums/**
+site/static/blog/rss.xml
+site/static/sitemap.xml
+site/static/wp-content/**
 
 # 仓库演示内容只允许位于 fixtures/content；static 只保留公开静态资产。
 
@@ -183,5 +192,14 @@ static/wp-content/**
 !fixtures/content/albums/photos/.gitkeep
 !fixtures/content/albums/thumbnails/
 !fixtures/content/albums/thumbnails/.gitkeep
+!site/fixtures/content/albums/photos/
+!site/fixtures/content/albums/photos/.gitkeep
+!site/fixtures/content/albums/thumbnails/
+!site/fixtures/content/albums/thumbnails/.gitkeep
 
 # 匿名 fixture 必须位于 fixtures/，并通过隐私扫描后才可提交。
+
+# ZCode plugin local state
+.mimosa/
+.v2c/
+.video_agent/

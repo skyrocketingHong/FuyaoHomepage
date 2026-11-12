@@ -14,7 +14,7 @@
 
 所有 `VITE_*` 均视为浏览器可见。本项目不再使用 `VITE_*` 保存站点配置、内容路径或密钥。
 
-原有 `.env` 公开字段已迁入 `config/site.example.yaml`，原有 `static/data` 与 `static/posts` 示例已迁入 `fixtures/content/`。开发与 CI 直接使用迁移后的公开演示数据；生产构建只读取外部 YAML 与内容目录。
+原有 `.env` 公开字段已迁入 `site/config/site.example.yaml`，原有 `static/data` 与 `static/posts` 示例已迁入 `site/fixtures/content/`。开发与 CI 直接使用迁移后的公开演示数据；生产构建只读取外部 YAML 与内容目录。
 
 ## 2. 服务器目录
 
@@ -52,7 +52,7 @@
 
 ## 3. 公开站点配置
 
-以 [config/site.example.yaml](./config/site.example.yaml) 为字段模板。`schemaVersion` 当前为 `1`。
+以 [site/config/site.example.yaml](./site/config/site.example.yaml) 为字段模板。`schemaVersion` 当前为 `1`。
 
 - `site`：站名、域名、运营日期、默认语言
 - `profile`：公开姓名、生日、公开邮箱、头像、双语角色与签名
@@ -96,7 +96,7 @@
 
 将 `services.githubProxyUrl` 设为 `https://<站点域名>/api/github/repos`，通过 GitHub 官方 REST API 提供最多六个最近更新的公开仓库。开发环境未配置代理时直接使用官方 API，不再访问失效的第三方置顶仓库服务。其他公开地址统一使用本站的 `/api/stats/cloudflare`、`/api/stats/wakatime/activity` 和 `/api/stats/wakatime/languages`。
 
-独立 Python 标准库服务 `scripts/serve-public-data.py` 只监听 `127.0.0.1:3191`。创建权限为 `0600` 的 `/srv/fuyao/shared/config/public-data.json`，按以下结构填写真实上游地址：
+独立 Python 标准库服务 `site/scripts/serve-public-data.py` 只监听 `127.0.0.1:3191`。创建权限为 `0600` 的 `/srv/fuyao/shared/config/public-data.json`，按以下结构填写真实上游地址：
 
 ```json
 {
@@ -116,7 +116,7 @@
 
 ```bash
 sudo install -d -m 0755 /srv/fuyao/services/public-data
-sudo install -m 0644 scripts/serve-public-data.py /srv/fuyao/services/public-data/
+sudo install -m 0644 site/scripts/serve-public-data.py /srv/fuyao/services/public-data/
 sudo install -d -o caddy -g caddy -m 0700 /srv/fuyao/cache/public-data
 sudo install -m 0644 deploy/systemd/fuyao-public-data.service /etc/systemd/system/
 sudo systemctl daemon-reload
@@ -131,13 +131,13 @@ Caddy 将 `.webmanifest` 作为 `application/manifest+json` 返回，避免回�
 
 ## 4. 内容目录映射
 
-以 [config/content.example.yaml](./config/content.example.yaml) 为模板。所有 `paths` 均相对于 `FUYAO_CONTENT_ROOT`，不能填写绝对路径。构建端使用 `realpath` 验证每个目录仍位于内容根目录内，符号链接越界会阻止发布。
+以 [site/config/content.example.yaml](./site/config/content.example.yaml) 为模板。所有 `paths` 均相对于 `FUYAO_CONTENT_ROOT`，不能填写绝对路径。构建端使用 `realpath` 验证每个目录仍位于内容根目录内，符号链接越界会阻止发布。
 
 相册媒体采用 `external` 模式：元数据进入构建快照，原图和缩略图不复制到 Git 仓库或 release。
 
 ## 5. 服务端变量与密钥
 
-`.env.example` 只列出非秘密的常规部署参数。生产部署和内容服务支持的外部变量如下：
+`site/.env.example` 只列出非秘密的常规部署参数。生产部署和内容服务支持的外部变量如下：
 
 | 变量                          | 必需条件                 | 用途                                                |
 | :---------------------------- | :----------------------- | :-------------------------------------------------- |
@@ -150,7 +150,7 @@ Caddy 将 `.webmanifest` 作为 `application/manifest+json` 返回，避免回�
 | `FUYAO_DEPLOY_LOCK`           | 可选                     | 构建与部署互斥锁路径                                |
 | `FUYAO_SECRETS_FILE`          | 可选                     | 为最终产物泄漏扫描提供需禁止出现的服务端秘密值      |
 | `FUYAO_REPOSITORY_URL`        | 未设置本地源码目录时部署 | 公开源码仓库地址                                    |
-| `FUYAO_SOURCE_ROOT`           | 可选                     | 使用已存在源码目录部署，避免重新克隆                |
+| `FUYAO_SOURCE_ROOT`           | 可选                     | 使用包含 `site/` 的仓库根目录部署，避免重新克隆     |
 | `FUYAO_RELEASE_KEEP`          | 可选                     | 成功部署后保留的 release 数量，默认 `5`             |
 | `FUYAO_HEALTHCHECK_URL`       | 可选                     | 切换后用于验证 `release.json` 的站点地址            |
 | `FUYAO_POSTS_WATCH_DIR`       | 内容监听                 | 文章监听目录                                        |
@@ -181,6 +181,8 @@ GitHub Token、部署令牌、私钥、密码和 Webhook Secret 只能进入服�
 
 ### 6.1 开发与 CI
 
+在仓库根目录执行命令。根 npm 工作区统一安装依赖，将站点命令转发到 `site/`；站点构建输出位于 `site/build/`。
+
 ```bash
 npm ci
 npm run check
@@ -188,7 +190,7 @@ npm test
 npm run build
 ```
 
-命令自动使用迁移后的 `config/*.example.yaml` 与 `fixtures/content/`，将输入复制到 `.fuyao/build-inputs/current/`，生成索引后冻结为只读快照。生成物不回写 `static`。
+命令自动使用迁移后的 `site/config/*.example.yaml` 与 `site/fixtures/content/`，将输入复制到 `site/.fuyao/build-inputs/current/`，生成索引后冻结为只读快照。生成物不回写 `site/static`。
 
 ### 6.2 生产
 
@@ -196,7 +198,7 @@ npm run build
 export FUYAO_CONFIG_ROOT=/srv/fuyao/shared/config
 export FUYAO_CONTENT_ROOT=/srv/fuyao/shared/content
 export FUYAO_FAVICON_ROOT=/srv/fuyao/shared/legacy/root-assets/favicon
-export FUYAO_DEPLOY_LOCK="$PWD/.fuyao/production-build.lock"
+export FUYAO_DEPLOY_LOCK="$PWD/site/.fuyao/production-build.lock"
 npm run build:production
 ```
 
@@ -207,17 +209,17 @@ npm run build:production
 生产部署模板位于 `deploy/systemd/` 和 `deploy/caddy/`。`npm run deploy` 执行以下事务：
 
 1. 获取部署锁。
-2. 从公开 `main` 克隆到临时目录。
-3. 只读使用外部配置和内容，准备构建快照。
+2. 使用 `FUYAO_SOURCE_ROOT` 指定的仓库根目录，未配置时从公开 `main` 克隆到临时目录；按根锁文件安装工作区依赖。
+3. 从仓库内 `site/` 执行站点流程，只读使用外部配置和内容，准备构建快照。
 4. 执行检查、测试、生产构建和产物扫描。
-5. 将构建结果复制到新的 `releases/<release-id>/`。
+5. 将 `site/build/` 复制到新的 `releases/<release-id>/`。
 6. 原子切换 `current`，随后执行可选健康检查。
 7. 健康检查失败时恢复旧指针；成功后按保留数量清理旧 release。
 
 回滚命令：
 
 ```bash
-node scripts/deploy.js --rollback=<release-id>
+node site/scripts/deploy.js --rollback=<release-id>
 ```
 
 回滚仅切换 release 指针，不修改持久化内容。
@@ -237,7 +239,7 @@ node scripts/deploy.js --rollback=<release-id>
 
 新增照片时，将 `jpg`、`jpeg`、`png`、`heic`、`webp`、`tiff` 或 `tif` 文件直接上传到 `albums/photos/` 根目录。不要手工写入 `thumbnails/` 或 `metadata/`。
 
-服务使用 `/srv/fuyao/tooling/current` 中的已验证源码与依赖，并通过 `/opt/fuyao/node/bin/node` 运行。代码版本发布后必须同步更新 tooling；内容变更不克隆仓库，也不运行 Vite。
+`/srv/fuyao/tooling/current` 保存已验证的完整仓库与工作区依赖；服务工作目录为 `/srv/fuyao/tooling/current/site`，通过 `/opt/fuyao/node/bin/node` 执行站点脚本。代码版本发布后必须同步更新 tooling；内容变更不克隆仓库，也不运行 Vite。
 
 首次启用 `content-only` 前，必须使用本版本完成一次完整代码发布，将 `200.html` SPA 回退、Service Worker 绕过规则和浏览器 release 轮询写入当前应用 bundle。完成该引导发布后，后续内容事件不再需要完整构建。
 
@@ -285,7 +287,7 @@ export FUYAO_MIGRATION_MANIFEST=/srv/fuyao/shared/backups/migration-<date>.json
 npm run content:migrate:apply
 ```
 
-迁移脚本不覆盖内容不同的目标文件，不删除源文件，并记录文件数、总大小和每个文件的 SHA-256。仓库演示配置与内容已经迁入 `config/` 和 `fixtures/content/`；未来加入的真实 YAML、文章、媒体和生成索引必须先完成外部备份与抽样恢复，再从 Git 跟踪范围移除。
+迁移脚本不覆盖内容不同的目标文件，不删除源文件，并记录文件数、总大小和每个文件的 SHA-256。仓库演示配置与内容已经迁入 `site/config/` 和 `site/fixtures/content/`；未来加入的真实 YAML、文章、媒体和生成索引必须先完成外部备份与抽样恢复，再从 Git 跟踪范围移除。
 
 如果秘密曾进入 Git 历史，必须先在对应平台轮换或撤销，再使用专用历史重写工具清理所有引用；仅删除最新提交不构成清理完成。重写后重新运行：
 
@@ -298,7 +300,7 @@ npm run audit:history
 
 ## 10. 版本与 Build Train
 
-`version.json` 是唯一人工维护入口。版本使用合法 SemVer；补丁号为 `0` 时页面省略补丁号，否则显示完整版本。当前版本 `27.1.1`、Build Train `4B` 和构建序号 `116` 的页面显示为 `27.1.1 (4B116)`。构建标识直接拼接 Build Train 与构建序号，不补前导零。
+`site/version.json` 是唯一人工维护入口。版本使用合法 SemVer；补丁号为 `0` 时页面省略补丁号，否则显示完整版本。当前版本 `27.1.1`、Build Train `4B` 和构建序号 `116` 的页面显示为 `27.1.1 (4B116)`。构建标识直接拼接 Build Train 与构建序号，不补前导零。
 
 ```bash
 npm run version:show
@@ -308,4 +310,17 @@ npm run build:bump
 npm run train:set -- 4C
 ```
 
-开发、检查、测试和构建不会自动修改版本。只有显式版本命令会同步 `version.json`、`package.json` 和 `package-lock.json`。
+开发、检查、测试和构建不会自动修改版本。只有显式版本命令会同步 `site/version.json`、`site/package.json` 和根 `package-lock.json` 的 `packages['site']` 条目；根工作区编排包不单独维护版本。
+
+## 11. 主题契约与管理平台
+
+管理平台（FuyaoManager）位于独立仓库，将本项目的 `site/` 作为外部主题登记；其
+环境变量（`FUYAO_ADMIN_*`）在彼处文档维护。本仓库经 `contracts/theme` 下的
+生成式副本消费主题契约（由 `site/scripts/sync-theme-contracts.js` 维护，来源与
+摘要记录于 `contracts/theme/PROVENANCE.json`）。主题构建优先使用平台注入的
+`FUYAO_THEME_CONTRACTS`，否则使用仓库副本；契约缺失或损坏时构建直接失败。
+
+```bash
+node site/scripts/sync-theme-contracts.js --source /path/to/FuyaoManager/contracts/theme
+npm run contracts:check   # 依 PROVENANCE 摘要校验副本（CI 使用）
+```
