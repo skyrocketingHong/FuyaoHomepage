@@ -81,6 +81,26 @@ export function formatDuration(seconds: number, locale: LocaleKey = 'zh-CN'): st
 
 export { dayjs };
 
+/** 按日期的年份分组，组内保持原有顺序，年份采用降序。 */
+export function groupByYear<T>(
+	items: T[],
+	getDate: (item: T) => string | undefined,
+	unknownYear: string
+): [string, T[]][] {
+	const getYear = (item: T) => getDate(item)?.slice(0, 4) || unknownYear;
+	let groups = Object.groupBy?.(items, getYear);
+	if (!groups) {
+		const fallback: Record<string, T[]> = Object.create(null);
+		for (const item of items) {
+			(fallback[getYear(item)] ??= []).push(item);
+		}
+		groups = fallback;
+	}
+	// groupBy 的可选键可能缺席，已创建的分组均为数组。
+	const entries = Object.entries(groups) as [string, T[]][];
+	return entries.sort(([yearA], [yearB]) => yearB.localeCompare(yearA));
+}
+
 /**
  * 根据 locale 生成月份标题
  *

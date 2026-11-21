@@ -158,7 +158,9 @@ export async function loadFootprints(): Promise<FootprintData> {
 		}
 
 		// 排序索引
-		const sortedCities = [...cities].sort((a, b) => (a.title || '').localeCompare(b.title || ''));
+		const compareCityTitles = (a: City, b: City) => (a.title || '').localeCompare(b.title || '');
+		const sortedCities =
+			cities.toSorted?.(compareCityTitles) ?? [...cities].sort(compareCityTitles);
 
 		// 确保年份内部有序（年份键本身的排序在 UI 层处理，这里仅确保每一年内的通过 visitDate 排序）
 		Object.keys(cityByYear).forEach((year) => {

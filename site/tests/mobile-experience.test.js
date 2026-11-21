@@ -193,7 +193,10 @@ test('支付页使用统一三段式 Pass、固定层级和底部轨道', () => 
 	assert.match(wallet, /pay\.states\.qr_error/);
 	assert.doesNotMatch(wallet, /scan_hint|payment-pass__hint/);
 
-	assert.match(stack, /visualPayments = \$derived\(\[\.\.\.processedPayments\]\.reverse\(\)\)/);
+	assert.match(
+		stack,
+		/visualPayments = \$derived\(\s*processedPayments\.toReversed\?\.\(\) \?\? \[\.\.\.processedPayments\]\.reverse\(\)\s*\)/
+	);
 	assert.match(stack, /introVisualIndex = \$derived\(visualPayments\.length\)/);
 	assert.match(stack, /expandedPassId = \$state<string \| null>\(null\)/);
 	assert.match(stack, /expandedPassId === paymentId \? null : paymentId/);

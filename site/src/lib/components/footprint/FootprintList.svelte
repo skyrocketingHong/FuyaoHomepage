@@ -14,6 +14,7 @@
 	import type { SidebarItemType } from '$lib/types/sidebar';
 	import type { FootprintIndices, City, Attraction, BasePlace } from '$lib/utils/domain/footprints';
 	import { sidebarState } from '$lib/stores/app.svelte';
+	import { groupByYear } from '$lib/utils/datetime/date';
 	import { Calendar, MapPin } from 'lucide-svelte';
 	import { t } from '$lib/i18n/store';
 
@@ -82,18 +83,10 @@
 				const spots = city.children || [];
 				const isCityActive = String(city.id) === currentActiveId;
 
-				const spotsByYear: Record<string, Attraction[]> = {};
-				spots.forEach((spot) => {
-					const year = spot.visitDate ? spot.visitDate.substring(0, 4) : $t('footprint.unknown');
-					if (!spotsByYear[year]) spotsByYear[year] = [];
-					spotsByYear[year].push(spot);
-				});
-
-				const sortedYears = Object.keys(spotsByYear).sort((a, b) => b.localeCompare(a));
+				const spotsByYear = groupByYear(spots, (spot) => spot.visitDate, $t('footprint.unknown'));
 
 				// Create nested items: City -> Year -> Spots
-				const yearItems: SidebarItemType[] = sortedYears.map((year) => {
-					const yearSpots = spotsByYear[year];
+				const yearItems: SidebarItemType[] = spotsByYear.map(([year, yearSpots]) => {
 					return {
 						id: `city-${city.id}-year-${year}`,
 						label: `${year} (${yearSpots.length})`,

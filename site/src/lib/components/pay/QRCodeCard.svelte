@@ -69,7 +69,9 @@
 	let underlapRulerElement = $state<HTMLSpanElement>();
 	let measuredLayout = $state<PaymentLayout | null>(null);
 
-	let visualPayments = $derived([...processedPayments].reverse());
+	let visualPayments = $derived(
+		processedPayments.toReversed?.() ?? [...processedPayments].reverse()
+	);
 	let introVisualIndex = $derived(visualPayments.length);
 	let visualCardCount = $derived(visualPayments.length + 1);
 	let activeVisualIndex = $derived.by(() => {

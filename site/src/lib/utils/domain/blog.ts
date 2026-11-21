@@ -23,6 +23,7 @@ import {
 	PenTool
 } from 'lucide-svelte';
 import { t } from '$lib/i18n/store';
+import { groupByYear } from '$lib/utils/datetime/date';
 import { get } from 'svelte/store';
 
 /**
@@ -205,18 +206,10 @@ export function getBlogListUrl(category: string = 'All', tag: string = ''): `/bl
  * @returns [year, posts[]] 格式的元组数组，按年份降序排列
  */
 export function groupPostsByYear(posts: BlogPost[], activeTag: string = '') {
-	const groups: Record<string, BlogPost[]> = {};
-
 	const filteredPosts = activeTag
 		? posts.filter((p) => p.tags && p.tags.includes(activeTag))
 		: posts;
 
-	filteredPosts.forEach((post) => {
-		const year = post.date ? post.date.substring(0, 4) : 'unknown';
-		if (!groups[year]) groups[year] = [];
-		groups[year].push(post);
-	});
-
 	// 按年份降序排序
-	return Object.entries(groups).sort(([yearA], [yearB]) => yearB.localeCompare(yearA));
+	return groupByYear(filteredPosts, (post) => post.date, 'unknown');
 }
