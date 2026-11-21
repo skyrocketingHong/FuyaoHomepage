@@ -235,9 +235,11 @@
 		--section-icon-cutout: var(--section-icon-cutout-purple);
 	}
 
-	/* 夜间：顶部高光减弱 (材质色与投影由 token 的 .dark 配置接管) */
-	.dark .liquid-glass-icon-tint {
-		background: linear-gradient(180deg, rgb(255 255 255 / 14%) 0%, transparent 46%);
+	/* 夜间：顶部高光减弱 (材质色与投影由主题 token 接管) */
+	.liquid-glass-icon-tint {
+		@variant dark {
+			background: linear-gradient(180deg, rgb(255 255 255 / 14%) 0%, transparent 46%);
+		}
 	}
 
 	/* 侧栏灰色区块标题：与导航图标列左边缘对齐 (列表外层 4px + 导航项内部 12px = 16px) */

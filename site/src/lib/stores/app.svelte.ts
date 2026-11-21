@@ -364,101 +364,116 @@ export class LayoutState {
 	}
 }
 
+type ThemePreference = 'light' | 'dark' | 'system';
+
 /**
  * 主题状态管理
  */
 export class ThemeState {
 	/** 当前主题偏好设置 */
-	preference = $state<'light' | 'dark' | 'system'>('system');
+	preference = $state<ThemePreference>('system');
 
 	/** 当前实际是否为暗色模式 (用于 UI 渲染判断) */
 	isDark = $state(false);
 
-	/** 初始化完成前直接提交类名，不触发外观过渡 */
-	private initialized = false;
+	private readonly systemScheme =
+		typeof window === 'undefined' ? null : window.matchMedia('(prefers-color-scheme: dark)');
 
 	constructor() {
-		if (typeof window !== 'undefined') {
-			// 初始化
-			const saved = localStorage.getItem('theme') as 'light' | 'dark' | 'system' | null;
-			this.preference = saved || 'system';
-			this.updateSystem();
-			this.initialized = true;
+		if (!this.systemScheme) return;
 
-			// 监听系统变化
-			window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
-				if (this.preference === 'system') {
-					this.setDark(e.matches);
-				}
-			});
+		try {
+			const saved = localStorage.getItem('theme');
+			if (saved === 'light' || saved === 'dark') this.preference = saved;
+		} catch {
+			// 存储受限时，初始化沿用系统配色。
 		}
+		// 初始化直接提交配色，不播放外观过渡。
+		this.applyTheme();
+
+		// 监听系统变化
+		this.systemScheme.addEventListener('change', () => {
+			if (this.preference === 'system') this.updateTheme();
+		});
+		window.addEventListener('storage', (event) => {
+			if (event.key !== 'theme' && event.key !== null) return;
+			try {
+				if (event.storageArea !== localStorage) return;
+			} catch {
+				return;
+			}
+			const saved = event.newValue;
+			this.preference = saved === 'light' || saved === 'dark' ? saved : 'system';
+			this.updateTheme();
+		});
+	}
+
+	private resolveDark() {
+		return (
+			this.preference === 'dark' ||
+			(this.preference === 'system' && this.systemScheme?.matches === true)
+		);
 	}
 
 	/**
-	 * 设置实际的 DOM 类名
+	 * 同步页面配色和浏览器界面颜色
 	 *
 	 * 主题与系统主题变化复用统一外观过渡入口 (View Transition 能力检测)，
 	 * 使背景、玻璃 Token 与文字颜色在同一帧提交；初始化与 prefers-reduced-motion
 	 * 下直接切换最终状态。
 	 */
-	private setDark(isDark: boolean) {
-		if (typeof document === 'undefined') {
-			this.isDark = isDark;
-			return;
+	private applyTheme() {
+		this.isDark = this.resolveDark();
+		const followsSystem = this.preference === 'system';
+		const scheme = document.querySelector<HTMLMetaElement>('meta[name="color-scheme"]');
+		if (scheme) scheme.content = followsSystem ? 'light dark' : this.preference;
+
+		// 更新 meta theme-color
+		const themeColor = document.querySelector<HTMLMetaElement>('meta[name="theme-color"]');
+		if (themeColor) {
+			themeColor.content = followsSystem || this.isDark ? '#000000' : '#ffffff';
+			themeColor.media = followsSystem ? '(prefers-color-scheme: dark)' : 'all';
 		}
-		const apply = () => {
-			this.isDark = isDark;
-			document.documentElement.classList.toggle('dark', isDark);
-			// 更新 meta theme-color
-			const meta = document.querySelector('meta[name="theme-color"]');
-			if (meta) {
-				meta.setAttribute('content', isDark ? '#000000' : '#ffffff');
-			}
-		};
-		// 初始化或明暗未实际翻转时直接提交，避免页面加载时多一次无意义过渡
-		if (!this.initialized || this.isDark === isDark) {
-			apply();
-			return;
-		}
-		runAppearanceTransition(apply);
 	}
 
 	/**
 	 * 内部更新逻辑
 	 */
-	private updateSystem() {
-		if (typeof window === 'undefined') return;
-
-		if (this.preference === 'system') {
-			const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-			this.setDark(systemDark);
-		} else {
-			this.setDark(this.preference === 'dark');
+	private updateTheme() {
+		if (!this.systemScheme) return;
+		// 明暗未实际翻转时直接提交。过渡回调读取最新偏好，避免快速操作回写旧值。
+		if (this.isDark === this.resolveDark()) {
+			this.applyTheme();
+			return;
 		}
+		runAppearanceTransition(() => this.applyTheme());
 	}
 
 	/**
 	 * 设置主题偏好
 	 */
-	setPreference(pref: 'light' | 'dark' | 'system') {
+	setPreference(pref: ThemePreference) {
 		this.preference = pref;
+		if (!this.systemScheme) return;
 
-		if (typeof window !== 'undefined') {
+		try {
 			if (pref === 'system') {
 				localStorage.removeItem('theme');
 			} else {
 				localStorage.setItem('theme', pref);
 			}
+		} catch {
+			// 存储受限时，仍切换当前页面的配色。
 		}
 
-		this.updateSystem();
+		this.updateTheme();
 	}
 
 	/**
 	 * 循环切换：Light -> Dark -> System
 	 */
 	cycle() {
-		const order: ('light' | 'dark' | 'system')[] = ['light', 'dark', 'system'];
+		const order: ThemePreference[] = ['light', 'dark', 'system'];
 		const nextIndex = (order.indexOf(this.preference) + 1) % order.length;
 		this.setPreference(order[nextIndex]);
 	}

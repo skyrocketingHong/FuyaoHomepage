@@ -1,7 +1,9 @@
 /* 主题与 CSS 变量模块 */
 
 :root {
-	color-scheme: light;
+	color-scheme: light dark;
+	--scrollbar-thumb: rgb(0 0 0 / 20%);
+	--scrollbar-thumb-hover: rgb(0 0 0 / 40%);
 	--radius: 0.625rem;
 	--background: oklch(1 0 0);
 	--foreground: oklch(0.129 0.042 264.695);
@@ -164,6 +166,7 @@
 	--reader-code-text: oklch(0.278 0.012 248.2);
 	--reader-code-text-muted: oklch(0.551 0.019 251);
 	--reader-code-hover: oklch(0.963 0.005 247.9);
+	--reader-code-image-shadow: none;
 	/* 代码语法调色板 (GitHub 浅色) */
 	--reader-syntax-keyword: oklch(0.588 0.193 20.5);
 	--reader-syntax-title: oklch(0.502 0.188 295);
@@ -196,117 +199,129 @@
 	--section-icon-cutout-purple: oklch(0.48 0.25 302);
 }
 
-.dark {
+:root:has(> head > meta[name='color-scheme'][content='light']) {
+	color-scheme: light;
+}
+
+:root:has(> head > meta[name='color-scheme'][content='dark']) {
 	color-scheme: dark;
-	--background: oklch(0.129 0.042 264.695);
-	--foreground: oklch(0.984 0.003 247.858);
-	--card: oklch(0.208 0.042 265.755);
-	--card-foreground: oklch(0.984 0.003 247.858);
-	--popover: oklch(0.208 0.042 265.755);
-	--popover-foreground: oklch(0.984 0.003 247.858);
-	--primary: oklch(0.929 0.013 255.508);
-	--primary-foreground: oklch(0.208 0.042 265.755);
-	--secondary: oklch(0.279 0.041 260.031);
-	--secondary-foreground: oklch(0.984 0.003 247.858);
-	--muted: oklch(0.279 0.041 260.031);
-	--muted-foreground: oklch(0.704 0.04 256.788);
-	--accent: oklch(0.279 0.041 260.031);
-	--accent-foreground: oklch(0.984 0.003 247.858);
-	--destructive: oklch(0.704 0.191 22.216);
-	--border: oklch(1 0 0 / 10%);
-	--input: oklch(1 0 0 / 15%);
-	--ring: oklch(0.551 0.027 264.364);
-	--chart-1: oklch(0.488 0.243 264.376);
-	--chart-2: oklch(0.696 0.17 162.48);
-	--chart-3: oklch(0.769 0.188 70.08);
-	--chart-4: oklch(0.627 0.265 303.9);
-	--chart-5: oklch(0.645 0.246 16.439);
-	--sidebar: oklch(0.208 0.042 265.755);
-	--sidebar-foreground: oklch(0.984 0.003 247.858);
-	--sidebar-primary: oklch(0.488 0.243 264.376);
-	--sidebar-primary-foreground: oklch(0.984 0.003 247.858);
-	--sidebar-accent: oklch(0.279 0.041 260.031);
-	--sidebar-accent-foreground: oklch(0.984 0.003 247.858);
-	--sidebar-border: oklch(1 0 0 / 10%);
-	--sidebar-ring: oklch(0.551 0.027 264.364);
-	--theme-color: #ff8800;
-	--payment-card-shadow: inset 0 1px 0 rgb(255 255 255 / 0.2), 0 10px 24px rgb(0 0 0 / 0.28);
-	--wallpaper-readability-overlay: oklch(0.12 0.005 265 / 0.47);
-	/* 夜间唯一玻璃基准材质：沿用当前夜间 Sidebar panel 表面 */
-	--glass-surface-opacity: 0.4;
-	--glass-surface: oklch(0.24 0.02 265 / var(--glass-surface-opacity));
-	--glass-edge-top-opacity: 0.16;
-	--glass-edge-left-opacity: 0.08;
-	--glass-edge-bottom-opacity: 0.24;
-	--glass-edge-right-opacity: 0.04;
-	--glass-edge-dark: rgb(0 0 0);
-	--glass-chrome-divider-opacity: 0.4;
-	--glass-highlight: oklch(1 0 0 / 0.08);
-	--glass-border: oklch(1 0 0 / 0.12);
-	--glass-shadow: oklch(0 0 0 / 0.35);
-	/* Header 工具栏控件 token (夜间)：主体表面仍由 --glass-surface 提供 */
-	--header-control-selected: oklch(1 0 0 / 0.14);
-	--header-control-edge: oklch(1 0 0 / 0.14);
-	--header-control-highlight: oklch(1 0 0 / 0.1);
-	--header-control-shadow: oklch(0 0 0 / 0.4);
-	--header-control-divider: oklch(1 0 0 / 0.16);
-	/* 移动端 Dock 胶囊（夜间）：边界与投影同步加深 */
-	--mobile-dock-capsule-edge: oklch(1 0 0 / 0.16);
-	--mobile-dock-capsule-shadow: oklch(0 0 0 / 0.4);
-	/* Newsroom 与阅读语义 token (夜间)：中性近黑表面 + 高对比浅色文字。 */
-	--newsroom-background: #000000;
-	--newsroom-card: #1d1d1f;
-	--newsroom-foreground: #f5f5f7;
-	--newsroom-secondary: #a1a1a6;
-	--newsroom-caption: #86868b;
-	--newsroom-border: #424245;
-	--newsroom-link: #2997ff;
-	--newsroom-interactive: rgb(255 255 255 / 0.06);
-	--newsroom-interactive-hover: rgb(255 255 255 / 0.12);
-	--reader-background: #000000;
-	--reader-foreground: #f5f5f7;
-	--reader-secondary: #a1a1a6;
-	--reader-caption: #86868b;
-	--reader-card: #1d1d1f;
-	--reader-card-hover: #2c2c2e;
-	--reader-border: #424245;
-	--reader-interactive: rgb(255 255 255 / 0.06);
-	--reader-interactive-hover: rgb(255 255 255 / 0.12);
-	--reader-code-background: #1d1d1f;
-	--reader-code-border: oklch(0.33 0.015 252.3);
-	--reader-code-border-inner: oklch(0.267 0.015 256.8);
-	--reader-code-text: oklch(0.857 0.014 248);
-	--reader-code-text-muted: oklch(0.662 0.018 250.9);
-	--reader-code-hover: oklch(0.33 0.015 252.3);
-	--reader-syntax-keyword: oklch(0.734 0.163 25.8);
-	--reader-syntax-title: oklch(0.801 0.127 305.9);
-	--reader-syntax-attr: oklch(0.786 0.115 246.7);
-	--reader-syntax-string: oklch(0.856 0.077 244.1);
-	--reader-syntax-builtin: oklch(0.799 0.141 60.1);
-	--reader-syntax-comment: oklch(0.662 0.018 250.9);
-	--reader-syntax-name: oklch(0.842 0.164 145.8);
-	--reader-syntax-section: oklch(0.569 0.202 259.7);
-	--reader-syntax-bullet: oklch(0.857 0.133 90);
-	--reader-syntax-addition: oklch(0.907 0.112 146.3);
-	--reader-syntax-addition-bg: oklch(0.305 0.083 149.3);
-	--reader-syntax-deletion: oklch(0.922 0.04 27.5);
-	--reader-syntax-deletion-bg: oklch(0.328 0.127 25.9);
-	/* SectionHeader 图标底座 token (夜间)：surface 提高明度保证深色背景可辨，
-	 * cutout 同步加深保持与 surface 的从属关系，投影更重 */
-	--section-icon-foreground: oklch(0.985 0 0);
-	--section-icon-shadow: oklch(0 0 0 / 0.5);
-	--section-icon-surface-orange: oklch(0.74 0.18 56);
-	--section-icon-cutout-orange: oklch(0.68 0.19 50);
-	--section-icon-surface-green: oklch(0.77 0.19 152);
-	--section-icon-cutout-green: oklch(0.69 0.19 150);
-	--section-icon-surface-sky: oklch(0.74 0.15 233);
-	--section-icon-cutout-sky: oklch(0.66 0.15 237);
-	--section-icon-surface-teal: oklch(0.77 0.14 182);
-	--section-icon-cutout-teal: oklch(0.69 0.13 183);
-	--section-icon-surface-rose: oklch(0.7 0.19 13);
-	--section-icon-cutout-rose: oklch(0.62 0.21 15);
-	--section-icon-surface-purple: oklch(0.63 0.25 304);
-	--section-icon-cutout-purple: oklch(0.55 0.26 303);
+}
+
+:root {
+	@variant dark {
+		--scrollbar-thumb: rgb(255 255 255 / 20%);
+		--scrollbar-thumb-hover: rgb(255 255 255 / 40%);
+		--background: oklch(0.129 0.042 264.695);
+		--foreground: oklch(0.984 0.003 247.858);
+		--card: oklch(0.208 0.042 265.755);
+		--card-foreground: oklch(0.984 0.003 247.858);
+		--popover: oklch(0.208 0.042 265.755);
+		--popover-foreground: oklch(0.984 0.003 247.858);
+		--primary: oklch(0.929 0.013 255.508);
+		--primary-foreground: oklch(0.208 0.042 265.755);
+		--secondary: oklch(0.279 0.041 260.031);
+		--secondary-foreground: oklch(0.984 0.003 247.858);
+		--muted: oklch(0.279 0.041 260.031);
+		--muted-foreground: oklch(0.704 0.04 256.788);
+		--accent: oklch(0.279 0.041 260.031);
+		--accent-foreground: oklch(0.984 0.003 247.858);
+		--destructive: oklch(0.704 0.191 22.216);
+		--border: oklch(1 0 0 / 10%);
+		--input: oklch(1 0 0 / 15%);
+		--ring: oklch(0.551 0.027 264.364);
+		--chart-1: oklch(0.488 0.243 264.376);
+		--chart-2: oklch(0.696 0.17 162.48);
+		--chart-3: oklch(0.769 0.188 70.08);
+		--chart-4: oklch(0.627 0.265 303.9);
+		--chart-5: oklch(0.645 0.246 16.439);
+		--sidebar: oklch(0.208 0.042 265.755);
+		--sidebar-foreground: oklch(0.984 0.003 247.858);
+		--sidebar-primary: oklch(0.488 0.243 264.376);
+		--sidebar-primary-foreground: oklch(0.984 0.003 247.858);
+		--sidebar-accent: oklch(0.279 0.041 260.031);
+		--sidebar-accent-foreground: oklch(0.984 0.003 247.858);
+		--sidebar-border: oklch(1 0 0 / 10%);
+		--sidebar-ring: oklch(0.551 0.027 264.364);
+		--theme-color: #ff8800;
+		--payment-card-shadow: inset 0 1px 0 rgb(255 255 255 / 0.2), 0 10px 24px rgb(0 0 0 / 0.28);
+		--wallpaper-readability-overlay: oklch(0.12 0.005 265 / 0.47);
+		/* 夜间唯一玻璃基准材质：沿用当前夜间 Sidebar panel 表面 */
+		--glass-surface-opacity: 0.4;
+		--glass-surface: oklch(0.24 0.02 265 / var(--glass-surface-opacity));
+		--glass-edge-top-opacity: 0.16;
+		--glass-edge-left-opacity: 0.08;
+		--glass-edge-bottom-opacity: 0.24;
+		--glass-edge-right-opacity: 0.04;
+		--glass-edge-dark: rgb(0 0 0);
+		--glass-chrome-divider-opacity: 0.4;
+		--glass-highlight: oklch(1 0 0 / 0.08);
+		--glass-border: oklch(1 0 0 / 0.12);
+		--glass-shadow: oklch(0 0 0 / 0.35);
+		/* Header 工具栏控件 token (夜间)：主体表面仍由 --glass-surface 提供 */
+		--header-control-selected: oklch(1 0 0 / 0.14);
+		--header-control-edge: oklch(1 0 0 / 0.14);
+		--header-control-highlight: oklch(1 0 0 / 0.1);
+		--header-control-shadow: oklch(0 0 0 / 0.4);
+		--header-control-divider: oklch(1 0 0 / 0.16);
+		/* 移动端 Dock 胶囊（夜间）：边界与投影同步加深 */
+		--mobile-dock-capsule-edge: oklch(1 0 0 / 0.16);
+		--mobile-dock-capsule-shadow: oklch(0 0 0 / 0.4);
+		/* Newsroom 与阅读语义 token (夜间)：中性近黑表面 + 高对比浅色文字。 */
+		--newsroom-background: #000000;
+		--newsroom-card: #1d1d1f;
+		--newsroom-foreground: #f5f5f7;
+		--newsroom-secondary: #a1a1a6;
+		--newsroom-caption: #86868b;
+		--newsroom-border: #424245;
+		--newsroom-link: #2997ff;
+		--newsroom-interactive: rgb(255 255 255 / 0.06);
+		--newsroom-interactive-hover: rgb(255 255 255 / 0.12);
+		--reader-background: #000000;
+		--reader-foreground: #f5f5f7;
+		--reader-secondary: #a1a1a6;
+		--reader-caption: #86868b;
+		--reader-card: #1d1d1f;
+		--reader-card-hover: #2c2c2e;
+		--reader-border: #424245;
+		--reader-interactive: rgb(255 255 255 / 0.06);
+		--reader-interactive-hover: rgb(255 255 255 / 0.12);
+		--reader-code-background: #1d1d1f;
+		--reader-code-border: oklch(0.33 0.015 252.3);
+		--reader-code-border-inner: oklch(0.267 0.015 256.8);
+		--reader-code-text: oklch(0.857 0.014 248);
+		--reader-code-text-muted: oklch(0.662 0.018 250.9);
+		--reader-code-hover: oklch(0.33 0.015 252.3);
+		--reader-code-image-shadow: 0 8px 30px rgb(0 0 0 / 50%);
+		--reader-syntax-keyword: oklch(0.734 0.163 25.8);
+		--reader-syntax-title: oklch(0.801 0.127 305.9);
+		--reader-syntax-attr: oklch(0.786 0.115 246.7);
+		--reader-syntax-string: oklch(0.856 0.077 244.1);
+		--reader-syntax-builtin: oklch(0.799 0.141 60.1);
+		--reader-syntax-comment: oklch(0.662 0.018 250.9);
+		--reader-syntax-name: oklch(0.842 0.164 145.8);
+		--reader-syntax-section: oklch(0.569 0.202 259.7);
+		--reader-syntax-bullet: oklch(0.857 0.133 90);
+		--reader-syntax-addition: oklch(0.907 0.112 146.3);
+		--reader-syntax-addition-bg: oklch(0.305 0.083 149.3);
+		--reader-syntax-deletion: oklch(0.922 0.04 27.5);
+		--reader-syntax-deletion-bg: oklch(0.328 0.127 25.9);
+		/* SectionHeader 图标底座 token (夜间)：surface 提高明度保证深色背景可辨，
+		 * cutout 同步加深保持与 surface 的从属关系，投影更重 */
+		--section-icon-foreground: oklch(0.985 0 0);
+		--section-icon-shadow: oklch(0 0 0 / 0.5);
+		--section-icon-surface-orange: oklch(0.74 0.18 56);
+		--section-icon-cutout-orange: oklch(0.68 0.19 50);
+		--section-icon-surface-green: oklch(0.77 0.19 152);
+		--section-icon-cutout-green: oklch(0.69 0.19 150);
+		--section-icon-surface-sky: oklch(0.74 0.15 233);
+		--section-icon-cutout-sky: oklch(0.66 0.15 237);
+		--section-icon-surface-teal: oklch(0.77 0.14 182);
+		--section-icon-cutout-teal: oklch(0.69 0.13 183);
+		--section-icon-surface-rose: oklch(0.7 0.19 13);
+		--section-icon-cutout-rose: oklch(0.62 0.21 15);
+		--section-icon-surface-purple: oklch(0.63 0.25 304);
+		--section-icon-cutout-purple: oklch(0.55 0.26 303);
+	}
 }
 
 /* 降低透明度偏好：所有玻璃语义表面同步提高基准不透明度，高成本模糊由组件侧关闭 */
@@ -315,9 +330,10 @@
 		--glass-surface-opacity: 0.92;
 		/* Header 控件与导航胶囊关闭实时模糊，保留清晰边界 */
 		--mobile-dock-capsule-edge: oklch(0.4 0.02 255 / 0.4);
-	}
-	.dark {
-		--mobile-dock-capsule-edge: oklch(1 0 0 / 0.3);
+
+		@variant dark {
+			--mobile-dock-capsule-edge: oklch(1 0 0 / 0.3);
+		}
 	}
 }
 
@@ -325,10 +341,10 @@
 @media (prefers-contrast: more) {
 	:root {
 		--wallpaper-readability-overlay: oklch(0.97 0.005 255 / 0.44);
-	}
 
-	.dark {
-		--wallpaper-readability-overlay: oklch(0.12 0.005 265 / 0.6);
+		@variant dark {
+			--wallpaper-readability-overlay: oklch(0.12 0.005 265 / 0.6);
+		}
 	}
 }
 

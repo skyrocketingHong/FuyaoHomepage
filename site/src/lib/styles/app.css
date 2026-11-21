@@ -8,7 +8,23 @@
 @plugin '@tailwindcss/typography';
 
 /* 定义暗黑模式下的自定义变体 */
-@custom-variant dark (&:is(.dark *));
+@custom-variant dark {
+	&:where(
+		:root:has(> head > meta[name='color-scheme'][content='dark']),
+		:root:has(> head > meta[name='color-scheme'][content='dark']) *
+	) {
+		@slot;
+	}
+
+	@media (prefers-color-scheme: dark) {
+		&:where(
+			:root:has(> head > meta[name='color-scheme'][content='light dark']),
+			:root:has(> head > meta[name='color-scheme'][content='light dark']) *
+		) {
+			@slot;
+		}
+	}
+}
 
 @import './base.css';
 @import './components.css';

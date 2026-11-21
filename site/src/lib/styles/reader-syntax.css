@@ -1,14 +1,14 @@
 /* Highlight.js 语法高亮主题样式 (基于 GitHub 主题) */
 /* 全部颜色引用 theme.css 的 --reader-code-* / --reader-syntax-* 阅读语义 token，
- * 日夜随 .dark 自动切换，本文件不再保留固定色值 */
+ * 日夜随页面配色自动切换，本文件不再保留固定色值 */
 
 .markdown-body .code-wrapper {
 	background-color: var(--reader-code-background);
 	color: var(--reader-code-text);
 }
 
-.dark .markdown-body .code-wrapper img {
-	box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5); /* 深色模式下增强阴影 */
+.markdown-body .code-wrapper img {
+	box-shadow: var(--reader-code-image-shadow); /* 深色模式下增强阴影 */
 }
 
 .markdown-body .code-wrapper .hljs-doctag,

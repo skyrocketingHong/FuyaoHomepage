@@ -89,7 +89,7 @@ The repository root owns npm workspace orchestration, the shared dependency lock
     │   └── update-version.js      # Version validation, synchronization, and Build Train formatting
     ├── src/
     │   ├── app.d.ts          # TypeScript declarations
-    │   ├── app.html          # HTML template
+    │   ├── app.html          # HTML template and first-paint color scheme
     │   ├── hooks.client.ts   # Hydrate the real GlobalLoader before SPA route resolution
     │   ├── service-worker.ts # Service Worker
     │   ├── lib/              # Core application library
@@ -119,7 +119,7 @@ The repository root owns npm workspace orchestration, the shared dependency lock
     │   │   │   ├── fonts.css     # Font definitions
     │   │   │   ├── reader-syntax.css # Reader syntax highlighting
     │   │   │   ├── reader.css    # Reader typography
-    │   │   │   ├── theme.css     # Theme and material tokens
+    │   │   │   ├── theme.css     # Browser color scheme, theme and material tokens
     │   │   │   └── utilities.css # Global utility classes
     │   │   ├── types/            # Type definitions
     │   │   │   ├── album.ts      # Album types: Photo, AlbumIndex, and YearGroup
@@ -272,7 +272,7 @@ The repository root owns npm workspace orchestration, the shared dependency lock
     │   │   └── utils/            # Utility functions
     │   │       ├── datetime/     # Date and time
     │   │       │   ├── age.ts            # Age calculation
-    │   │       │   └── date.ts           # Date formatting
+    │   │       │   └── date.ts           # Date formatting and year grouping
     │   │       ├── domain/       # Domain logic
     │   │       │   ├── blog.ts           # Blog data processing
     │   │       │   ├── blogRoute.ts      # Catch-all category, tag, and article path parsing

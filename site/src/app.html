@@ -18,16 +18,21 @@
 		<link rel="mask-icon" href="/favicon/safari-pinned-tab.svg" color="#5bbad5" />
 		<meta name="msapplication-TileColor" content="#224679" />
 		<meta name="msapplication-TileImage" content="/favicon/mstile-144x144.png" />
+		<meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)" />
 		<meta name="theme-color" content="#ffffff" />
+		<meta name="color-scheme" content="light dark" />
 		<script>
 			(function () {
-				var saved = localStorage.getItem('theme');
-				var sys = window.matchMedia('(prefers-color-scheme: dark)').matches;
-				if (saved === 'dark' || (!saved && sys)) {
-					document.documentElement.classList.add('dark');
-					document.querySelector('meta[name="theme-color"]').setAttribute('content', '#000000');
-				} else {
-					document.documentElement.classList.remove('dark');
+				try {
+					const saved = localStorage.getItem('theme');
+					if (saved === 'light' || saved === 'dark') {
+						document.querySelector('meta[name="color-scheme"]').content = saved;
+						const themeColor = document.querySelector('meta[name="theme-color"]');
+						themeColor.content = saved === 'dark' ? '#000000' : '#ffffff';
+						themeColor.media = 'all';
+					}
+				} catch {
+					// 存储受限时，首屏沿用系统配色。
 				}
 			})();
 		</script>

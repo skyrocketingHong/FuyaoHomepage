@@ -88,7 +88,7 @@
     │   └── update-version.js      # 版本校验、更新、同步及 Build Train 格式化入口
     ├── src/
     │   ├── app.d.ts          # TypeScript 类型定义
-    │   ├── app.html          # HTML 模版
+    │   ├── app.html          # HTML 模板及首屏配色
     │   ├── hooks.client.ts   # SPA 路由解析前水合真实 GlobalLoader
     │   ├── service-worker.ts # Service Worker
     │   ├── lib/              # 核心库代码
@@ -118,7 +118,7 @@
     │   │   │   ├── fonts.css     # 字体定义
     │   │   │   ├── reader-syntax.css # 阅读器语法高亮样式
     │   │   │   ├── reader.css    # 阅读器排版样式
-    │   │   │   ├── theme.css     # 主题与材质 Token
+    │   │   │   ├── theme.css     # 浏览器配色、主题与材质 Token
     │   │   │   └── utilities.css # 全局工具类
     │   │   ├── types/            # 类型定义
     │   │   │   ├── album.ts      # 相册类型 (Photo, AlbumIndex, YearGroup)
@@ -271,7 +271,7 @@
     │   │   └── utils/            # 实用工具函数
     │   │       ├── datetime/     # 时间处理
     │   │       │   ├── age.ts            # 年龄计算
-    │   │       │   └── date.ts           # 日期格式化
+    │   │       │   └── date.ts           # 日期格式化与年份分组
     │   │       ├── domain/       # 业务逻辑
     │   │       │   ├── blog.ts           # 博客数据处理
     │   │       │   ├── blogRoute.ts      # 统一博客 catch-all 分类、标签与文章路径解析
