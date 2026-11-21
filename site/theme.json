@@ -1,7 +1,7 @@
 {
 	"contract": "fuyao.theme.manifest/v1",
 	"id": "fuyao-homepage",
-	"version": "27.2.0",
+	"version": "27.2.1",
 	"name": "Fuyao Homepage",
 	"description": "The original SvelteKit public site registered as the first theme.",
 	"adapter": "node22-sveltekit-static",

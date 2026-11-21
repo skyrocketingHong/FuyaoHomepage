@@ -36,6 +36,16 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 - Fixed direct album URLs being treated as physical directories instead of SPA routes; fallback pages now hydrate the real `GlobalLoader` before route resolution, preserving its Crossfade lifecycle and true viewport-centered text.
 
+## 27.2.1 (2026-11-21)
+
+### Fixed
+
+- Apply the saved or system color scheme before first paint, synchronize native controls and browser chrome, and reflect theme changes across tabs.
+
+### Changed
+
+- Share the blog and footprint year grouping logic and prefer non-mutating array methods with compatibility fallbacks.
+
 ## 27.2 (2026-11-11)
 
 ### Added
